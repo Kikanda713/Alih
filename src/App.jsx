@@ -6,6 +6,16 @@ import './App.css'
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
 
+  const handleNavClick = (e, targetId) => {
+    e.preventDefault()
+    setMenuOpen(false)
+    document.body.style.overflow = ''
+    const el = document.getElementById(targetId)
+    if (el) {
+      setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+    }
+  }
+
   return (
     <div className="app">
 
@@ -13,27 +23,50 @@ function App() {
       <nav className="navbar">
         <div className="nav-container">
           <a href="#" className="logo">
-            <span className="logo-mark">A</span>
-            <div>
-              <span className="logo-text">ALIH</span>
-              <span className="logo-tagline">Autonomous Intelligent Liquidity Hub</span>
+            {/* Placeholder logo — final logo coming later */}
+            <svg className="logo-svg" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="40" height="40" rx="8" fill="#C65D2E"/>
+              <text x="50%" y="54%" dominantBaseline="middle" textAnchor="middle" fill="#FFFFFF" fontFamily="Space Grotesk, sans-serif" fontWeight="700" fontSize="22">A</text>
+            </svg>
+            <div className="logo-text-group">
+              <span className="logo-text" translate="no">ALIH</span>
+              <span className="logo-tagline">AUTONOMOUS INTELLIGENT LIQUIDITY HUB</span>
             </div>
           </a>
 
-          <ul className={`nav-links ${menuOpen ? 'active' : ''}`}>
-            <li><a href="#home">Accueil</a></li>
-            <li><a href="#how">Comment ça marche</a></li>
-            <li><a href="#trust">Confiance</a></li>
-            <li><a href="#pricing">Tarifs</a></li>
-            <li><a href="#contact">Contact</a></li>
+          <ul className="nav-links">
+            <li><a href="#home" onClick={(e) => handleNavClick(e, 'home')}>Accueil</a></li>
+            <li><a href="#how" onClick={(e) => handleNavClick(e, 'how')}>Comment ça marche</a></li>
+            <li><a href="#trust" onClick={(e) => handleNavClick(e, 'trust')}>Confiance</a></li>
+            <li><a href="#pricing" onClick={(e) => handleNavClick(e, 'pricing')}>Tarifs</a></li>
+            <li><a href="#contact" onClick={(e) => handleNavClick(e, 'contact')}>Contact</a></li>
           </ul>
 
-          <div className={`nav-auth ${menuOpen ? 'active' : ''}`}>
+          <div className="nav-auth">
             <a href="#signin" className="btn-signin">Se connecter</a>
             <a href="#signup" className="btn-signup">S'inscrire</a>
           </div>
 
-          <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
+          {/* Mobile-only menu panel */}
+          <div className={`mobile-menu ${menuOpen ? 'active' : ''}`}>
+            <ul className="mobile-menu-links">
+              <li><a href="#home" onClick={(e) => handleNavClick(e, 'home')}>Accueil</a></li>
+              <li><a href="#how" onClick={(e) => handleNavClick(e, 'how')}>Comment ça marche</a></li>
+              <li><a href="#trust" onClick={(e) => handleNavClick(e, 'trust')}>Confiance</a></li>
+              <li><a href="#pricing" onClick={(e) => handleNavClick(e, 'pricing')}>Tarifs</a></li>
+              <li><a href="#contact" onClick={(e) => handleNavClick(e, 'contact')}>Contact</a></li>
+            </ul>
+            <div className="mobile-menu-auth">
+              <a href="#signin" className="btn-signin">Se connecter</a>
+              <a href="#signup" className="btn-signup">S'inscrire</a>
+            </div>
+          </div>
+
+          <button className="hamburger" onClick={() => {
+            const next = !menuOpen
+            setMenuOpen(next)
+            document.body.style.overflow = next ? 'hidden' : ''
+          }} aria-label="Menu">
             {menuOpen ? <FaTimes /> : <FaBars />}
           </button>
         </div>
@@ -50,14 +83,14 @@ function App() {
             </span>
 
             <h1 className="hero-title">
-              Parlez à vos produits.<br />
-              <span className="hero-highlight">Achetez, vendez</span><br />
-              et échangez via IA.
+             <span className="hero-highlight"> Achetez, vendez</span><br />
+              depuis votre messagerie.
+              
             </h1>
 
             <p className="hero-subtitle">
-              ALIH connecte les personnes, les produits et les opportunités grâce
-              à une intelligence artificielle conversationnelle. Simple comme un message.
+               ALIH vous aide à trouver, vendre ou échanger ce dont vous avez besoin grâce à une conversation simple. 
+               Aussi naturel qu'un message.
             </p>
 
             {/* Platform CTAs */}
@@ -101,9 +134,9 @@ function App() {
             <div className="phone-mockup">
               <div className="phone-screen">
                 <div className="chat-header">
-                  <div className="chat-avatar">A</div>
+                  <div className="chat-avatar" translate="no">A</div>
                   <div>
-                    <p className="chat-name">ALIH Agent</p>
+                    <p className="chat-name" translate="no">ALIH Agent</p>
                     <p className="chat-status">en ligne</p>
                   </div>
                 </div>
@@ -368,6 +401,14 @@ function App() {
       {/* ============ FOOTER ============ */}
       <footer className="footer">
         <div className="container">
+          <div className="footer-logo">
+            {/* Placeholder dark logo — final logo coming later */}
+            <svg className="footer-logo-svg" width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="40" height="40" rx="8" fill="#C65D2E"/>
+              <text x="50%" y="54%" dominantBaseline="middle" textAnchor="middle" fill="#FFFFFF" fontFamily="Space Grotesk, sans-serif" fontWeight="700" fontSize="22">A</text>
+            </svg>
+            <span className="footer-logo-text" translate="no">ALIH</span>
+          </div>
           <span className="footer-text">© 2026 ALIH — Autonomous Intelligent Liquidity Hub</span>
           <div className="footer-links">
             <a href="#privacy">Confidentialité</a>
