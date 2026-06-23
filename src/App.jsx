@@ -1,10 +1,16 @@
 import { useState } from 'react'
 import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck } from 'react-icons/fa'
 import { HiOutlineChatAlt2, HiOutlineSearch, HiOutlineCurrencyDollar, HiOutlineCreditCard } from 'react-icons/hi'
+import ProfileMenu from './components/ProfileMenu.jsx'
+import MerchantPanel from './components/MerchantPanel.jsx'
+import { useT, LanguageSwitcher } from './i18n/index.jsx'
 import './App.css'
+
+const WHATSAPP_LINK = 'https://wa.me/243991880037'
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { t } = useT()
 
   const handleNavClick = (e, targetId) => {
     e.preventDefault()
@@ -16,6 +22,14 @@ function App() {
     }
   }
 
+  const navItems = [
+    { id: 'home', label: t('nav.home') },
+    { id: 'how', label: t('nav.how') },
+    { id: 'trust', label: t('nav.trust') },
+    { id: 'pricing', label: t('nav.pricing') },
+    { id: 'contact', label: t('nav.contact') },
+  ]
+
   return (
     <div className="app">
 
@@ -26,39 +40,35 @@ function App() {
             {/* Placeholder logo — final logo coming later */}
             <svg className="logo-svg" width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect width="40" height="40" rx="8" fill="#C65D2E"/>
-              <text x="50%" y="54%" dominantBaseline="middle" textAnchor="middle" fill="#FFFFFF" fontFamily="Space Grotesk, sans-serif" fontWeight="700" fontSize="22">A</text>
+              <text x="50%" y="54%" dominantBaseline="middle" textAnchor="middle" fill="#FFFFFF" fontFamily="Space Grotesk, sans-serif" fontWeight="700" fontSize="22">T</text>
             </svg>
             <div className="logo-text-group">
-              <span className="logo-text" translate="no">ALIH</span>
-              <span className="logo-tagline">AUTONOMOUS INTELLIGENT LIQUIDITY HUB</span>
+              <span className="logo-text" translate="no">Tindisa</span>
+              <span className="logo-tagline">Acheter et vendre par message</span>
             </div>
           </a>
 
           <ul className="nav-links">
-            <li><a href="#home" onClick={(e) => handleNavClick(e, 'home')}>Accueil</a></li>
-            <li><a href="#how" onClick={(e) => handleNavClick(e, 'how')}>Comment ça marche</a></li>
-            <li><a href="#trust" onClick={(e) => handleNavClick(e, 'trust')}>Confiance</a></li>
-            <li><a href="#pricing" onClick={(e) => handleNavClick(e, 'pricing')}>Tarifs</a></li>
-            <li><a href="#contact" onClick={(e) => handleNavClick(e, 'contact')}>Contact</a></li>
+            {navItems.map((item) => (
+              <li key={item.id}><a href={`#${item.id}`} onClick={(e) => handleNavClick(e, item.id)}>{item.label}</a></li>
+            ))}
           </ul>
 
           <div className="nav-auth">
-            <a href="#signin" className="btn-signin">Se connecter</a>
-            <a href="#signup" className="btn-signup">S'inscrire</a>
+            <LanguageSwitcher />
+            <ProfileMenu />
           </div>
 
           {/* Mobile-only menu panel */}
           <div className={`mobile-menu ${menuOpen ? 'active' : ''}`}>
             <ul className="mobile-menu-links">
-              <li><a href="#home" onClick={(e) => handleNavClick(e, 'home')}>Accueil</a></li>
-              <li><a href="#how" onClick={(e) => handleNavClick(e, 'how')}>Comment ça marche</a></li>
-              <li><a href="#trust" onClick={(e) => handleNavClick(e, 'trust')}>Confiance</a></li>
-              <li><a href="#pricing" onClick={(e) => handleNavClick(e, 'pricing')}>Tarifs</a></li>
-              <li><a href="#contact" onClick={(e) => handleNavClick(e, 'contact')}>Contact</a></li>
+              {navItems.map((item) => (
+                <li key={item.id}><a href={`#${item.id}`} onClick={(e) => handleNavClick(e, item.id)}>{item.label}</a></li>
+              ))}
             </ul>
             <div className="mobile-menu-auth">
-              <a href="#signin" className="btn-signin">Se connecter</a>
-              <a href="#signup" className="btn-signup">S'inscrire</a>
+              <LanguageSwitcher />
+              <ProfileMenu />
             </div>
           </div>
 
@@ -79,34 +89,32 @@ function App() {
         <div className="hero-container">
           <div className="hero-content">
             <span className="hero-badge">
-              <span>◈</span> L'intelligence au service des proximités africaines
+              <span>◈</span> {t('hero.badge')}
             </span>
 
             <h1 className="hero-title">
-             <span className="hero-highlight"> Achetez, vendez</span><br />
-              depuis votre messagerie.
-              
+             <span className="hero-highlight"> {t('hero.title.highlight')}</span><br />
+              {t('hero.title.rest')}
             </h1>
 
             <p className="hero-subtitle">
-               ALIH vous aide à trouver, vendre ou échanger ce dont vous avez besoin grâce à une conversation simple. 
-               Aussi naturel qu'un message.
+               {t('hero.subtitle')}
             </p>
 
-            {/* Platform CTAs */}
+            {/* Platform CTAs — messaging is the primary action */}
             <div className="platforms">
               <a
-                href="https://wa.me/243991880037"
+                href={WHATSAPP_LINK}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="platform-btn whatsapp"
               >
                 <FaWhatsapp className="platform-icon" />
-                <span>Parler sur WhatsApp</span>
+                <span>{t('cta.whatsapp')}</span>
               </a>
               <a href="#telegram" className="platform-btn telegram">
                 <FaTelegramPlane className="platform-icon" />
-                <span>Ouvrir sur Telegram</span>
+                <span>{t('cta.telegram')}</span>
               </a>
             </div>
 
@@ -124,7 +132,7 @@ function App() {
               <div className="stat-divider"></div>
               <div className="stat">
                 <span className="stat-number">24/7</span>
-                <span className="stat-label">Agent IA disponible</span>
+                <span className="stat-label">Assistant disponible</span>
               </div>
             </div>
           </div>
@@ -134,15 +142,15 @@ function App() {
             <div className="phone-mockup">
               <div className="phone-screen">
                 <div className="chat-header">
-                  <div className="chat-avatar" translate="no">A</div>
+                  <div className="chat-avatar" translate="no">T</div>
                   <div>
-                    <p className="chat-name" translate="no">ALIH Agent</p>
+                    <p className="chat-name" translate="no">Tindisa</p>
                     <p className="chat-status">en ligne</p>
                   </div>
                 </div>
                 <div className="chat-body">
                   <div className="chat-msg bot">
-                    <p>Bonjour ! 👋 Je suis ALIH, votre assistant intelligent.</p>
+                    <p>Bonjour ! 👋 Je suis Tindisa, votre assistant.</p>
                   </div>
                   <div className="chat-msg bot">
                     <p>Que recherchez-vous aujourd'hui ?</p>
@@ -166,71 +174,54 @@ function App() {
         </div>
       </section>
 
-      {/* ============ HOW IT WORKS — AGENTS IA ============ */}
+      {/* ============ MERCHANT SPACE (auth-gated) ============ */}
+      <MerchantPanel />
+
+      {/* ============ HOW IT WORKS ============ */}
       <section className="how-it-works" id="how">
         <div className="container">
-          <h2 className="section-title">Nos agents IA au travail</h2>
-          <p className="section-subtitle">Quatre agents autonomes qui collaborent pour vous offrir la meilleure expérience de commerce</p>
+          <h2 className="section-title">{t('how.title')}</h2>
+          <p className="section-subtitle">{t('how.subtitle')}</p>
 
           <div className="steps-grid">
-            {/* Agent 1 — Commerce Agent */}
             <div className="step-card agent-card">
-              <div className="agent-badge">Agent 01</div>
+              <div className="agent-badge">Étape 01</div>
               <div className="agent-icon">
                 <HiOutlineChatAlt2 size={28} />
               </div>
-              <h3 className="agent-name">Commerce Agent</h3>
-              <p className="agent-role">Compréhension & Recherche</p>
-              <p className="agent-desc">Analyse votre intention, parcourt le catalogue et vous propose les produits les plus pertinents en temps réel.</p>
+              <h3 className="agent-name">Discuter</h3>
+              <p className="agent-role">Sur WhatsApp ou Telegram</p>
+              <p className="agent-desc">Dites ce que vous cherchez à vendre ou à acheter. L'assistant comprend et vous propose les bonnes offres.</p>
             </div>
 
-            {/* Agent 2 — Pricing Agent */}
             <div className="step-card agent-card">
-              <div className="agent-badge">Agent 02</div>
+              <div className="agent-badge">Étape 02</div>
               <div className="agent-icon">
                 <HiOutlineSearch size={28} />
               </div>
-              <h3 className="agent-name">Pricing Agent</h3>
-              <p className="agent-role">Évaluation & Valorisation</p>
-              <p className="agent-desc">Calcule la valeur marché dynamique de chaque produit. Score la qualité et compare les prix pour vous éclairer.</p>
+              <h3 className="agent-name">Comparer</h3>
+              <p className="agent-role">Le bon prix</p>
+              <p className="agent-desc">Voyez plusieurs offres et leurs prix. L'assistant vous aide à choisir l'option la plus avantageuse.</p>
             </div>
 
-            {/* Agent 3 — Negotiation Agent */}
             <div className="step-card agent-card">
-              <div className="agent-badge">Agent 03</div>
+              <div className="agent-badge">Étape 03</div>
               <div className="agent-icon">
                 <HiOutlineCurrencyDollar size={28} />
               </div>
-              <h3 className="agent-name">Negotiation Agent</h3>
-              <p className="agent-role">Négociation Autonome</p>
-              <p className="agent-desc">Négocie automatiquement avec le vendeur. Génère des contre-offres intelligentes en respectant les règles de prix.</p>
+              <h3 className="agent-name">Négocier</h3>
+              <p className="agent-role">À votre place</p>
+              <p className="agent-desc">L'assistant négocie avec le vendeur pour obtenir le meilleur prix, en toute transparence.</p>
             </div>
 
-            {/* Agent 4 — Payment Agent */}
             <div className="step-card agent-card">
-              <div className="agent-badge">Agent 04</div>
+              <div className="agent-badge">Étape 04</div>
               <div className="agent-icon">
                 <HiOutlineCreditCard size={28} />
               </div>
-              <h3 className="agent-name">Payment Agent</h3>
-              <p className="agent-role">Transaction & Escrow</p>
-              <p className="agent-desc">Initie le paiement sécurisé via Mobile Money. Gère l'escrow et confirme la transaction après livraison.</p>
-            </div>
-          </div>
-
-          {/* Agent orchestration flow */}
-          <div className="agent-flow">
-            <span className="agent-flow-label">Orchestration</span>
-            <div className="agent-flow-steps">
-              <span>Intention détectée</span>
-              <span className="flow-arrow">→</span>
-              <span>Agent sélectionné</span>
-              <span className="flow-arrow">→</span>
-              <span>Outils exécutés</span>
-              <span className="flow-arrow">→</span>
-              <span>Réponse synthétisée</span>
-              <span className="flow-arrow">→</span>
-              <span>Règles validées</span>
+              <h3 className="agent-name">Payer & recevoir</h3>
+              <p className="agent-role">En sécurité</p>
+              <p className="agent-desc">Payez par Mobile Money en toute sécurité. Le vendeur n'est payé qu'après la livraison.</p>
             </div>
           </div>
         </div>
@@ -240,32 +231,32 @@ function App() {
       <section className="trust" id="trust">
         <div className="network-pattern"></div>
         <div className="container">
-          <h2 className="section-title">Pourquoi faire confiance à ALIH ?</h2>
-          <p className="section-subtitle">Sécurité, transparence et intelligence à chaque transaction</p>
+          <h2 className="section-title">{t('trust.title')}</h2>
+          <p className="section-subtitle">Sécurité, transparence et simplicité à chaque transaction</p>
 
           <div className="trust-grid">
             <div className="trust-card">
               <div className="trust-icon">
                 <FaShieldAlt size={24} color="#C65D2E" />
               </div>
-              <h3>Paiements sécurisés</h3>
-              <p>Vos fonds sont protégés par un système d'escrow. Le vendeur ne reçoit le paiement qu'après votre confirmation.</p>
+              <h3>{t('trust.card1.title')}</h3>
+              <p>{t('trust.card1.text')}</p>
             </div>
 
             <div className="trust-card">
               <div className="trust-icon">
                 <FaUserCheck size={24} color="#C65D2E" />
               </div>
-              <h3>Vendeurs vérifiés</h3>
-              <p>Chaque vendeur passe par un processus de vérification KYC. Seuls les profils de confiance sont actifs.</p>
+              <h3>{t('trust.card2.title')}</h3>
+              <p>{t('trust.card2.text')}</p>
             </div>
 
             <div className="trust-card">
               <div className="trust-icon">
                 <FaRobot size={24} color="#C65D2E" />
               </div>
-              <h3>IA responsable</h3>
-              <p>Nos agents respectent des règles strictes : prix plancher, transparence des offres, aucune manipulation.</p>
+              <h3>{t('trust.card3.title')}</h3>
+              <p>{t('trust.card3.text')}</p>
             </div>
           </div>
         </div>
@@ -275,7 +266,7 @@ function App() {
       <section className="pricing" id="pricing">
         <div className="container">
           <h2 className="section-title">Tarification basée sur votre volume d'activité</h2>
-          <p className="section-subtitle">Vous ne payez que ce que ALIH génère pour vous. Plus vous vendez, moins c'est cher.</p>
+          <p className="section-subtitle">Vous ne payez que ce que Tindisa génère pour vous. Plus vous vendez, moins c'est cher.</p>
 
           <div className="pricing-grid">
             {/* Starter — Low Volume */}
@@ -286,20 +277,20 @@ function App() {
                   <span className="pricing-amount">5%</span>
                   <span className="pricing-period">par transaction</span>
                 </div>
-                <p className="pricing-desc">Pour les vendeurs occasionnels avec un faible volume d'activité ALIH.</p>
+                <p className="pricing-desc">Pour les vendeurs occasionnels avec un faible volume d'activité Tindisa.</p>
               </div>
               <div className="pricing-volume">
                 <span className="pricing-volume-label">Volume mensuel</span>
                 <span className="pricing-volume-value">Jusqu'à 100 interactions</span>
               </div>
               <ul className="pricing-features">
-                <li><FaCheck className="pricing-check" /> 100 conversations IA / mois</li>
+                <li><FaCheck className="pricing-check" /> 100 conversations / mois</li>
                 <li><FaCheck className="pricing-check" /> 30 négociations automatisées</li>
-                <li><FaCheck className="pricing-check" /> Agent Commerce inclus</li>
-                <li><FaCheck className="pricing-check" /> Paiement escrow standard</li>
+                <li><FaCheck className="pricing-check" /> Assistant commerce inclus</li>
+                <li><FaCheck className="pricing-check" /> Paiement sécurisé standard</li>
                 <li><FaCheck className="pricing-check" /> Support WhatsApp</li>
               </ul>
-              <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
+              <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
                 Démarrer
               </a>
             </div>
@@ -313,22 +304,22 @@ function App() {
                   <span className="pricing-amount">3.5%</span>
                   <span className="pricing-period">par transaction</span>
                 </div>
-                <p className="pricing-desc">Pour les vendeurs actifs dont ALIH traite un volume significatif chaque mois.</p>
+                <p className="pricing-desc">Pour les vendeurs actifs dont Tindisa traite un volume significatif chaque mois.</p>
               </div>
               <div className="pricing-volume">
                 <span className="pricing-volume-label">Volume mensuel</span>
                 <span className="pricing-volume-value">100 à 500 interactions</span>
               </div>
               <ul className="pricing-features">
-                <li><FaCheck className="pricing-check" /> 500 conversations IA / mois</li>
+                <li><FaCheck className="pricing-check" /> 500 conversations / mois</li>
                 <li><FaCheck className="pricing-check" /> 150 négociations automatisées</li>
-                <li><FaCheck className="pricing-check" /> Agent Négociation avancé</li>
-                <li><FaCheck className="pricing-check" /> Agent Pricing dynamique</li>
-                <li><FaCheck className="pricing-check" /> Escrow prioritaire</li>
+                <li><FaCheck className="pricing-check" /> Négociation avancée</li>
+                <li><FaCheck className="pricing-check" /> Prix dynamiques</li>
+                <li><FaCheck className="pricing-check" /> Paiement prioritaire</li>
                 <li><FaCheck className="pricing-check" /> Rapports d'activité hebdo</li>
                 <li><FaCheck className="pricing-check" /> Support prioritaire 24/7</li>
               </ul>
-              <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-primary">
+              <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-primary">
                 Choisir Croissance
               </a>
             </div>
@@ -341,22 +332,22 @@ function App() {
                   <span className="pricing-amount">2%</span>
                   <span className="pricing-period">par transaction</span>
                 </div>
-                <p className="pricing-desc">Pour les entreprises et gros vendeurs avec un haut volume d'activité ALIH.</p>
+                <p className="pricing-desc">Pour les entreprises et gros vendeurs avec un haut volume d'activité Tindisa.</p>
               </div>
               <div className="pricing-volume">
                 <span className="pricing-volume-label">Volume mensuel</span>
                 <span className="pricing-volume-value">500+ interactions</span>
               </div>
               <ul className="pricing-features">
-                <li><FaCheck className="pricing-check" /> Conversations IA illimitées</li>
+                <li><FaCheck className="pricing-check" /> Conversations illimitées</li>
                 <li><FaCheck className="pricing-check" /> Négociations illimitées</li>
-                <li><FaCheck className="pricing-check" /> Tous les agents IA inclus</li>
-                <li><FaCheck className="pricing-check" /> Agent Marketing automatique</li>
+                <li><FaCheck className="pricing-check" /> Toutes les fonctions incluses</li>
+                <li><FaCheck className="pricing-check" /> Marketing automatique</li>
                 <li><FaCheck className="pricing-check" /> API d'intégration catalogue</li>
                 <li><FaCheck className="pricing-check" /> Dashboard & analytics complets</li>
                 <li><FaCheck className="pricing-check" /> Gestionnaire de compte dédié</li>
               </ul>
-              <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
+              <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
                 Contacter l'équipe
               </a>
             </div>
@@ -364,7 +355,7 @@ function App() {
 
           {/* Pricing note */}
           <p className="pricing-note">
-            ◈ &nbsp;Une <strong>interaction</strong> = une conversation initiée par un acheteur via ALIH (recherche, négociation ou commande).<br />
+            ◈ &nbsp;Une <strong>interaction</strong> = une conversation initiée par un acheteur via Tindisa (recherche, négociation ou commande).<br />
             Aucun frais fixe. Commission uniquement sur les transactions conclues.
           </p>
         </div>
@@ -375,24 +366,23 @@ function App() {
         <div className="network-pattern"></div>
         <div className="container">
           <div className="final-cta-accent"></div>
-          <h2 className="final-cta-title">Commencer une conversation</h2>
+          <h2 className="final-cta-title">{t('finalcta.title')}</h2>
           <p className="final-cta-subtitle">
-            Rejoignez des milliers d'utilisateurs qui achètent et vendent intelligemment
-            via leur messagerie préférée.
+            {t('finalcta.subtitle')}
           </p>
           <div className="platforms">
             <a
-              href="https://wa.me/243991880037"
+              href={WHATSAPP_LINK}
               target="_blank"
               rel="noopener noreferrer"
               className="platform-btn whatsapp"
             >
               <FaWhatsapp className="platform-icon" />
-              <span>WhatsApp</span>
+              <span>{t('cta.whatsapp')}</span>
             </a>
             <a href="#telegram" className="platform-btn telegram">
               <FaTelegramPlane className="platform-icon" />
-              <span>Telegram</span>
+              <span>{t('cta.telegram')}</span>
             </a>
           </div>
         </div>
@@ -405,11 +395,11 @@ function App() {
             {/* Placeholder dark logo — final logo coming later */}
             <svg className="footer-logo-svg" width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect width="40" height="40" rx="8" fill="#C65D2E"/>
-              <text x="50%" y="54%" dominantBaseline="middle" textAnchor="middle" fill="#FFFFFF" fontFamily="Space Grotesk, sans-serif" fontWeight="700" fontSize="22">A</text>
+              <text x="50%" y="54%" dominantBaseline="middle" textAnchor="middle" fill="#FFFFFF" fontFamily="Space Grotesk, sans-serif" fontWeight="700" fontSize="22">T</text>
             </svg>
-            <span className="footer-logo-text" translate="no">ALIH</span>
+            <span className="footer-logo-text" translate="no">Tindisa</span>
           </div>
-          <span className="footer-text">© 2026 ALIH — Autonomous Intelligent Liquidity Hub</span>
+          <span className="footer-text">{t('footer.text')}</span>
           <div className="footer-links">
             <a href="#privacy">Confidentialité</a>
             <a href="#terms">Conditions</a>
