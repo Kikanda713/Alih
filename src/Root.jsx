@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import App from './App.jsx'
 import DashboardLayout from './pages/dashboard/DashboardLayout.jsx'
-import DashboardHome from './pages/dashboard/DashboardHome.jsx'
+import ChatHome from './pages/dashboard/ChatHome.jsx'
 import CataloguePage from './pages/dashboard/CataloguePage.jsx'
 import VentesPage from './pages/dashboard/VentesPage.jsx'
 import WalletPage from './pages/dashboard/WalletPage.jsx'
@@ -11,7 +11,7 @@ export default function Root() {
     <Routes>
       <Route path="/" element={<App />} />
       <Route path="/dashboard" element={<DashboardLayout />}>
-        <Route index element={<DashboardHome />} />
+        <Route index element={<ChatHome />} />
         <Route path="catalogue" element={<CataloguePage />} />
         <Route path="ventes" element={<VentesPage />} />
         <Route path="wallet" element={<WalletPage />} />

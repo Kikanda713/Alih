@@ -82,6 +82,28 @@ const dict = {
     'profile.logout': 'Se déconnecter',
     'profile.login': 'Se connecter',
 
+    // Accueil conversationnel (canal interne)
+    'chat.greeting': 'Bonjour 👋',
+    'chat.greetingSub': 'Demandez à votre assistant Tindisa de chercher, négocier, vendre ou livrer — directement ici.',
+    'chat.placeholder': 'Écrivez votre message…',
+    'chat.send': 'Envoyer',
+    'chat.attach': 'Joindre un fichier',
+    'chat.conversations': 'Conversations',
+    'chat.new': 'Nouvelle',
+    'chat.noConversations': 'Aucune conversation pour le moment.',
+    'chat.untitled': 'Sans titre',
+    'chat.unavailable': "L'assistant n'est pas disponible pour le moment. Réessayez plus tard.",
+    'chat.stats.title': 'Aperçu',
+    'chat.stats.sales': 'ventes',
+    'chat.sugg.sales': 'Résumer mes ventes',
+    'chat.sugg.salesPrompt': 'Résume mes ventes du jour.',
+    'chat.sugg.stock': 'Produits en rupture',
+    'chat.sugg.stockPrompt': 'Quels produits sont en rupture de stock ?',
+    'chat.sugg.price': 'Conseil de prix',
+    'chat.sugg.pricePrompt': "Aide-moi à fixer un bon prix et un prix plancher.",
+    'chat.sugg.publish': 'Publier sur Facebook',
+    'chat.sugg.publishPrompt': 'Publie mon meilleur produit sur ma page Facebook.',
+
     // Mode démo (à retirer en production)
     'demo.login': 'Essayer en démo',
     'demo.exit': 'Quitter la démo',
