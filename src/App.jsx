@@ -1,12 +1,16 @@
 import { useState } from 'react'
 import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck } from 'react-icons/fa'
 import { HiOutlineChatAlt2, HiOutlineSearch, HiOutlineCurrencyDollar, HiOutlineCreditCard } from 'react-icons/hi'
+import ProfileMenu from './components/ProfileMenu.jsx'
+import MerchantPanel from './components/MerchantPanel.jsx'
+import { useT, LanguageSwitcher } from './i18n/index.jsx'
 import './App.css'
 
 const WHATSAPP_LINK = 'https://wa.me/243991880037'
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { t } = useT()
 
   const handleNavClick = (e, targetId) => {
     e.preventDefault()
