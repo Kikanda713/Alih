@@ -366,6 +366,19 @@
 .wallet-tx-icon.debit { background: rgba(192,57,43,0.1); color: #c0392b; }
 .wallet-amount-credit { color: #1e8449; font-weight: 700; white-space: nowrap; }
 .wallet-amount-debit { color: #c0392b; font-weight: 700; white-space: nowrap; }
+
+/* ---------- Pagination ---------- */
+.pagination { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+.pagination-count { font-size: 0.82rem; color: var(--gray-light); }
+.pagination-ctrl { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.pagination-info { font-size: 0.88rem; color: var(--gray); font-weight: 600; min-width: 48px; text-align: center; }
+.pagination-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--white); cursor: pointer; color: var(--gray);
+}
+.pagination-btn:hover:not(:disabled) { border-color: var(--terracotta); color: var(--terracotta); }
+.pagination-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 @media (max-width: 540px) {
   .form-row { grid-template-columns: 1fr; }
   .cat-head { flex-direction: column; }

@@ -3,6 +3,7 @@ import { FaHandshake } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
 import { Spinner, EmptyState, Badge } from '../../components/ui.jsx'
+import { usePaged, Pagination } from '../../components/Pagination.jsx'
 
 const STATUS_TONE = {
   ACCEPTED: 'success',
@@ -33,6 +34,7 @@ export default function VentesPage() {
   const { t } = useT()
   const [loading, setLoading] = useState(true)
   const [offers, setOffers] = useState([])
+  const { pageItems, page, setPage, totalPages, count } = usePaged(offers, 10)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -61,6 +63,7 @@ export default function VentesPage() {
       ) : offers.length === 0 ? (
         <EmptyState icon={<FaHandshake />} title={t('sales.empty.title')} text={t('sales.empty.text')} />
       ) : (
+        <>
         <div className="cat-table-wrap">
           <table className="cat-table">
             <thead>
@@ -74,7 +77,7 @@ export default function VentesPage() {
               </tr>
             </thead>
             <tbody>
-              {offers.map((o) => (
+              {pageItems.map((o) => (
                 <tr key={o.id}>
                   <td>{fmtDate(o.createdAt)}</td>
                   <td><span className="cat-sku">{String(o.productId).slice(0, 8)}…</span></td>
@@ -93,6 +96,8 @@ export default function VentesPage() {
             </tbody>
           </table>
         </div>
+        <Pagination page={page} totalPages={totalPages} count={count} onChange={setPage} />
+        </>
       )}
     </div>
   )

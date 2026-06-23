@@ -3,6 +3,7 @@ import { FaWallet, FaArrowDown, FaArrowUp, FaMoneyBillWave } from 'react-icons/f
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
 import { Card, Spinner, EmptyState } from '../../components/ui.jsx'
+import { usePaged, Pagination } from '../../components/Pagination.jsx'
 
 function fmt(v, currency = 'CDF') {
   const n = Number(v)
@@ -21,6 +22,7 @@ export default function WalletPage() {
   const { t } = useT()
   const [loading, setLoading] = useState(true)
   const [wallet, setWallet] = useState({ balance: 0, currency: 'CDF', transactions: [] })
+  const { pageItems, page, setPage, totalPages, count } = usePaged(wallet.transactions, 10)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -66,6 +68,7 @@ export default function WalletPage() {
         {wallet.transactions.length === 0 ? (
           <EmptyState icon={<FaMoneyBillWave />} title={t('wallet.empty.title')} text={t('wallet.empty.text')} />
         ) : (
+          <>
           <div className="cat-table-wrap">
             <table className="cat-table">
               <thead>
@@ -77,7 +80,7 @@ export default function WalletPage() {
                 </tr>
               </thead>
               <tbody>
-                {wallet.transactions.map((tx) => (
+                {pageItems.map((tx) => (
                   <tr key={tx.id}>
                     <td>
                       <span className={`wallet-tx-icon ${isCredit(tx.type) ? 'credit' : 'debit'}`}>
@@ -94,6 +97,8 @@ export default function WalletPage() {
               </tbody>
             </table>
           </div>
+          <Pagination page={page} totalPages={totalPages} count={count} onChange={setPage} />
+          </>
         )}
       </div>
     </div>
