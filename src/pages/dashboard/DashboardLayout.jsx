@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import { NavLink, Outlet, Link, Navigate } from 'react-router-dom'
-import { FaHome, FaBoxOpen, FaArrowLeft, FaHandshake, FaBars, FaAngleLeft, FaAngleRight } from 'react-icons/fa'
+import { FaHome, FaBoxOpen, FaArrowLeft, FaHandshake, FaBars, FaAngleLeft, FaAngleRight, FaWallet } from 'react-icons/fa'
 import { isAuth0Configured } from '../../auth/config'
 import ProfileMenu from '../../components/ProfileMenu.jsx'
 import { LanguageSwitcher, useT } from '../../i18n/index.jsx'
@@ -43,6 +43,7 @@ function DashboardShell() {
     { to: '/dashboard', end: true, icon: <FaHome />, label: t('dash.nav.home') },
     { to: '/dashboard/catalogue', icon: <FaBoxOpen />, label: t('dash.nav.catalogue') },
     { to: '/dashboard/ventes', icon: <FaHandshake />, label: t('dash.nav.sales') },
+    { to: '/dashboard/wallet', icon: <FaWallet />, label: t('dash.nav.wallet') },
   ]
 
   return (
