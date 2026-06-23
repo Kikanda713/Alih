@@ -214,6 +214,35 @@
 
 .dash-backdrop { display: none; }
 
+/* ---------- Groupe déroulant « Canaux » dans la sidebar ---------- */
+.sidebar-group { position: relative; }
+.sidebar-group-trigger { width: 100%; background: none; border: none; cursor: pointer; font-family: var(--font-body); }
+.sidebar-group-caret { margin-left: auto; font-size: 0.7rem; color: var(--gray-light); transition: transform 0.2s var(--ease); }
+.sidebar-group.open .sidebar-group-caret { transform: rotate(180deg); }
+.sidebar-submenu { display: none; flex-direction: column; gap: 2px; padding: 4px 0 6px 14px; }
+.sidebar-group.open .sidebar-submenu { display: flex; }
+.sidebar-subitem {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px;
+  color: var(--gray); text-decoration: none; font-size: 0.88rem; font-weight: 600; white-space: nowrap;
+}
+.sidebar-subitem:hover { background: rgba(18,18,18,0.04); color: var(--ebony); }
+.sidebar-subicon {
+  width: 24px; height: 24px; border-radius: 7px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 0.78rem;
+}
+.sidebar-subitem.ch-whatsapp .sidebar-subicon { background: #25D366; }
+.sidebar-subitem.ch-telegram .sidebar-subicon { background: #0088cc; }
+.sidebar-subitem.ch-facebook .sidebar-subicon { background: #1877F2; }
+.sidebar-subext { margin-left: auto; font-size: 0.7rem; color: var(--gray-light); }
+
+/* Repliée (desktop) : caret caché, sous-menu en flyout à droite de l'icône */
+.dash.sidebar-collapsed .sidebar-group-caret { display: none; }
+.dash.sidebar-collapsed .sidebar-submenu {
+  position: absolute; left: calc(100% + 8px); top: 0; min-width: 210px;
+  padding: 8px; background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-btn); box-shadow: var(--shadow-md); z-index: 80;
+}
+
 .dash-main { min-width: 0; }
 .dash-page { display: flex; flex-direction: column; gap: 22px; }
 .dash-page-head { display: flex; flex-direction: column; gap: 4px; }
@@ -285,6 +314,12 @@
   .dash.sidebar-collapsed .dash-nav-item { justify-content: flex-start; padding: 11px 14px; }
   .dash.sidebar-collapsed .dash-nav-item span,
   .dash.sidebar-collapsed .dash-nav-back span { display: inline; }
+  /* Canaux : accordéon inline (pas de flyout) dans le drawer mobile */
+  .dash.sidebar-collapsed .sidebar-group-caret { display: inline; }
+  .dash.sidebar-collapsed .sidebar-submenu {
+    position: static; left: auto; min-width: 0; padding: 4px 0 6px 14px;
+    background: none; border: none; box-shadow: none;
+  }
 }
 
 /* ---------- Carte Canaux ---------- */

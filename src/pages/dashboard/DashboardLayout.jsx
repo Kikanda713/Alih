@@ -6,6 +6,7 @@ import { isAuth0Configured } from '../../auth/config'
 import ProfileMenu from '../../components/ProfileMenu.jsx'
 import { LanguageSwitcher, useT } from '../../i18n/index.jsx'
 import { Spinner } from '../../components/ui.jsx'
+import SidebarChannels from '../../components/SidebarChannels.jsx'
 import { DEMO_MODE, isDemoSession } from '../../demo/demo' // DEMO: retirer en production
 
 const COLLAPSE_KEY = 'tindisa_sidebar_collapsed'
@@ -80,6 +81,7 @@ function DashboardShell() {
                 {item.icon} <span>{item.label}</span>
               </NavLink>
             ))}
+            <SidebarChannels />
           </nav>
 
           <div className="dash-sidebar-foot">

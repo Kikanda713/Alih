@@ -91,6 +91,7 @@ const dict = {
     'dash.nav.home': 'Accueil',
     'dash.nav.catalogue': 'Catalogue',
     'dash.nav.sales': 'Ventes',
+    'dash.nav.channels': 'Canaux',
     'dash.backToSite': 'Retour au site',
     'dash.toggleSidebar': 'Réduire / développer le menu',
     'dash.loginRequired': 'Connectez-vous pour accéder à votre tableau de bord.',
