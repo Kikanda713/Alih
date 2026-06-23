@@ -5,6 +5,7 @@ import { FaBoxOpen, FaWarehouse, FaPlug, FaPlus } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
 import { Card, Button, Spinner } from '../../components/ui.jsx'
+import ChannelsCard from '../../components/ChannelsCard.jsx'
 
 export default function DashboardHome() {
   const { user } = useAuth0()
@@ -83,6 +84,8 @@ export default function DashboardHome() {
               <FaPlus /> {t('dash.home.quickAdd')}
             </Button>
           </div>
+
+          <ChannelsCard />
         </>
       )}
     </div>

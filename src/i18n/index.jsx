@@ -92,7 +92,15 @@ const dict = {
     'dash.nav.catalogue': 'Catalogue',
     'dash.nav.sales': 'Ventes',
     'dash.backToSite': 'Retour au site',
+    'dash.toggleSidebar': 'Réduire / développer le menu',
     'dash.loginRequired': 'Connectez-vous pour accéder à votre tableau de bord.',
+
+    // Canaux
+    'channels.title': 'Mes canaux',
+    'channels.subtitle': "L'essentiel se passe dans la messagerie. Ouvrez vos canaux en un clic.",
+    'channels.whatsapp': 'Ouvrir ma session WhatsApp',
+    'channels.telegram': 'Ouvrir ma session Telegram',
+    'channels.facebook': 'Voir ma page (gérée par Tindisa)',
 
     // Dashboard — Home
     'dash.home.hello': 'Bonjour {name} 👋',
