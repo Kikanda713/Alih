@@ -11,6 +11,7 @@ const STATUS_TONE = {
   REJECTED: 'danger',
   EXPIRED: 'neutral',
 }
+const DELIVERY_TONE = { CONFIRMED: 'success', BOOKED: 'warn', CANCELLED: 'danger' }
 
 function fmtPrice(v, currency = 'CDF') {
   if (v == null) return '—'
@@ -69,6 +70,7 @@ export default function VentesPage() {
                 <th>{t('sales.col.offer')}</th>
                 <th>{t('sales.col.counter')}</th>
                 <th>{t('sales.col.status')}</th>
+                <th>{t('sales.col.delivery')}</th>
               </tr>
             </thead>
             <tbody>
@@ -79,6 +81,13 @@ export default function VentesPage() {
                   <td>{fmtPrice(o.buyerOffer, o.currency)}</td>
                   <td>{fmtPrice(o.counterOffer, o.currency)}</td>
                   <td><Badge tone={STATUS_TONE[o.status] || 'neutral'}>{t(`sales.status.${o.status}`)}</Badge></td>
+                  <td>
+                    {o.delivery ? (
+                      <Badge tone={DELIVERY_TONE[o.delivery.status] || 'neutral'}>{t(`sales.delivery.${o.delivery.status}`)}</Badge>
+                    ) : (
+                      <span className="cat-sku">—</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -4,6 +4,7 @@ import DashboardLayout from './pages/dashboard/DashboardLayout.jsx'
 import DashboardHome from './pages/dashboard/DashboardHome.jsx'
 import CataloguePage from './pages/dashboard/CataloguePage.jsx'
 import VentesPage from './pages/dashboard/VentesPage.jsx'
+import WalletPage from './pages/dashboard/WalletPage.jsx'
 
 export default function Root() {
   return (
@@ -13,6 +14,7 @@ export default function Root() {
         <Route index element={<DashboardHome />} />
         <Route path="catalogue" element={<CataloguePage />} />
         <Route path="ventes" element={<VentesPage />} />
+        <Route path="wallet" element={<WalletPage />} />
       </Route>
     </Routes>
   )

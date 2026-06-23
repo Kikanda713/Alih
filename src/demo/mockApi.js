@@ -32,8 +32,17 @@ function seed() {
     ],
     offers: [
       { id: uid(), productId: 'demo-sam', buyerOffer: 170000, counterOffer: 175000, currency: 'CDF', status: 'NEGOTIATING', createdAt: '2026-06-22T09:30:00Z' },
-      { id: uid(), productId: 'demo-sav', buyerOffer: 3200, counterOffer: null, currency: 'CDF', status: 'ACCEPTED', createdAt: '2026-06-21T14:05:00Z' },
+      { id: uid(), productId: 'demo-sav', buyerOffer: 3200, counterOffer: null, currency: 'CDF', status: 'ACCEPTED', createdAt: '2026-06-21T14:05:00Z', delivery: { status: 'CONFIRMED' } },
     ],
+    wallet: {
+      balance: 188200,
+      currency: 'CDF',
+      transactions: [
+        { id: uid(), type: 'CREDIT', amount: 175000, description: 'Vente Samsung Galaxy A14 (escrow libéré)', createdAt: '2026-06-22T16:40:00Z' },
+        { id: uid(), type: 'CREDIT', amount: 3200, description: 'Vente Savon de Marseille', createdAt: '2026-06-21T15:10:00Z' },
+        { id: uid(), type: 'DEBIT', amount: 4000, description: 'Frais de livraison', createdAt: '2026-06-21T15:12:00Z' },
+      ],
+    },
     wanzoLinked: false,
   }
 }
@@ -107,6 +116,9 @@ function route(method, path, body) {
   }
   if (path === '/v1/merchant/offers' && method === 'GET') {
     return { offers: d.offers }
+  }
+  if (path === '/v1/merchant/wallet' && method === 'GET') {
+    return d.wallet || { balance: 0, currency: 'CDF', transactions: [] }
   }
   if (path === '/v1/merchant/wanzo/products' && method === 'GET') {
     return { linked: d.wanzoLinked, products: [] }
