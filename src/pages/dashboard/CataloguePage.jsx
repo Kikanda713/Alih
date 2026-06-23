@@ -5,6 +5,7 @@ import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
 import { useToast } from '../../components/Toast.jsx'
 import { Card, Button, Badge, Spinner, EmptyState, Field, Input, Modal, ConfirmModal } from '../../components/ui.jsx'
+import { usePaged, Pagination } from '../../components/Pagination.jsx'
 import ProductFormModal from './ProductFormModal.jsx'
 
 function fmtPrice(v) {
@@ -100,6 +101,7 @@ function WanzoTab({ t }) {
   const [state, setState] = useState({ loading: true, link: null, products: [] })
   const [companyId, setCompanyId] = useState('')
   const [busy, setBusy] = useState('')
+  const wp = usePaged(state.products, 10)
 
   const load = useCallback(async () => {
     setState((s) => ({ ...s, loading: true }))
@@ -174,7 +176,10 @@ function WanzoTab({ t }) {
       {state.products.length === 0 ? (
         <EmptyState icon={<FaBoxOpen />} text={t('cat.wanzo.empty')} />
       ) : (
-        <ProductTable products={state.products} readOnly t={t} />
+        <>
+          <ProductTable products={wp.pageItems} readOnly t={t} />
+          <Pagination page={wp.page} totalPages={wp.totalPages} count={wp.count} onChange={wp.setPage} />
+        </>
       )}
     </div>
   )
@@ -193,6 +198,7 @@ export default function CataloguePage() {
   const [confirm, setConfirm] = useState({ open: false, product: null, busy: false })
   const [renaming, setRenaming] = useState(false)
   const [error, setError] = useState('')
+  const lp = usePaged(products, 10)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -291,7 +297,10 @@ export default function CataloguePage() {
             action={<Button variant="primary" onClick={() => setModal({ open: true, product: null })}><FaPlus /> {t('cat.add')}</Button>}
           />
         ) : (
-          <ProductTable products={products} onEdit={(p) => setModal({ open: true, product: p })} onDelete={(p) => setConfirm({ open: true, product: p, busy: false })} t={t} />
+          <>
+            <ProductTable products={lp.pageItems} onEdit={(p) => setModal({ open: true, product: p })} onDelete={(p) => setConfirm({ open: true, product: p, busy: false })} t={t} />
+            <Pagination page={lp.page} totalPages={lp.totalPages} count={lp.count} onChange={lp.setPage} />
+          </>
         )
       ) : (
         <WanzoTab t={t} />

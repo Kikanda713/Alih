@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck } from 'react-icons/fa'
 import { HiOutlineChatAlt2, HiOutlineSearch, HiOutlineCurrencyDollar, HiOutlineCreditCard } from 'react-icons/hi'
-import tindisaLogo from './assets/tindisa-logo.png'
-import tindisaFooterLogo from './assets/tindisa.png'
 import './App.css'
 
 function App() {
@@ -38,8 +36,8 @@ function App() {
           </ul>
 
           <div className="nav-auth">
-            <a href="#signin" className="btn-signin">Se connecter</a>
-            <a href="#signup" className="btn-signup">S'inscrire</a>
+            <LanguageSwitcher />
+            <ProfileMenu />
           </div>
 
           {/* Mobile-only menu panel */}
@@ -52,8 +50,8 @@ function App() {
               <li><a href="#contact" onClick={(e) => handleNavClick(e, 'contact')}>Contact</a></li>
             </ul>
             <div className="mobile-menu-auth">
-              <a href="#signin" className="btn-signin">Se connecter</a>
-              <a href="#signup" className="btn-signup">S'inscrire</a>
+              <LanguageSwitcher />
+              <ProfileMenu />
             </div>
           </div>
 
@@ -163,52 +161,68 @@ function App() {
       {/* ============ HOW IT WORKS — AGENTS IA ============ */}
       <section className="how-it-works" id="how">
         <div className="container">
-          <h2 className="section-title">Comment ça marche</h2>
-          <p className="section-subtitle">Achetez et vendez en toute simplicité via WhatsApp ou Telegram, en 4 étapes</p>
+          <h2 className="section-title">Nos agents IA au travail</h2>
+          <p className="section-subtitle">Quatre agents autonomes qui collaborent pour vous offrir la meilleure expérience de commerce</p>
 
           <div className="steps-grid">
-            {/* Étape 1 */}
+            {/* Agent 1 — Commerce Agent */}
             <div className="step-card agent-card">
-              <div className="agent-badge">Étape 01</div>
+              <div className="agent-badge">Agent 01</div>
               <div className="agent-icon">
                 <HiOutlineChatAlt2 size={28} />
               </div>
-              <h3 className="agent-name">Envoyez un message</h3>
-              <p className="agent-role">WhatsApp ou Telegram</p>
-              <p className="agent-desc">Ouvrez une conversation sur WhatsApp ou Telegram et décrivez ce que vous cherchez ou ce que vous souhaitez vendre.</p>
+              <h3 className="agent-name">Commerce Agent</h3>
+              <p className="agent-role">Compréhension & Recherche</p>
+              <p className="agent-desc">Analyse votre intention, parcourt le catalogue et vous propose les produits les plus pertinents en temps réel.</p>
             </div>
 
-            {/* Étape 2 */}
+            {/* Agent 2 — Pricing Agent */}
             <div className="step-card agent-card">
-              <div className="agent-badge">Étape 02</div>
+              <div className="agent-badge">Agent 02</div>
               <div className="agent-icon">
                 <HiOutlineSearch size={28} />
               </div>
-              <h3 className="agent-name">Recevez des offres</h3>
-              <p className="agent-role">Recherche intelligente</p>
-              <p className="agent-desc">Parcourez les meilleures offres disponibles, comparées et vérifiées en temps réel selon vos critères.</p>
+              <h3 className="agent-name">Pricing Agent</h3>
+              <p className="agent-role">Évaluation & Valorisation</p>
+              <p className="agent-desc">Calcule la valeur marché dynamique de chaque produit. Score la qualité et compare les prix pour vous éclairer.</p>
             </div>
 
-            {/* Étape 3 */}
+            {/* Agent 3 — Negotiation Agent */}
             <div className="step-card agent-card">
-              <div className="agent-badge">Étape 03</div>
+              <div className="agent-badge">Agent 03</div>
               <div className="agent-icon">
                 <HiOutlineCurrencyDollar size={28} />
               </div>
-              <h3 className="agent-name">Négociez le prix</h3>
-              <p className="agent-role">Meilleur prix garanti</p>
-              <p className="agent-desc">Proposez votre prix ou laissez Tindisa négocier pour vous. Obtenez toujours la meilleure offre possible.</p>
+              <h3 className="agent-name">Negotiation Agent</h3>
+              <p className="agent-role">Négociation Autonome</p>
+              <p className="agent-desc">Négocie automatiquement avec le vendeur. Génère des contre-offres intelligentes en respectant les règles de prix.</p>
             </div>
 
-            {/* Étape 4 */}
+            {/* Agent 4 — Payment Agent */}
             <div className="step-card agent-card">
-              <div className="agent-badge">Étape 04</div>
+              <div className="agent-badge">Agent 04</div>
               <div className="agent-icon">
                 <HiOutlineCreditCard size={28} />
               </div>
-              <h3 className="agent-name">Payez en sécurité</h3>
-              <p className="agent-role">Mobile Money & Escrow</p>
-              <p className="agent-desc">Payez via Mobile Money en toute sécurité. Votre argent est protégé jusqu'à la confirmation de réception.</p>
+              <h3 className="agent-name">Payment Agent</h3>
+              <p className="agent-role">Transaction & Escrow</p>
+              <p className="agent-desc">Initie le paiement sécurisé via Mobile Money. Gère l'escrow et confirme la transaction après livraison.</p>
+            </div>
+          </div>
+
+          {/* Agent orchestration flow */}
+          <div className="agent-flow">
+            <span className="agent-flow-label">Orchestration</span>
+            <div className="agent-flow-steps">
+              <span>Intention détectée</span>
+              <span className="flow-arrow">→</span>
+              <span>Agent sélectionné</span>
+              <span className="flow-arrow">→</span>
+              <span>Outils exécutés</span>
+              <span className="flow-arrow">→</span>
+              <span>Réponse synthétisée</span>
+              <span className="flow-arrow">→</span>
+              <span>Règles validées</span>
             </div>
           </div>
         </div>
