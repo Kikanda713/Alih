@@ -565,6 +565,27 @@ section[id] {
   font-weight: 400;
 }
 
+.how-it-works .section-subtitle {
+  margin-bottom: 46px;
+}
+
+/* How-it-works full-width image */
+.how-image-wrapper {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.how-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-card);
+}
+
 .steps-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

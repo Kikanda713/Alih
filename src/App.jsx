@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck } from 'react-icons/fa'
-import { HiOutlineChatAlt2, HiOutlineSearch, HiOutlineCurrencyDollar, HiOutlineCreditCard } from 'react-icons/hi'
+import tindisaLogo from './assets/tindisa-logo.png'
+import tindisaFooterLogo from './assets/tindisa.png'
+import { LanguageSwitcher, useT } from './i18n'
+import ProfileMenu from './components/ProfileMenu'
 import './App.css'
 
 function App() {
+  const { t } = useT()
   const [menuOpen, setMenuOpen] = useState(false)
   const [pricingTab, setPricingTab] = useState('tindisa')
 
@@ -28,11 +32,11 @@ function App() {
           </a>
 
           <ul className="nav-links">
-            <li><a href="#home" onClick={(e) => handleNavClick(e, 'home')}>Accueil</a></li>
-            <li><a href="#how" onClick={(e) => handleNavClick(e, 'how')}>Comment ça marche</a></li>
-            <li><a href="#trust" onClick={(e) => handleNavClick(e, 'trust')}>Confiance</a></li>
-            <li><a href="#pricing" onClick={(e) => handleNavClick(e, 'pricing')}>Tarifs</a></li>
-            <li><a href="#contact" onClick={(e) => handleNavClick(e, 'contact')}>Contact</a></li>
+            <li><a href="#home" onClick={(e) => handleNavClick(e, 'home')}>{t('nav.home')}</a></li>
+            <li><a href="#how" onClick={(e) => handleNavClick(e, 'how')}>{t('nav.how')}</a></li>
+            <li><a href="#trust" onClick={(e) => handleNavClick(e, 'trust')}>{t('nav.trust')}</a></li>
+            <li><a href="#pricing" onClick={(e) => handleNavClick(e, 'pricing')}>{t('nav.pricing')}</a></li>
+            <li><a href="#contact" onClick={(e) => handleNavClick(e, 'contact')}>{t('nav.contact')}</a></li>
           </ul>
 
           <div className="nav-auth">
@@ -43,11 +47,11 @@ function App() {
           {/* Mobile-only menu panel */}
           <div className={`mobile-menu ${menuOpen ? 'active' : ''}`}>
             <ul className="mobile-menu-links">
-              <li><a href="#home" onClick={(e) => handleNavClick(e, 'home')}>Accueil</a></li>
-              <li><a href="#how" onClick={(e) => handleNavClick(e, 'how')}>Comment ça marche</a></li>
-              <li><a href="#trust" onClick={(e) => handleNavClick(e, 'trust')}>Confiance</a></li>
-              <li><a href="#pricing" onClick={(e) => handleNavClick(e, 'pricing')}>Tarifs</a></li>
-              <li><a href="#contact" onClick={(e) => handleNavClick(e, 'contact')}>Contact</a></li>
+              <li><a href="#home" onClick={(e) => handleNavClick(e, 'home')}>{t('nav.home')}</a></li>
+              <li><a href="#how" onClick={(e) => handleNavClick(e, 'how')}>{t('nav.how')}</a></li>
+              <li><a href="#trust" onClick={(e) => handleNavClick(e, 'trust')}>{t('nav.trust')}</a></li>
+              <li><a href="#pricing" onClick={(e) => handleNavClick(e, 'pricing')}>{t('nav.pricing')}</a></li>
+              <li><a href="#contact" onClick={(e) => handleNavClick(e, 'contact')}>{t('nav.contact')}</a></li>
             </ul>
             <div className="mobile-menu-auth">
               <LanguageSwitcher />
@@ -76,13 +80,13 @@ function App() {
             </span> */}
 
             <h1 className="hero-title">
-             <span className="hero-highlight"> Achetez, vendez</span><br />
-              depuis votre messagerie.
+             <span className="hero-highlight"> {t('hero.title.highlight')}</span><br />
+              {t('hero.title.rest')}
               
             </h1>
 
             <p className="hero-subtitle">
-              Avec tindisa, plus besoin de parcourir des catalogues ou de visiter plusieurs boutiques. Trouvez ce dont vous avez besoin directement dans votre messagerie.
+              {t('hero.subtitle')}
             </p>
 
             {/* Platform CTAs */}
@@ -94,11 +98,11 @@ function App() {
                 className="platform-btn whatsapp"
               >
                 <FaWhatsapp className="platform-icon" />
-                <span>Parler sur WhatsApp</span>
+                <span>{t('cta.whatsapp')}</span>
               </a>
               <a href="#telegram" className="platform-btn telegram">
                 <FaTelegramPlane className="platform-icon" />
-                <span>Ouvrir sur Telegram</span>
+                <span>{t('cta.telegram')}</span>
               </a>
             </div>
 
@@ -161,69 +165,15 @@ function App() {
       {/* ============ HOW IT WORKS — AGENTS IA ============ */}
       <section className="how-it-works" id="how">
         <div className="container">
-          <h2 className="section-title">Nos agents IA au travail</h2>
-          <p className="section-subtitle">Quatre agents autonomes qui collaborent pour vous offrir la meilleure expérience de commerce</p>
+          <h2 className="section-title">{t('how.title')}</h2>
+          <p className="section-subtitle">{t('how.subtitle')}</p>
 
-          <div className="steps-grid">
-            {/* Agent 1 — Commerce Agent */}
-            <div className="step-card agent-card">
-              <div className="agent-badge">Agent 01</div>
-              <div className="agent-icon">
-                <HiOutlineChatAlt2 size={28} />
-              </div>
-              <h3 className="agent-name">Commerce Agent</h3>
-              <p className="agent-role">Compréhension & Recherche</p>
-              <p className="agent-desc">Analyse votre intention, parcourt le catalogue et vous propose les produits les plus pertinents en temps réel.</p>
-            </div>
-
-            {/* Agent 2 — Pricing Agent */}
-            <div className="step-card agent-card">
-              <div className="agent-badge">Agent 02</div>
-              <div className="agent-icon">
-                <HiOutlineSearch size={28} />
-              </div>
-              <h3 className="agent-name">Pricing Agent</h3>
-              <p className="agent-role">Évaluation & Valorisation</p>
-              <p className="agent-desc">Calcule la valeur marché dynamique de chaque produit. Score la qualité et compare les prix pour vous éclairer.</p>
-            </div>
-
-            {/* Agent 3 — Negotiation Agent */}
-            <div className="step-card agent-card">
-              <div className="agent-badge">Agent 03</div>
-              <div className="agent-icon">
-                <HiOutlineCurrencyDollar size={28} />
-              </div>
-              <h3 className="agent-name">Negotiation Agent</h3>
-              <p className="agent-role">Négociation Autonome</p>
-              <p className="agent-desc">Négocie automatiquement avec le vendeur. Génère des contre-offres intelligentes en respectant les règles de prix.</p>
-            </div>
-
-            {/* Agent 4 — Payment Agent */}
-            <div className="step-card agent-card">
-              <div className="agent-badge">Agent 04</div>
-              <div className="agent-icon">
-                <HiOutlineCreditCard size={28} />
-              </div>
-              <h3 className="agent-name">Payment Agent</h3>
-              <p className="agent-role">Transaction & Escrow</p>
-              <p className="agent-desc">Initie le paiement sécurisé via Mobile Money. Gère l'escrow et confirme la transaction après livraison.</p>
-            </div>
-          </div>
-
-          {/* Agent orchestration flow */}
-          <div className="agent-flow">
-            <span className="agent-flow-label">Orchestration</span>
-            <div className="agent-flow-steps">
-              <span>Intention détectée</span>
-              <span className="flow-arrow">→</span>
-              <span>Agent sélectionné</span>
-              <span className="flow-arrow">→</span>
-              <span>Outils exécutés</span>
-              <span className="flow-arrow">→</span>
-              <span>Réponse synthétisée</span>
-              <span className="flow-arrow">→</span>
-              <span>Règles validées</span>
-            </div>
+          <div className="how-image-wrapper">
+            <img
+              src="/Design sans titre (36).png"
+              alt="Comment ça marche — Tindisa"
+              className="how-image"
+            />
           </div>
         </div>
       </section>
@@ -232,7 +182,7 @@ function App() {
       <section className="trust" id="trust">
         <div className="network-pattern"></div>
         <div className="container">
-          <h2 className="section-title">Pourquoi faire confiance à tindisa ?</h2>
+          <h2 className="section-title">{t('trust.title')}</h2>
           <p className="section-subtitle">Sécurité, transparence et intelligence à chaque transaction</p>
 
           <div className="trust-grid">
@@ -240,24 +190,24 @@ function App() {
               <div className="trust-icon">
                 <FaShieldAlt size={24} color="#C65D2E" />
               </div>
-              <h3>Paiements sécurisés</h3>
-              <p>Vos fonds sont protégés par un système d'escrow. Le vendeur ne reçoit le paiement qu'après votre confirmation.</p>
+              <h3>{t('trust.card1.title')}</h3>
+              <p>{t('trust.card1.text')}</p>
             </div>
 
             <div className="trust-card">
               <div className="trust-icon">
                 <FaUserCheck size={24} color="#C65D2E" />
               </div>
-              <h3>Vendeurs vérifiés</h3>
-              <p>Chaque vendeur passe par un processus de vérification KYC. Seuls les profils de confiance sont actifs.</p>
+              <h3>{t('trust.card2.title')}</h3>
+              <p>{t('trust.card2.text')}</p>
             </div>
 
             <div className="trust-card">
               <div className="trust-icon">
                 <FaRobot size={24} color="#C65D2E" />
               </div>
-              <h3>IA responsable</h3>
-              <p>Nos agents respectent des règles strictes : prix plancher, transparence des offres, aucune manipulation.</p>
+              <h3>{t('trust.card3.title')}</h3>
+              <p>{t('trust.card3.text')}</p>
             </div>
           </div>
         </div>
@@ -471,10 +421,9 @@ function App() {
         <div className="network-pattern"></div>
         <div className="container">
           <div className="final-cta-accent"></div>
-          <h2 className="final-cta-title">Commencer une conversation</h2>
+          <h2 className="final-cta-title">{t('finalcta.title')}</h2>
           <p className="final-cta-subtitle">
-            Rejoignez des milliers d'utilisateurs qui achètent et vendent intelligemment
-            via leur messagerie préférée.
+            {t('finalcta.subtitle')}
           </p>
           <div className="platforms">
             <a
@@ -500,7 +449,7 @@ function App() {
           <div className="footer-logo">
             <img src={tindisaFooterLogo} alt="Tindisa" className="footer-logo-img" />
           </div>
-          <span className="footer-text">© 2026 Tindisa — Votre marché dans la messagerie</span>
+          <span className="footer-text">{t('footer.text')}</span>
           <div className="footer-links">
             <a href="#privacy">Confidentialité</a>
             <a href="#terms">Conditions</a>
