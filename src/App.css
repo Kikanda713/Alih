@@ -190,6 +190,39 @@ section[id] {
   border: 1px solid var(--border);
 }
 
+/* Language Switcher */
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(18, 18, 18, 0.05);
+  border-radius: 20px;
+  padding: 3px;
+}
+
+.lang-btn {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--gray);
+  cursor: pointer;
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+
+.lang-btn:hover {
+  color: var(--ebony);
+}
+
+.lang-btn.active {
+  background: var(--white);
+  color: var(--ebony);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
 .btn-signin:hover {
   background: rgba(18, 18, 18, 0.04);
 }
