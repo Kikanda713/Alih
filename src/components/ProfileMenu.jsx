@@ -5,6 +5,8 @@ import { FaChevronDown, FaThLarge, FaSignOutAlt } from 'react-icons/fa'
 import { isAuth0Configured } from '../auth/config'
 import AuthButtons from '../auth/AuthButtons.jsx'
 import { useT } from '../i18n/index.jsx'
+import { DEMO_MODE } from '../demo/demo' // DEMO: retirer en production
+import DemoProfileMenu from '../demo/DemoProfileMenu.jsx' // DEMO: retirer en production
 
 function initials(user) {
   const src = user?.name || user?.email || '?'
@@ -71,6 +73,8 @@ function ProfileMenuInner() {
 }
 
 export default function ProfileMenu() {
+  // DEMO: en mode démo, profil/connexion fictifs. Retirer ces 2 lignes en prod.
+  if (DEMO_MODE) return <DemoProfileMenu />
   // Si Auth0 n'est pas configuré, useAuth0() n'a pas de provider -> on rend les
   // boutons (mode dégradé) sans appeler le hook.
   if (!isAuth0Configured) return <AuthButtons />

@@ -1,10 +1,11 @@
 import { useAuth0 } from '@auth0/auth0-react'
 import { NavLink, Outlet, Link, Navigate } from 'react-router-dom'
-import { FaHome, FaBoxOpen, FaArrowLeft } from 'react-icons/fa'
+import { FaHome, FaBoxOpen, FaArrowLeft, FaHandshake } from 'react-icons/fa'
 import { isAuth0Configured } from '../../auth/config'
 import ProfileMenu from '../../components/ProfileMenu.jsx'
 import { LanguageSwitcher, useT } from '../../i18n/index.jsx'
 import { Spinner } from '../../components/ui.jsx'
+import { DEMO_MODE, isDemoSession } from '../../demo/demo' // DEMO: retirer en production
 
 function Logo() {
   return (
@@ -18,24 +19,12 @@ function Logo() {
   )
 }
 
-function DashboardLayoutInner() {
-  const { isAuthenticated, isLoading } = useAuth0()
+// Coquille de mise en page partagée (aucun hook d'auth ici).
+function DashboardShell() {
   const { t } = useT()
-
-  if (isLoading) {
-    return <div className="dash-loading"><Spinner label={t('merchant.loading')} /></div>
-  }
-  if (!isAuthenticated) {
-    return (
-      <div className="dash-loading">
-        <p>{t('dash.loginRequired')}</p>
-        <Link to="/" className="ui-btn ui-btn-primary">{t('dash.backToSite')}</Link>
-      </div>
-    )
-  }
-
   return (
     <div className="dash">
+      {DEMO_MODE && <div className="demo-banner">{t('demo.banner')}</div>}
       <header className="dash-header">
         <div className="dash-header-inner">
           <Logo />
@@ -55,6 +44,9 @@ function DashboardLayoutInner() {
             <NavLink to="/dashboard/catalogue" className={({ isActive }) => `dash-nav-item${isActive ? ' active' : ''}`}>
               <FaBoxOpen /> <span>{t('dash.nav.catalogue')}</span>
             </NavLink>
+            <NavLink to="/dashboard/ventes" className={({ isActive }) => `dash-nav-item${isActive ? ' active' : ''}`}>
+              <FaHandshake /> <span>{t('dash.nav.sales')}</span>
+            </NavLink>
           </nav>
           <Link to="/" className="dash-nav-item dash-nav-back">
             <FaArrowLeft /> <span>{t('dash.backToSite')}</span>
@@ -69,7 +61,29 @@ function DashboardLayoutInner() {
   )
 }
 
+function DashboardLayoutInner() {
+  const { isAuthenticated, isLoading } = useAuth0()
+  const { t } = useT()
+
+  if (isLoading) {
+    return <div className="dash-loading"><Spinner label={t('merchant.loading')} /></div>
+  }
+  if (!isAuthenticated) {
+    return (
+      <div className="dash-loading">
+        <p>{t('dash.loginRequired')}</p>
+        <Link to="/" className="ui-btn ui-btn-primary">{t('dash.backToSite')}</Link>
+      </div>
+    )
+  }
+  return <DashboardShell />
+}
+
 export default function DashboardLayout() {
+  // DEMO: garde fictive (session démo). Retirer ce bloc en production.
+  if (DEMO_MODE) {
+    return isDemoSession() ? <DashboardShell /> : <Navigate to="/" replace />
+  }
   if (!isAuth0Configured) return <Navigate to="/" replace />
   return <DashboardLayoutInner />
 }

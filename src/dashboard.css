@@ -242,3 +242,63 @@
   .form-row { grid-template-columns: 1fr; }
   .cat-head { flex-direction: column; }
 }
+
+/* ---------- Miniatures produit ---------- */
+.cat-col-img { width: 52px; }
+.cat-thumb {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 8px; overflow: hidden;
+  background: var(--ivory); color: var(--gray-light); border: 1px solid var(--border);
+}
+.cat-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ---------- Chip boutique ---------- */
+.cat-shop-chip {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 10px;
+  background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-pill);
+  padding: 6px 14px; cursor: pointer; font-weight: 600; color: var(--ebony); font-size: 0.9rem;
+}
+.cat-shop-chip:hover { border-color: var(--terracotta); }
+.cat-shop-chip svg:first-child { color: var(--terracotta); }
+.cat-shop-edit { color: var(--gray-light); font-size: 0.8rem; }
+
+/* ---------- Champ image (formulaire) ---------- */
+.product-image-field { display: flex; align-items: center; gap: 16px; }
+.product-image-preview {
+  width: 84px; height: 84px; border-radius: var(--radius-input); overflow: hidden;
+  background: var(--ivory); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.product-image-preview img { width: 100%; height: 100%; object-fit: cover; }
+.product-image-placeholder { color: var(--gray-light); font-size: 1.6rem; }
+.product-image-actions { display: flex; align-items: center; gap: 10px; }
+.spin { animation: ui-spin 0.7s linear infinite; }
+
+/* ---------- Confirm ---------- */
+.ui-confirm-text { color: var(--gray); line-height: 1.5; }
+
+/* ---------- Bannière mode démo (à retirer en prod) ---------- */
+.demo-banner {
+  background: var(--copper-gold); color: var(--ebony);
+  text-align: center; font-size: 0.82rem; font-weight: 600;
+  padding: 6px 12px; letter-spacing: 0.01em;
+}
+
+/* ---------- Toasts ---------- */
+.toast-stack {
+  position: fixed; right: 18px; bottom: 18px; z-index: 2000;
+  display: flex; flex-direction: column; gap: 10px; max-width: 360px;
+}
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--ebony); color: #fff; border-radius: var(--radius-btn);
+  padding: 12px 14px; box-shadow: var(--shadow-md);
+  animation: ui-modal-in 0.18s var(--ease);
+}
+.toast-icon { display: inline-flex; font-size: 1rem; }
+.toast-success .toast-icon { color: #4ade80; }
+.toast-error .toast-icon { color: #f87171; }
+.toast-info .toast-icon { color: var(--copper-gold); }
+.toast-msg { flex: 1; font-size: 0.9rem; }
+.toast-close { background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; padding: 2px; }
+.toast-close:hover { color: #fff; }

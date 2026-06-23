@@ -82,9 +82,15 @@ const dict = {
     'profile.logout': 'Se déconnecter',
     'profile.login': 'Se connecter',
 
+    // Mode démo (à retirer en production)
+    'demo.login': 'Essayer en démo',
+    'demo.exit': 'Quitter la démo',
+    'demo.banner': 'Mode démonstration — données fictives, aucune connexion réelle.',
+
     // Dashboard — navigation & layout
     'dash.nav.home': 'Accueil',
     'dash.nav.catalogue': 'Catalogue',
+    'dash.nav.sales': 'Ventes',
     'dash.backToSite': 'Retour au site',
     'dash.loginRequired': 'Connectez-vous pour accéder à votre tableau de bord.',
 
@@ -139,6 +145,40 @@ const dict = {
     'cat.wanzo.readonly': 'Lecture seule — ces produits sont gérés dans Wanzo. Synchronisez pour mettre à jour.',
     'cat.wanzo.notLinked': "Vous n'avez pas encore relié de compte Wanzo.",
     'cat.wanzo.empty': 'Aucun produit Wanzo synchronisé. Cliquez sur « Publier mon catalogue ».',
+
+    // Image produit (Cloudinary)
+    'form.imageUpload': 'Ajouter une photo',
+    'form.imageUploading': 'Téléversement…',
+    'form.imageRemove': "Retirer l'image",
+    'form.imageNoConfig': "L'upload d'images n'est pas configuré (Cloudinary).",
+    'form.invalidNumber': 'Les montants doivent être des nombres positifs.',
+    'form.floorTooHigh': 'Le prix plancher ne peut pas dépasser le prix affiché.',
+
+    // Boutique
+    'shop.rename': 'Renommer ma boutique',
+    'shop.name': 'Nom de la boutique',
+
+    // Toasts
+    'toast.created': 'Produit ajouté.',
+    'toast.updated': 'Produit mis à jour.',
+    'toast.deleted': 'Produit supprimé.',
+    'toast.shopRenamed': 'Boutique renommée.',
+
+    // Ventes / négociations reçues
+    'sales.title': 'Mes ventes',
+    'sales.subtitle': 'Les offres et négociations reçues sur vos produits.',
+    'sales.empty.title': 'Aucune offre pour le moment',
+    'sales.empty.text': 'Les offres des acheteurs apparaîtront ici.',
+    'sales.col.date': 'Date',
+    'sales.col.product': 'Produit',
+    'sales.col.offer': 'Offre',
+    'sales.col.counter': 'Contre-offre',
+    'sales.col.status': 'Statut',
+    'sales.status.PENDING': 'En attente',
+    'sales.status.NEGOTIATING': 'En négociation',
+    'sales.status.ACCEPTED': 'Acceptée',
+    'sales.status.REJECTED': 'Refusée',
+    'sales.status.EXPIRED': 'Expirée',
   },
 
   // PROVISIONAL — to be reviewed by a native Lingala speaker.

@@ -95,3 +95,19 @@ export function Modal({ open, title, onClose, children, footer }) {
     </div>
   )
 }
+
+export function ConfirmModal({ open, title, message, confirmLabel, cancelLabel, danger, busy, onConfirm, onClose }) {
+  return (
+    <Modal open={open} title={title} onClose={busy ? undefined : onClose}>
+      <p className="ui-confirm-text">{message}</p>
+      <div className="ui-modal-foot">
+        <Button variant="ghost" onClick={onClose} disabled={busy}>
+          {cancelLabel || 'Annuler'}
+        </Button>
+        <Button variant={danger ? 'danger' : 'primary'} onClick={onConfirm} disabled={busy}>
+          {confirmLabel || 'Confirmer'}
+        </Button>
+      </div>
+    </Modal>
+  )
+}

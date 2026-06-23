@@ -6,14 +6,17 @@ import './dashboard.css'
 import Root from './Root.jsx'
 import Auth0ProviderWithConfig from './auth/Auth0ProviderWithConfig.jsx'
 import { LanguageProvider } from './i18n/index.jsx'
+import { ToastProvider } from './components/Toast.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <LanguageProvider>
-        <Auth0ProviderWithConfig>
-          <Root />
-        </Auth0ProviderWithConfig>
+        <ToastProvider>
+          <Auth0ProviderWithConfig>
+            <Root />
+          </Auth0ProviderWithConfig>
+        </ToastProvider>
       </LanguageProvider>
     </BrowserRouter>
   </StrictMode>,
