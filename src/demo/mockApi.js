@@ -58,6 +58,18 @@ function seed() {
       { id: uid(), firstname: 'Nadège', lastname: 'Lukusa', email: 'nadege@maisonwax.cd', phone: '+243990101011', type: 'merchant', status: 'active', createdAt: '2026-05-19T15:30:00Z' },
       { id: uid(), firstname: 'Samuel', lastname: 'Kasongo', email: 'samuel.kasongo@gmail.com', phone: '+243990202012', type: 'buyer', status: 'active', createdAt: '2026-06-22T08:20:00Z' },
     ],
+    subscription: {
+      id: uid(), plan: 'pro', status: 'trialing', priceUsd: 29,
+      trialEndsAt: new Date(Date.now() + 20 * 864e5).toISOString(),
+      currentPeriodEnd: new Date(Date.now() + 20 * 864e5).toISOString(),
+    },
+    adminSubs: [
+      { id: uid(), userName: 'Sarah Tshibanda', plan: 'pro', status: 'active', priceUsd: 29, currentPeriodEnd: new Date(Date.now() + 12 * 864e5).toISOString() },
+      { id: uid(), userName: 'Jean Mwamba', plan: 'basic', status: 'active', priceUsd: 9, currentPeriodEnd: new Date(Date.now() + 25 * 864e5).toISOString() },
+      { id: uid(), userName: 'Olivier Banza', plan: 'business', status: 'active', priceUsd: 59, currentPeriodEnd: new Date(Date.now() + 8 * 864e5).toISOString() },
+      { id: uid(), userName: 'Nadège Lukusa', plan: 'pro', status: 'trialing', priceUsd: 29, trialEndsAt: new Date(Date.now() + 18 * 864e5).toISOString() },
+      { id: uid(), userName: 'Aline Mukendi', plan: 'basic', status: 'cancelled', priceUsd: 9, currentPeriodEnd: new Date(Date.now() - 3 * 864e5).toISOString() },
+    ],
     conversations: [
       {
         id: 'conv-demo-1',
@@ -173,6 +185,38 @@ function route(method, path, body) {
   }
   if (path === '/v1/wanzo/sync' && method === 'POST') {
     return { synced: 0, reason: 'demo' }
+  }
+
+  // ---- Abonnement (marchand) ----
+  const PRICES = { basic: 9, pro: 29, business: 59 }
+  if (path === '/v1/merchant/subscription' && method === 'GET') {
+    return { subscription: d.subscription || null }
+  }
+  if (path === '/v1/merchant/subscription' && method === 'POST') {
+    const useTrial = body.trial && body.plan === 'pro'
+    const end = new Date(Date.now() + 30 * 864e5).toISOString()
+    d.subscription = {
+      id: uid(), plan: body.plan, status: useTrial ? 'trialing' : 'active',
+      priceUsd: PRICES[body.plan] || 0,
+      trialEndsAt: useTrial ? end : null, currentPeriodEnd: end,
+    }
+    save(d)
+    return d.subscription
+  }
+  if (path === '/v1/merchant/subscription' && method === 'PUT') {
+    if (!d.subscription) return {}
+    if (body.cancel) d.subscription.status = 'cancelled'
+    else if (body.plan) {
+      d.subscription.plan = body.plan
+      d.subscription.status = 'active'
+      d.subscription.priceUsd = PRICES[body.plan] || 0
+      d.subscription.currentPeriodEnd = new Date(Date.now() + 30 * 864e5).toISOString()
+    }
+    save(d)
+    return d.subscription
+  }
+  if (path === '/v1/admin/subscriptions' && method === 'GET') {
+    return { subscriptions: d.adminSubs || [] }
   }
 
   // ---- Back-office admin ----

@@ -382,6 +382,39 @@
   .admin-search { max-width: none; }
 }
 
+/* ---------- Abonnement (marchand) ---------- */
+.sub-current { display: flex; align-items: center; gap: 16px; }
+.sub-current-icon {
+  width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(211, 155, 90, 0.18); color: var(--copper-gold); font-size: 1.3rem;
+}
+.sub-current-main { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sub-current-label { font-size: 0.8rem; color: var(--gray); }
+.sub-current-plan { display: flex; align-items: center; gap: 10px; font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; color: var(--ebony); }
+.sub-current-meta { font-size: 0.85rem; color: var(--gray); }
+
+.sub-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: start; }
+.sub-card { position: relative; display: flex; flex-direction: column; gap: 10px; }
+.sub-card.featured { border-color: var(--terracotta); box-shadow: var(--shadow-md); }
+.sub-card.current { outline: 2px solid var(--terracotta); outline-offset: -1px; }
+.sub-card-badge {
+  position: absolute; top: -10px; right: 16px;
+  background: var(--terracotta); color: #fff; font-size: 0.72rem; font-weight: 700;
+  padding: 3px 10px; border-radius: var(--radius-pill);
+}
+.sub-card-name { font-family: var(--font-heading); font-size: 1.2rem; color: var(--ebony); }
+.sub-card-price { color: var(--gray); }
+.sub-card-price b { font-family: var(--font-heading); font-size: 1.7rem; color: var(--ebony); }
+.sub-card-trial { display: inline-block; width: fit-content; background: rgba(39,174,96,0.12); color: #1e8449; font-size: 0.78rem; font-weight: 700; padding: 3px 10px; border-radius: var(--radius-pill); }
+.sub-card-features { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 6px 0 12px; }
+.sub-card-features li { display: flex; align-items: center; gap: 9px; font-size: 0.88rem; color: var(--gray); }
+.sub-card-features svg { color: var(--terracotta); flex-shrink: 0; font-size: 0.8rem; }
+.sub-card .ui-btn { margin-top: auto; }
+.sub-note { font-size: 0.85rem; color: var(--gray-light); }
+
+@media (max-width: 820px) { .sub-grid { grid-template-columns: 1fr; } }
+
 /* ---------- Pagination ---------- */
 .pagination { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
 .pagination-count { font-size: 0.82rem; color: var(--gray-light); }
