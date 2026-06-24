@@ -602,21 +602,75 @@ section[id] {
   margin-bottom: 46px;
 }
 
-/* How-it-works full-width image */
-.how-image-wrapper {
-  width: 100%;
-  max-width: 520px;
-  margin: 0 auto;
-  border-radius: var(--radius-card);
+/* How It Works — Scène : la personne entourée de bulles simples */
+.how-stage {
+  position: relative;
+  max-width: 760px;
+  margin: 40px auto 0;
+  aspect-ratio: 1 / 1;
+  border-radius: 28px;
   overflow: hidden;
+  background: radial-gradient(circle at 50% 38%, #1f1f1f, #0b0b0b);
+}
+.how-person {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+.how-bubble {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  max-width: 230px;
+  background: #fff;
+  color: var(--ebony);
+  border-radius: 16px;
+  padding: 11px 15px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.3;
+  box-shadow: var(--shadow-md);
+  animation: how-float 4.5s ease-in-out infinite;
+}
+.how-bubble svg {
+  color: var(--terracotta);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.how-b1 { top: 7%; left: 3%; }
+.how-b2 { top: 15%; right: 3%; animation-delay: 0.6s; }
+.how-b3 { bottom: 28%; left: 2%; animation-delay: 1.2s; }
+.how-b4 { bottom: 12%; right: 2%; animation-delay: 1.8s; }
+@keyframes how-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
 }
 
-.how-image {
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  border-radius: var(--radius-card);
+@media (max-width: 640px) {
+  .how-stage {
+    aspect-ratio: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 18px;
+    max-width: 420px;
+  }
+  .how-person {
+    position: static;
+    width: auto;
+    max-height: 300px;
+  }
+  .how-bubble {
+    position: static;
+    max-width: 100%;
+    width: 100%;
+    animation: none;
+  }
 }
 
 .steps-grid {

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck } from 'react-icons/fa'
+import { HiOutlineChatAlt2, HiOutlineSearch, HiOutlineCurrencyDollar } from 'react-icons/hi'
 import tindisaLogo from './assets/tindisa-logo.png'
 import tindisaFooterLogo from './assets/tindisa.png'
 import { LanguageSwitcher, useT } from './i18n'
@@ -168,12 +169,25 @@ function App() {
           <h2 className="section-title">{t('how.title')}</h2>
           <p className="section-subtitle">{t('how.subtitle')}</p>
 
-          <div className="how-image-wrapper">
+          <div className="how-stage">
             <img
               src="/Design sans titre (36).png"
-              alt="Comment ça marche — Tindisa"
-              className="how-image"
+              alt="Une cliente discute avec Tindisa sur son téléphone"
+              className="how-person"
+              loading="lazy"
             />
+            <div className="how-bubble how-b1">
+              <HiOutlineChatAlt2 /> <span>Dites ce que vous cherchez</span>
+            </div>
+            <div className="how-bubble how-b2">
+              <HiOutlineSearch /> <span>On compare les meilleurs prix</span>
+            </div>
+            <div className="how-bubble how-b3">
+              <HiOutlineCurrencyDollar /> <span>On négocie à votre place</span>
+            </div>
+            <div className="how-bubble how-b4">
+              <FaShieldAlt /> <span>Payez et recevez en sécurité</span>
+            </div>
           </div>
         </div>
       </section>
