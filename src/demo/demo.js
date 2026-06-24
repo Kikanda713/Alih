@@ -11,12 +11,16 @@
  *        - src/pages/dashboard/DashboardLayout.jsx
  *   3. (optionnel) retirer VITE_DEMO_MODE de .env
  *
- * Activé si VITE_DEMO_MODE=true OU si Auth0 n'est pas configuré.
+ * SÉCURITÉ : la démo est IMPOSSIBLE dans un build de production (`vite build`).
+ * En dev uniquement, elle s'active si VITE_DEMO_MODE=true OU si Auth0 n'est pas
+ * configuré. Ainsi la prod ne peut jamais accorder le compte démo (qui cumule
+ * les rôles merchant + Admin-tindisa) par simple oubli de variable d'env.
  * ============================================================ */
 import { isAuth0Configured } from '../auth/config'
 
 export const DEMO_MODE =
-  import.meta.env.VITE_DEMO_MODE === 'true' || !isAuth0Configured
+  !import.meta.env.PROD &&
+  (import.meta.env.VITE_DEMO_MODE === 'true' || !isAuth0Configured)
 
 const SESSION_KEY = 'tindisa_demo_session'
 
@@ -25,6 +29,8 @@ export const demoUser = {
   name: 'Marchand Démo',
   email: 'demo@tindisa.cd',
   picture: null,
+  // En démo, l'utilisateur cumule les rôles pour explorer marchand ET back-office.
+  roles: ['merchant', 'Admin-tindisa'],
 }
 
 export function isDemoSession() {

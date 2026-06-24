@@ -1,8 +1,15 @@
 // Auth0 configuration, read from Vite env vars (see .env.example).
+// Convention de callback alignée sur Wanzo : chemin explicite `/auth/callback`
+// (ex. http://localhost:5173/auth/callback en local, https://tindisa.com/auth/callback
+// en prod). Calculé depuis l'origine si VITE_AUTH0_CALLBACK_URL n'est pas fourni.
 export const auth0Config = {
   domain: import.meta.env.VITE_AUTH0_DOMAIN,
   clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
   audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+  callbackUrl:
+    import.meta.env.VITE_AUTH0_CALLBACK_URL ||
+    `${window.location.origin}/auth/callback`,
+  logoutUrl: import.meta.env.VITE_AUTH0_LOGOUT_URL || window.location.origin,
 };
 
 // Base URL of the Tindisa API gateway (BFF).

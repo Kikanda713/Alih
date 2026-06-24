@@ -44,6 +44,32 @@ function seed() {
       ],
     },
     wanzoLinked: false,
+    adminUsers: [
+      { id: uid(), firstname: 'Sarah', lastname: 'Tshibanda', email: 'sarah@boutiquekin.cd', phone: '+243990000001', type: 'merchant', status: 'active', createdAt: '2026-05-02T09:00:00Z' },
+      { id: uid(), firstname: 'Jean', lastname: 'Mwamba', email: 'jean.mwamba@gmail.com', phone: '+243991111002', type: 'merchant', status: 'active', createdAt: '2026-05-10T11:30:00Z' },
+      { id: uid(), firstname: 'Esther', lastname: 'Kalala', email: 'esther.kalala@gmail.com', phone: '+243992222003', type: 'buyer', status: 'active', createdAt: '2026-05-15T14:10:00Z' },
+      { id: uid(), firstname: 'Patrick', lastname: 'Ilunga', email: '', phone: '+243993333004', type: 'buyer', status: 'guest', createdAt: '2026-06-01T08:45:00Z' },
+      { id: uid(), firstname: 'Aline', lastname: 'Mukendi', email: 'aline.m@boutique.cd', phone: '+243994444005', type: 'merchant', status: 'suspended', createdAt: '2026-04-20T16:20:00Z' },
+      { id: uid(), firstname: 'David', lastname: 'Kabeya', email: 'david.kabeya@gmail.com', phone: '+243995555006', type: 'buyer', status: 'active', createdAt: '2026-06-08T10:05:00Z' },
+      { id: uid(), firstname: 'Grace', lastname: 'Nsimba', email: 'grace.nsimba@gmail.com', phone: '+243996666007', type: 'buyer', status: 'active', createdAt: '2026-06-12T13:40:00Z' },
+      { id: uid(), firstname: 'Olivier', lastname: 'Banza', email: 'olivier@shopgombe.cd', phone: '+243997777008', type: 'merchant', status: 'active', createdAt: '2026-05-28T09:15:00Z' },
+      { id: uid(), firstname: 'Christelle', lastname: 'Mbuyi', email: '', phone: '+243998888009', type: 'buyer', status: 'guest', createdAt: '2026-06-18T17:55:00Z' },
+      { id: uid(), firstname: 'Yannick', lastname: 'Tshisekedi', email: 'yannick.t@gmail.com', phone: '+243999999010', type: 'buyer', status: 'active', createdAt: '2026-06-20T12:00:00Z' },
+      { id: uid(), firstname: 'Nadège', lastname: 'Lukusa', email: 'nadege@maisonwax.cd', phone: '+243990101011', type: 'merchant', status: 'active', createdAt: '2026-05-19T15:30:00Z' },
+      { id: uid(), firstname: 'Samuel', lastname: 'Kasongo', email: 'samuel.kasongo@gmail.com', phone: '+243990202012', type: 'buyer', status: 'active', createdAt: '2026-06-22T08:20:00Z' },
+    ],
+    subscription: {
+      id: uid(), plan: 'pro', status: 'trialing', priceUsd: 29,
+      trialEndsAt: new Date(Date.now() + 20 * 864e5).toISOString(),
+      currentPeriodEnd: new Date(Date.now() + 20 * 864e5).toISOString(),
+    },
+    adminSubs: [
+      { id: uid(), userName: 'Sarah Tshibanda', plan: 'pro', status: 'active', priceUsd: 29, currentPeriodEnd: new Date(Date.now() + 12 * 864e5).toISOString() },
+      { id: uid(), userName: 'Jean Mwamba', plan: 'basic', status: 'active', priceUsd: 9, currentPeriodEnd: new Date(Date.now() + 25 * 864e5).toISOString() },
+      { id: uid(), userName: 'Olivier Banza', plan: 'business', status: 'active', priceUsd: 59, currentPeriodEnd: new Date(Date.now() + 8 * 864e5).toISOString() },
+      { id: uid(), userName: 'Nadège Lukusa', plan: 'pro', status: 'trialing', priceUsd: 29, trialEndsAt: new Date(Date.now() + 18 * 864e5).toISOString() },
+      { id: uid(), userName: 'Aline Mukendi', plan: 'basic', status: 'cancelled', priceUsd: 9, currentPeriodEnd: new Date(Date.now() - 3 * 864e5).toISOString() },
+    ],
     conversations: [
       {
         id: 'conv-demo-1',
@@ -161,6 +187,68 @@ function route(method, path, body) {
     return { synced: 0, reason: 'demo' }
   }
 
+  // ---- Abonnement (marchand) ----
+  const PRICES = { basic: 9, pro: 29, business: 59 }
+  if (path === '/v1/merchant/subscription' && method === 'GET') {
+    return { subscription: d.subscription || null }
+  }
+  if (path === '/v1/merchant/subscription' && method === 'POST') {
+    const useTrial = body.trial && body.plan === 'pro'
+    const end = new Date(Date.now() + 30 * 864e5).toISOString()
+    d.subscription = {
+      id: uid(), plan: body.plan, status: useTrial ? 'trialing' : 'active',
+      priceUsd: PRICES[body.plan] || 0,
+      trialEndsAt: useTrial ? end : null, currentPeriodEnd: end,
+    }
+    save(d)
+    return d.subscription
+  }
+  if (path === '/v1/merchant/subscription' && method === 'PUT') {
+    if (!d.subscription) return {}
+    if (body.cancel) d.subscription.status = 'cancelled'
+    else if (body.plan) {
+      d.subscription.plan = body.plan
+      d.subscription.status = 'active'
+      d.subscription.priceUsd = PRICES[body.plan] || 0
+      d.subscription.currentPeriodEnd = new Date(Date.now() + 30 * 864e5).toISOString()
+    }
+    save(d)
+    return d.subscription
+  }
+  if (path === '/v1/merchant/subscription/pay' && method === 'POST') {
+    // Démo : on simule un paiement Mobile Money confirmé.
+    const end = new Date(Date.now() + 30 * 864e5).toISOString()
+    d.subscription = {
+      id: uid(), plan: body.plan, status: 'active', priceUsd: PRICES[body.plan] || 0,
+      telecom: body.telecom, clientPhone: body.phone, trialEndsAt: null, currentPeriodEnd: end,
+    }
+    save(d)
+    return { status: 'pending', message: 'Paiement simulé (démo)' }
+  }
+  if (path === '/v1/admin/subscriptions' && method === 'GET') {
+    return { subscriptions: d.adminSubs || [] }
+  }
+
+  // ---- Back-office admin ----
+  if (path === '/v1/admin/stats' && method === 'GET') {
+    const u = d.adminUsers || []
+    return {
+      users: u.length,
+      merchants: u.filter((x) => x.type === 'merchant').length,
+      buyers: u.filter((x) => x.type === 'buyer').length,
+      pending: u.filter((x) => x.status === 'guest').length,
+    }
+  }
+  if (path === '/v1/admin/users' && method === 'GET') {
+    return { users: d.adminUsers || [], total: (d.adminUsers || []).length }
+  }
+  if (path.startsWith('/v1/admin/users/') && path.endsWith('/status') && method === 'PUT') {
+    const id = path.split('/')[4]
+    const u = (d.adminUsers || []).find((x) => x.id === id)
+    if (u) { u.status = body.status; save(d) }
+    return u || {}
+  }
+
   // ---- Canal interne / agent conversationnel ----
   if (path === '/v1/agent/conversations' && method === 'GET') {
     return {
@@ -213,4 +301,16 @@ export const mockApi = {
   post: (path, body) => delay(route('POST', path, body || {})),
   put: (path, body) => delay(route('PUT', path, body || {})),
   del: (path) => delay(route('DELETE', path)),
+  // Simule le streaming en démo : récupère la réponse mock puis l'émet par mots.
+  streamChat: async (body, onToken) => {
+    const r = await delay(route('POST', '/v1/agent/chat', body || {}))
+    const text = r?.reply?.content || ''
+    for (const w of text.split(/(\s+)/)) {
+      if (!w) continue
+      onToken(w)
+      // petite pause pour l'effet progressif en démo
+      await new Promise((res) => setTimeout(res, 12))
+    }
+    return { conversationId: r?.conversationId }
+  },
 }

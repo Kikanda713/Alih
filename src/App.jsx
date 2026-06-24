@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck, FaCamera, FaStore, FaMapMarkerAlt, FaTruck, FaMoneyBillWave } from 'react-icons/fa'
 import tindisaLogo from './assets/tindisa-logo.png'
 import tindisaFooterLogo from './assets/tindisa.png'
+import mpesaLogo from './assets/MPESA.png'
+import airtelLogo from './assets/AIRTEL.png'
+import orangeLogo from './assets/ORANGE.png'
 import { LanguageSwitcher, useT } from './i18n'
 import ProfileMenu from './components/ProfileMenu'
 import './App.css'
@@ -18,13 +21,13 @@ function App() {
       { ic: <FaCamera />, t: 'Cherchez par photo ou par message', s: 'Envoyez une photo ou décrivez ce que vous voulez' },
       { ic: <FaStore />, t: 'Tout le marché ici', s: 'Plus besoin d’aller de boutique en boutique' },
       { ic: <FaMapMarkerAlt />, t: 'Le produit et la boutique', s: 'Prix, disponibilité et adresse du vendeur' },
-      { ic: <FaMoneyBillWave />, t: 'Payez cash ou Mobile Money', s: 'Livraison ou retrait en boutique, au choix' },
+      { ic: <FaMoneyBillWave />, t: 'Payez cash ou Mobile Money', s: 'Livraison ou retrait en boutique, au choix', logos: [mpesaLogo, airtelLogo, orangeLogo] },
     ],
     merchant: [
       { ic: <FaStore />, t: 'Vendez sans site internet', s: 'Votre boutique vit dans la messagerie' },
       { ic: <FaCamera />, t: 'Vos produits faciles à trouver', s: 'Par photo ou par simple message' },
       { ic: <FaRobot />, t: 'On vend et discute le prix pour vous', s: 'Sans jamais descendre sous votre prix' },
-      { ic: <FaMoneyBillWave />, t: 'Encaissez cash ou Mobile Money', s: 'Vous êtes payé après la livraison' },
+      { ic: <FaMoneyBillWave />, t: 'Encaissez cash ou Mobile Money', s: 'Vous êtes payé après la livraison', logos: [mpesaLogo, airtelLogo, orangeLogo] },
     ],
   }
 
@@ -222,7 +225,14 @@ function App() {
             {howBubbles[howProfile].map((b, i) => (
               <div className={`how-bubble how-b${i + 1}`} key={`${howProfile}-${i}`}>
                 <span className="how-bubble-ic">{b.ic}</span>
-                <span className="how-bubble-tx"><b>{b.t}</b>{b.s}</span>
+                <span className="how-bubble-tx">
+                  <b>{b.t}</b>{b.s}
+                  {b.logos && (
+                    <span className="how-bubble-logos">
+                      {b.logos.map((src, k) => <img key={k} src={src} alt="" />)}
+                    </span>
+                  )}
+                </span>
               </div>
             ))}
           </div>

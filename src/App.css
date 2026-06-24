@@ -708,6 +708,8 @@ section[id] {
   font-weight: 700;
   color: var(--ebony);
 }
+.how-bubble-logos { display: flex; align-items: center; gap: 7px; margin-top: 7px; }
+.how-bubble-logos img { height: 20px; width: auto; border-radius: 4px; }
 .how-b1 { top: 6%; left: 0; }
 .how-b2 { bottom: 16%; left: 2%; animation-delay: 0.8s; }
 .how-b3 { top: 14%; right: 0; animation-delay: 1.6s; }
