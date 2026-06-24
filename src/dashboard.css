@@ -367,6 +367,21 @@
 .wallet-amount-credit { color: #1e8449; font-weight: 700; white-space: nowrap; }
 .wallet-amount-debit { color: #c0392b; font-weight: 700; white-space: nowrap; }
 
+/* ---------- Back-office admin ---------- */
+.dash-badge {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--terracotta); background: rgba(198, 93, 46, 0.1);
+  padding: 3px 9px; border-radius: var(--radius-pill);
+}
+.admin-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+.admin-tabs { border-bottom: none; }
+.admin-tabs .cat-tab { display: inline-flex; align-items: center; gap: 7px; }
+.admin-search { max-width: 280px; }
+@media (max-width: 640px) {
+  .admin-toolbar { flex-direction: column; align-items: stretch; }
+  .admin-search { max-width: none; }
+}
+
 /* ---------- Pagination ---------- */
 .pagination { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
 .pagination-count { font-size: 0.82rem; color: var(--gray-light); }

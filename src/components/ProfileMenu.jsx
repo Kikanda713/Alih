@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import { useNavigate } from 'react-router-dom'
-import { FaChevronDown, FaThLarge, FaSignOutAlt } from 'react-icons/fa'
+import { FaChevronDown, FaThLarge, FaSignOutAlt, FaUserShield } from 'react-icons/fa'
 import { isAuth0Configured } from '../auth/config'
 import AuthButtons from '../auth/AuthButtons.jsx'
 import { useT } from '../i18n/index.jsx'
+import { useIsAdmin } from '../auth/roles'
 import { DEMO_MODE } from '../demo/demo' // DEMO: retirer en production
 import DemoProfileMenu from '../demo/DemoProfileMenu.jsx' // DEMO: retirer en production
 
@@ -17,6 +18,7 @@ function ProfileMenuInner() {
   const { isAuthenticated, isLoading, user, logout } = useAuth0()
   const { t } = useT()
   const navigate = useNavigate()
+  const isAdmin = useIsAdmin()
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -59,6 +61,15 @@ function ProfileMenuInner() {
           >
             <FaThLarge /> {t('profile.dashboard')}
           </button>
+          {isAdmin && (
+            <button
+              className="profile-dropdown-item"
+              role="menuitem"
+              onClick={() => { setOpen(false); navigate('/admin') }}
+            >
+              <FaUserShield /> {t('profile.admin')}
+            </button>
+          )}
           <button
             className="profile-dropdown-item danger"
             role="menuitem"

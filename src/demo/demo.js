@@ -25,6 +25,8 @@ export const demoUser = {
   name: 'Marchand Démo',
   email: 'demo@tindisa.cd',
   picture: null,
+  // En démo, l'utilisateur cumule les rôles pour explorer marchand ET back-office.
+  roles: ['merchant', 'Admin-tindisa'],
 }
 
 export function isDemoSession() {

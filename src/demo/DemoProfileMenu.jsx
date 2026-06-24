@@ -1,8 +1,9 @@
 /* MODE DÉMO — bouton de connexion démo + profil. À SUPPRIMER en production. */
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FaChevronDown, FaThLarge, FaSignOutAlt, FaPlayCircle } from 'react-icons/fa'
+import { FaChevronDown, FaThLarge, FaSignOutAlt, FaPlayCircle, FaUserShield } from 'react-icons/fa'
 import { demoUser, isDemoSession, startDemoSession, endDemoSession } from './demo'
+import { isAdminRoles } from '../auth/roles'
 import { useT } from '../i18n/index.jsx'
 
 export default function DemoProfileMenu() {
@@ -51,6 +52,11 @@ export default function DemoProfileMenu() {
           <button className="profile-dropdown-item" role="menuitem" onClick={() => { setOpen(false); navigate('/dashboard') }}>
             <FaThLarge /> {t('profile.dashboard')}
           </button>
+          {isAdminRoles(demoUser.roles) && (
+            <button className="profile-dropdown-item" role="menuitem" onClick={() => { setOpen(false); navigate('/admin') }}>
+              <FaUserShield /> {t('profile.admin')}
+            </button>
+          )}
           <button className="profile-dropdown-item danger" role="menuitem" onClick={() => { endDemoSession(); setSession(false); navigate('/') }}>
             <FaSignOutAlt /> {t('demo.exit')}
           </button>

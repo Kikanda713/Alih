@@ -44,6 +44,20 @@ function seed() {
       ],
     },
     wanzoLinked: false,
+    adminUsers: [
+      { id: uid(), firstname: 'Sarah', lastname: 'Tshibanda', email: 'sarah@boutiquekin.cd', phone: '+243990000001', type: 'merchant', status: 'active', createdAt: '2026-05-02T09:00:00Z' },
+      { id: uid(), firstname: 'Jean', lastname: 'Mwamba', email: 'jean.mwamba@gmail.com', phone: '+243991111002', type: 'merchant', status: 'active', createdAt: '2026-05-10T11:30:00Z' },
+      { id: uid(), firstname: 'Esther', lastname: 'Kalala', email: 'esther.kalala@gmail.com', phone: '+243992222003', type: 'buyer', status: 'active', createdAt: '2026-05-15T14:10:00Z' },
+      { id: uid(), firstname: 'Patrick', lastname: 'Ilunga', email: '', phone: '+243993333004', type: 'buyer', status: 'guest', createdAt: '2026-06-01T08:45:00Z' },
+      { id: uid(), firstname: 'Aline', lastname: 'Mukendi', email: 'aline.m@boutique.cd', phone: '+243994444005', type: 'merchant', status: 'suspended', createdAt: '2026-04-20T16:20:00Z' },
+      { id: uid(), firstname: 'David', lastname: 'Kabeya', email: 'david.kabeya@gmail.com', phone: '+243995555006', type: 'buyer', status: 'active', createdAt: '2026-06-08T10:05:00Z' },
+      { id: uid(), firstname: 'Grace', lastname: 'Nsimba', email: 'grace.nsimba@gmail.com', phone: '+243996666007', type: 'buyer', status: 'active', createdAt: '2026-06-12T13:40:00Z' },
+      { id: uid(), firstname: 'Olivier', lastname: 'Banza', email: 'olivier@shopgombe.cd', phone: '+243997777008', type: 'merchant', status: 'active', createdAt: '2026-05-28T09:15:00Z' },
+      { id: uid(), firstname: 'Christelle', lastname: 'Mbuyi', email: '', phone: '+243998888009', type: 'buyer', status: 'guest', createdAt: '2026-06-18T17:55:00Z' },
+      { id: uid(), firstname: 'Yannick', lastname: 'Tshisekedi', email: 'yannick.t@gmail.com', phone: '+243999999010', type: 'buyer', status: 'active', createdAt: '2026-06-20T12:00:00Z' },
+      { id: uid(), firstname: 'Nadège', lastname: 'Lukusa', email: 'nadege@maisonwax.cd', phone: '+243990101011', type: 'merchant', status: 'active', createdAt: '2026-05-19T15:30:00Z' },
+      { id: uid(), firstname: 'Samuel', lastname: 'Kasongo', email: 'samuel.kasongo@gmail.com', phone: '+243990202012', type: 'buyer', status: 'active', createdAt: '2026-06-22T08:20:00Z' },
+    ],
     conversations: [
       {
         id: 'conv-demo-1',
@@ -159,6 +173,26 @@ function route(method, path, body) {
   }
   if (path === '/v1/wanzo/sync' && method === 'POST') {
     return { synced: 0, reason: 'demo' }
+  }
+
+  // ---- Back-office admin ----
+  if (path === '/v1/admin/stats' && method === 'GET') {
+    const u = d.adminUsers || []
+    return {
+      users: u.length,
+      merchants: u.filter((x) => x.type === 'merchant').length,
+      buyers: u.filter((x) => x.type === 'buyer').length,
+      pending: u.filter((x) => x.status === 'guest').length,
+    }
+  }
+  if (path === '/v1/admin/users' && method === 'GET') {
+    return { users: d.adminUsers || [], total: (d.adminUsers || []).length }
+  }
+  if (path.startsWith('/v1/admin/users/') && path.endsWith('/status') && method === 'PUT') {
+    const id = path.split('/')[4]
+    const u = (d.adminUsers || []).find((x) => x.id === id)
+    if (u) { u.status = body.status; save(d) }
+    return u || {}
   }
 
   // ---- Canal interne / agent conversationnel ----
