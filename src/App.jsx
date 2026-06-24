@@ -18,7 +18,7 @@ function App() {
       { ic: <FaCamera />, t: 'Cherchez par photo ou par message', s: 'Envoyez une photo ou décrivez ce que vous voulez' },
       { ic: <FaStore />, t: 'Tout le marché ici', s: 'Plus besoin d’aller de boutique en boutique' },
       { ic: <FaMapMarkerAlt />, t: 'Le produit et la boutique', s: 'Prix, disponibilité et adresse du vendeur' },
-      { ic: <FaMoneyBillWave />, t: 'Payez cash ou Mobile Money', s: 'Et faites-vous livrer chez vous' },
+      { ic: <FaMoneyBillWave />, t: 'Payez cash ou Mobile Money', s: 'Livraison ou retrait en boutique, au choix' },
     ],
     merchant: [
       { ic: <FaStore />, t: 'Vendez sans site internet', s: 'Votre boutique vit dans la messagerie' },
@@ -267,8 +267,10 @@ function App() {
       {/* ============ PRICING SECTION ============ */}
       <section className="pricing" id="pricing">
         <div className="container">
-          <h2 className="section-title">Choisissez votre formule</h2>
-          <p className="section-subtitle">Revendeurs, choisissez la formule adaptée à vos besoins : commission au volume ou abonnement mensuel.</p>
+          <h2 className="section-title">Tarifs pour les vendeurs</h2>
+          <p className="section-subtitle">
+            Acheter sur Tindisa est <strong>100% gratuit</strong>. Ces formules concernent uniquement les vendeurs : commission au volume ou abonnement mensuel.
+          </p>
 
           {/* Pricing Tabs */}
           <div className="pricing-tabs">
@@ -311,7 +313,7 @@ function App() {
                     <li><FaCheck className="pricing-check" /> 100 conversations / mois</li>
                     <li><FaCheck className="pricing-check" /> 30 négociations automatisées</li>
                     <li><FaCheck className="pricing-check" /> Recherche produits incluse</li>
-                    <li><FaCheck className="pricing-check" /> Paiement escrow standard</li>
+                    <li><FaCheck className="pricing-check" /> Paiement sécurisé</li>
                     <li><FaCheck className="pricing-check" /> Support WhatsApp</li>
                   </ul>
                   <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
@@ -338,8 +340,8 @@ function App() {
                     <li><FaCheck className="pricing-check" /> 500 conversations / mois</li>
                     <li><FaCheck className="pricing-check" /> 150 négociations automatisées</li>
                     <li><FaCheck className="pricing-check" /> Négociation avancée</li>
-                    <li><FaCheck className="pricing-check" /> Pricing dynamique</li>
-                    <li><FaCheck className="pricing-check" /> Escrow prioritaire</li>
+                    <li><FaCheck className="pricing-check" /> Prix dynamiques</li>
+                    <li><FaCheck className="pricing-check" /> Paiement sécurisé prioritaire</li>
                     <li><FaCheck className="pricing-check" /> Rapports d'activité hebdo</li>
                     <li><FaCheck className="pricing-check" /> Support prioritaire 24/7</li>
                   </ul>
@@ -396,13 +398,13 @@ function App() {
                       <span className="pricing-amount">9$</span>
                       <span className="pricing-period">/ mois</span>
                     </div>
-                    <p className="pricing-desc">Pour les particuliers qui veulent acheter et vendre simplement.</p>
+                    <p className="pricing-desc">Pour les petits vendeurs qui se lancent.</p>
                   </div>
                   <ul className="pricing-features">
                     <li><FaCheck className="pricing-check" /> Accès complet au catalogue</li>
                     <li><FaCheck className="pricing-check" /> 50 conversations / mois</li>
                     <li><FaCheck className="pricing-check" /> Négociation de prix incluse</li>
-                    <li><FaCheck className="pricing-check" /> Paiement escrow standard</li>
+                    <li><FaCheck className="pricing-check" /> Paiement sécurisé</li>
                     <li><FaCheck className="pricing-check" /> Support WhatsApp & Telegram</li>
                   </ul>
                   <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
@@ -425,7 +427,7 @@ function App() {
                     <li><FaCheck className="pricing-check" /> Conversations illimitées</li>
                     <li><FaCheck className="pricing-check" /> Mise en avant des produits</li>
                     <li><FaCheck className="pricing-check" /> Négociation avancée</li>
-                    <li><FaCheck className="pricing-check" /> Escrow prioritaire</li>
+                    <li><FaCheck className="pricing-check" /> Paiement sécurisé prioritaire</li>
                     <li><FaCheck className="pricing-check" /> Rapports d'activité mensuels</li>
                     <li><FaCheck className="pricing-check" /> Support prioritaire 24/7</li>
                   </ul>
@@ -458,10 +460,10 @@ function App() {
                 </div>
               </div>
 
-              {/* <p className="pricing-note">
-                ◈ &nbsp;Abonnement mensuel sans engagement. Résiliable à tout moment.<br />
-                Paiement via Mobile Money (M-Pesa, Airtel Money, Orange Money).
-              </p> */}
+              <p className="pricing-note">
+                ◈ &nbsp;Abonnement sans engagement, résiliable à tout moment. Paiement par Mobile Money ou cash.<br />
+                Côté acheteur, Tindisa reste 100% gratuit.
+              </p>
             </>
           )}
         </div>
