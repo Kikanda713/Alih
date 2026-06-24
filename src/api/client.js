@@ -1,5 +1,5 @@
 import { useAuth0 } from '@auth0/auth0-react'
-import { apiBaseUrl } from '../auth/config'
+import { apiBaseUrl, auth0Config } from '../auth/config'
 import { DEMO_MODE } from '../demo/demo' // DEMO: retirer en production
 import { mockApi } from '../demo/mockApi' // DEMO: retirer en production
 
@@ -31,10 +31,37 @@ export function useTindisaApi() {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   if (DEMO_MODE) return mockApi
 
-  const { getAccessTokenSilently } = useAuth0()
+  const { getAccessTokenSilently, loginWithRedirect } = useAuth0()
+
+  // Récupère un access token pour l'API Tindisa (audience). Le SDK rafraîchit
+  // silencieusement via le refresh token si l'access token est expiré. Si la
+  // session est réellement perdue (refresh expiré/révoqué), on relance le login
+  // NATIF Auth0 en revenant sur la page courante après authentification.
+  const getToken = async () => {
+    try {
+      return await getAccessTokenSilently(
+        auth0Config.audience
+          ? { authorizationParams: { audience: auth0Config.audience } }
+          : undefined,
+      )
+    } catch (e) {
+      const code = e?.error || e?.message
+      if (
+        code === 'login_required' ||
+        code === 'consent_required' ||
+        code === 'missing_refresh_token' ||
+        code === 'invalid_grant'
+      ) {
+        await loginWithRedirect({
+          appState: { returnTo: window.location.pathname + window.location.search },
+        })
+      }
+      throw e
+    }
+  }
 
   const call = async (path, opts = {}) => {
-    const token = await getAccessTokenSilently()
+    const token = await getToken()
     return apiFetch(path, { ...opts, token })
   }
 

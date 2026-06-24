@@ -1,5 +1,5 @@
 import { useAuth0 } from '@auth0/auth0-react'
-import { isAuth0Configured } from './config'
+import { auth0Config, isAuth0Configured } from './config'
 
 // Auth-aware buttons for the navbar. Logged out → "Se connecter" / "S'inscrire".
 // Logged in → user name + "Se déconnecter".
@@ -19,7 +19,7 @@ function Auth0Buttons() {
         <button
           type="button"
           className="btn-signup"
-          onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+          onClick={() => logout({ logoutParams: { returnTo: auth0Config.logoutUrl } })}
         >
           Se déconnecter
         </button>
@@ -27,15 +27,25 @@ function Auth0Buttons() {
     )
   }
 
+  // Pages NATIVES Auth0 (Universal Login). Après login → /dashboard (returnTo).
   return (
     <>
-      <button type="button" className="btn-signin" onClick={() => loginWithRedirect()}>
+      <button
+        type="button"
+        className="btn-signin"
+        onClick={() => loginWithRedirect({ appState: { returnTo: '/dashboard' } })}
+      >
         Se connecter
       </button>
       <button
         type="button"
         className="btn-signup"
-        onClick={() => loginWithRedirect({ authorizationParams: { screen_hint: 'signup' } })}
+        onClick={() =>
+          loginWithRedirect({
+            appState: { returnTo: '/dashboard' },
+            authorizationParams: { screen_hint: 'signup' },
+          })
+        }
       >
         S'inscrire
       </button>

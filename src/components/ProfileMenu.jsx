@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import { useNavigate } from 'react-router-dom'
 import { FaChevronDown, FaThLarge, FaSignOutAlt, FaUserShield } from 'react-icons/fa'
-import { isAuth0Configured } from '../auth/config'
+import { auth0Config, isAuth0Configured } from '../auth/config'
 import AuthButtons from '../auth/AuthButtons.jsx'
 import { useT } from '../i18n/index.jsx'
 import { useIsAdmin } from '../auth/roles'
@@ -73,7 +73,7 @@ function ProfileMenuInner() {
           <button
             className="profile-dropdown-item danger"
             role="menuitem"
-            onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+            onClick={() => logout({ logoutParams: { returnTo: auth0Config.logoutUrl } })}
           >
             <FaSignOutAlt /> {t('profile.logout')}
           </button>
