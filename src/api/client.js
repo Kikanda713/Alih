@@ -65,10 +65,54 @@ export function useTindisaApi() {
     return apiFetch(path, { ...opts, token })
   }
 
+  // Chat assistant en streaming (SSE). onToken reçoit chaque morceau ; renvoie
+  // { conversationId } à la fin. Repli automatique sur /v1/agent/chat si le
+  // streaming n'est pas disponible.
+  const streamChat = async (body, onToken) => {
+    const token = await getToken()
+    let res
+    try {
+      res = await fetch(`${apiBaseUrl}/v1/agent/chat/stream`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      })
+    } catch {
+      res = null
+    }
+    if (!res || !res.ok || !res.body) {
+      const r = await apiFetch('/v1/agent/chat', { method: 'POST', body, token })
+      if (r?.reply?.content) onToken(r.reply.content)
+      return { conversationId: r?.conversationId }
+    }
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let buf = ''
+    let conversationId
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buf += decoder.decode(value, { stream: true })
+      const parts = buf.split('\n\n')
+      buf = parts.pop() || ''
+      for (const part of parts) {
+        const line = part.replace(/^data:\s?/, '').trim()
+        if (!line) continue
+        try {
+          const d = JSON.parse(line)
+          if (d.token) onToken(d.token)
+          if (d.done) conversationId = d.conversationId
+        } catch { /* ignore keep-alive */ }
+      }
+    }
+    return { conversationId }
+  }
+
   return {
     get: (path) => call(path),
     post: (path, body) => call(path, { method: 'POST', body }),
     put: (path, body) => call(path, { method: 'PUT', body }),
     del: (path) => call(path, { method: 'DELETE' }),
+    streamChat,
   }
 }

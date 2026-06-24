@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import {
   FaPaperPlane, FaPaperclip, FaPlus, FaRegComments, FaTrash, FaTimes,
   FaChartBar, FaChevronDown, FaBoxOpen, FaHandshake, FaTags, FaImage, FaFileAlt,
@@ -46,6 +48,29 @@ function StatsFloat({ stats }) {
   )
 }
 
+/* ---------------- Rendu Markdown (assistant) ----------------
+   Tableaux GFM (scroll horizontal si large), liens (nouvel onglet),
+   images responsives, code en bloc scrollable. */
+const mdComponents = {
+  table: ({ node, ...props }) => (
+    <div className="md-table-wrap"><table {...props} /></div>
+  ),
+  a: ({ node, ...props }) => (
+    <a {...props} target="_blank" rel="noopener noreferrer" />
+  ),
+  img: ({ node, ...props }) => <img {...props} className="md-img" alt={props.alt || ''} />,
+}
+
+function MarkdownContent({ text }) {
+  return (
+    <div className="chat-md">
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
+        {text}
+      </ReactMarkdown>
+    </div>
+  )
+}
+
 /* ---------------- Bulle de message ---------------- */
 function Bubble({ m }) {
   return (
@@ -63,7 +88,13 @@ function Bubble({ m }) {
             )}
           </div>
         )}
-        {m.content && <p>{m.content}</p>}
+        {/* Assistant : markdown riche. Utilisateur : texte brut (sauts de ligne préservés). */}
+        {m.content &&
+          (m.role === 'assistant' ? (
+            <MarkdownContent text={m.content} />
+          ) : (
+            <p className="chat-user-text">{m.content}</p>
+          ))}
       </div>
     </div>
   )
@@ -208,20 +239,39 @@ export default function ChatHome() {
     setInput('')
     setAttachments([])
     setSending(true)
+    const assistantId = `a-${Date.now()}`
+    let acc = ''
+    let started = false
     try {
-      const r = await api.post('/v1/agent/chat', {
-        conversationId: currentId,
-        message: content,
-        attachments: atts,
-        history: messages.map((m) => ({ role: m.role, content: m.content })),
-      })
-      if (r?.conversationId && r.conversationId !== currentId) {
-        setCurrentId(r.conversationId)
+      const { conversationId } = await api.streamChat(
+        {
+          conversationId: currentId,
+          message: content,
+          attachments: atts,
+          history: messages.map((m) => ({ role: m.role, content: m.content })),
+        },
+        (tok) => {
+          acc += tok
+          if (!started) {
+            started = true
+            setSending(false) // 1er token reçu → la bulle prend le relais des "…"
+            setMessages((m) => [...m, { id: assistantId, role: 'assistant', content: acc }])
+          } else {
+            setMessages((m) => m.map((x) => (x.id === assistantId ? { ...x, content: acc } : x)))
+          }
+        },
+      )
+      if (conversationId && conversationId !== currentId) {
+        setCurrentId(conversationId)
         loadConversations()
       }
-      if (r?.reply) setMessages((m) => [...m, r.reply])
+      if (!started) {
+        setMessages((m) => [...m, { id: assistantId, role: 'assistant', content: t('chat.unavailable') }])
+      }
     } catch {
-      setMessages((m) => [...m, { id: `err-${m.length}`, role: 'assistant', content: t('chat.unavailable') }])
+      if (!started) {
+        setMessages((m) => [...m, { id: assistantId, role: 'assistant', content: t('chat.unavailable') }])
+      }
     } finally {
       setSending(false)
     }

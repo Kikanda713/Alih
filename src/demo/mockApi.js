@@ -301,4 +301,16 @@ export const mockApi = {
   post: (path, body) => delay(route('POST', path, body || {})),
   put: (path, body) => delay(route('PUT', path, body || {})),
   del: (path) => delay(route('DELETE', path)),
+  // Simule le streaming en démo : récupère la réponse mock puis l'émet par mots.
+  streamChat: async (body, onToken) => {
+    const r = await delay(route('POST', '/v1/agent/chat', body || {}))
+    const text = r?.reply?.content || ''
+    for (const w of text.split(/(\s+)/)) {
+      if (!w) continue
+      onToken(w)
+      // petite pause pour l'effet progressif en démo
+      await new Promise((res) => setTimeout(res, 12))
+    }
+    return { conversationId: r?.conversationId }
+  },
 }
