@@ -1091,6 +1091,21 @@ section[id] {
   line-height: 1.5;
 }
 
+.pricing-trial {
+  display: inline-block;
+  margin: 6px 0 10px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(39, 174, 96, 0.12);
+  color: #1e8449;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.pricing-card-featured .pricing-trial {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
 .pricing-volume {
   display: flex;
   flex-direction: column;

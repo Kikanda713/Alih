@@ -418,12 +418,14 @@ function App() {
                   <div className="pricing-header">
                     <h3 className="pricing-plan-name">Pro</h3>
                     <div className="pricing-price">
-                      <span className="pricing-amount">25$</span>
+                      <span className="pricing-amount">29$</span>
                       <span className="pricing-period">/ mois</span>
                     </div>
+                    <p className="pricing-trial">1 mois d'essai gratuit</p>
                     <p className="pricing-desc">Pour les vendeurs réguliers qui veulent maximiser leurs ventes.</p>
                   </div>
                   <ul className="pricing-features">
+                    <li><FaCheck className="pricing-check" /> 1 mois offert, sans engagement</li>
                     <li><FaCheck className="pricing-check" /> Conversations illimitées</li>
                     <li><FaCheck className="pricing-check" /> Mise en avant des produits</li>
                     <li><FaCheck className="pricing-check" /> Négociation avancée</li>
@@ -432,7 +434,7 @@ function App() {
                     <li><FaCheck className="pricing-check" /> Support prioritaire 24/7</li>
                   </ul>
                   <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-primary">
-                    S'abonner
+                    Essayer 1 mois gratuit
                   </a>
                 </div>
 
