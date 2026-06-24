@@ -1,6 +1,5 @@
-import { useState } from 'react'
-import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck, FaCamera, FaStore, FaMapMarkerAlt, FaTruck } from 'react-icons/fa'
-import { HiOutlineChatAlt2, HiOutlineSearch, HiOutlineCurrencyDollar } from 'react-icons/hi'
+import { useState, useEffect } from 'react'
+import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck, FaCamera, FaStore, FaMapMarkerAlt, FaTruck, FaMoneyBillWave } from 'react-icons/fa'
 import tindisaLogo from './assets/tindisa-logo.png'
 import tindisaFooterLogo from './assets/tindisa.png'
 import { LanguageSwitcher, useT } from './i18n'
@@ -16,18 +15,28 @@ function App() {
   // « Comment ça marche » — ce que Tindisa fait vraiment, selon le profil.
   const howBubbles = {
     client: [
-      { ic: <FaCamera />, t: 'Cherchez par photo', s: 'Envoyez une photo, on trouve le produit' },
-      { ic: <FaStore />, t: 'Tout le marché ici', s: 'Plus besoin de courir les boutiques' },
-      { ic: <FaMapMarkerAlt />, t: 'Infos + adresse', s: 'Prix, disponibilité, où l’acheter' },
-      { ic: <HiOutlineCurrencyDollar />, t: 'On négocie pour vous', s: 'Le meilleur prix, en sécurité' },
+      { ic: <FaCamera />, t: 'Cherchez par photo ou par message', s: 'Envoyez une photo ou décrivez ce que vous voulez' },
+      { ic: <FaStore />, t: 'Tout le marché ici', s: 'Plus besoin d’aller de boutique en boutique' },
+      { ic: <FaMapMarkerAlt />, t: 'Le produit et la boutique', s: 'Prix, disponibilité et adresse du vendeur' },
+      { ic: <FaMoneyBillWave />, t: 'Payez cash ou Mobile Money', s: 'Et faites-vous livrer chez vous' },
     ],
     merchant: [
-      { ic: <FaStore />, t: 'Vendez sans site web', s: 'Votre boutique dans la messagerie' },
-      { ic: <FaCamera />, t: 'Trouvable par photo', s: 'Vos produits remontent dans les recherches' },
-      { ic: <HiOutlineCurrencyDollar />, t: 'L’agent négocie', s: 'Jamais sous votre prix plancher' },
-      { ic: <FaTruck />, t: 'Payé après livraison', s: 'Paiement sécurisé + livraison organisée' },
+      { ic: <FaStore />, t: 'Vendez sans site internet', s: 'Votre boutique vit dans la messagerie' },
+      { ic: <FaCamera />, t: 'Vos produits faciles à trouver', s: 'Par photo ou par simple message' },
+      { ic: <FaRobot />, t: 'On vend et discute le prix pour vous', s: 'Sans jamais descendre sous votre prix' },
+      { ic: <FaMoneyBillWave />, t: 'Encaissez cash ou Mobile Money', s: 'Vous êtes payé après la livraison' },
     ],
   }
+
+  // Alternance automatique Acheteur/Commerçant toutes les 8 s. Le minuteur se
+  // réinitialise à chaque changement (donc aussi après un clic manuel).
+  useEffect(() => {
+    const id = setTimeout(
+      () => setHowProfile((p) => (p === 'client' ? 'merchant' : 'client')),
+      8000,
+    )
+    return () => clearTimeout(id)
+  }, [howProfile])
 
   const handleNavClick = (e, targetId) => {
     e.preventDefault()
