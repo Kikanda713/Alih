@@ -215,6 +215,16 @@ function route(method, path, body) {
     save(d)
     return d.subscription
   }
+  if (path === '/v1/merchant/subscription/pay' && method === 'POST') {
+    // Démo : on simule un paiement Mobile Money confirmé.
+    const end = new Date(Date.now() + 30 * 864e5).toISOString()
+    d.subscription = {
+      id: uid(), plan: body.plan, status: 'active', priceUsd: PRICES[body.plan] || 0,
+      telecom: body.telecom, clientPhone: body.phone, trialEndsAt: null, currentPeriodEnd: end,
+    }
+    save(d)
+    return { status: 'pending', message: 'Paiement simulé (démo)' }
+  }
   if (path === '/v1/admin/subscriptions' && method === 'GET') {
     return { subscriptions: d.adminSubs || [] }
   }

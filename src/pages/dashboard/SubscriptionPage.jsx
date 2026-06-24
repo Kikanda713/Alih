@@ -4,6 +4,7 @@ import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
 import { useToast } from '../../components/Toast.jsx'
 import { Card, Button, Badge, Spinner, ConfirmModal } from '../../components/ui.jsx'
+import PaymentModal from '../../components/PaymentModal.jsx'
 import { PLANS, planById } from '../../data/plans'
 
 const STATUS_TONE = { trialing: 'warn', active: 'success', cancelled: 'danger', expired: 'neutral' }
@@ -21,6 +22,7 @@ export default function SubscriptionPage() {
   const [busy, setBusy] = useState('')
   const [sub, setSub] = useState(null)
   const [cancelOpen, setCancelOpen] = useState(false)
+  const [payModal, setPayModal] = useState({ open: false, plan: null, amount: 0 })
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -39,11 +41,11 @@ export default function SubscriptionPage() {
 
   const active = sub && sub.status !== 'cancelled' && sub.status !== 'expired'
 
-  const choose = async (plan, trial) => {
+  // Essai gratuit (Pro) = sans paiement. Les souscriptions payantes passent par PaymentModal.
+  const startTrial = async (plan) => {
     setBusy(plan)
     try {
-      if (active) await api.put('/v1/merchant/subscription', { plan })
-      else await api.post('/v1/merchant/subscription', { plan, trial: !!trial })
+      await api.post('/v1/merchant/subscription', { plan, trial: true })
       notify(t('sub.toast.subscribed'), 'success')
       await load()
     } catch (e) {
@@ -119,7 +121,10 @@ export default function SubscriptionPage() {
                 <Button
                   variant={p.featured ? 'primary' : 'secondary'}
                   disabled={!!busy}
-                  onClick={() => choose(p.id, p.trial)}
+                  onClick={() => {
+                    if (!active && p.trial) startTrial(p.id)
+                    else setPayModal({ open: true, plan: p.id, amount: p.price })
+                  }}
                 >
                   {!active && p.trial ? t('sub.tryFree') : active ? t('sub.switch') : t('sub.subscribe')}
                 </Button>
@@ -141,6 +146,14 @@ export default function SubscriptionPage() {
         cancelLabel={t('form.cancel')}
         onConfirm={cancel}
         onClose={() => setCancelOpen(false)}
+      />
+
+      <PaymentModal
+        open={payModal.open}
+        plan={payModal.plan}
+        amount={payModal.amount}
+        onClose={() => setPayModal({ open: false, plan: null, amount: 0 })}
+        onDone={load}
       />
     </div>
   )

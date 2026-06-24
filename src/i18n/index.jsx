@@ -293,6 +293,20 @@ const dict = {
     'sub.toast.subscribed': 'Abonnement mis à jour.',
     'sub.toast.cancelled': 'Abonnement résilié.',
 
+    // Paiement Mobile Money
+    'pay.title': 'Payer mon abonnement',
+    'pay.amount': 'Montant : {amount}$ / mois',
+    'pay.operator': 'Opérateur Mobile Money',
+    'pay.phone': 'Numéro Mobile Money',
+    'pay.phoneHint': 'Format : 2439XXXXXXXX (sans +)',
+    'pay.phoneRequired': 'Numéro requis.',
+    'pay.pay': 'Payer',
+    'pay.pending': 'Paiement en cours…',
+    'pay.pendingHint': 'Confirmez le paiement avec votre code PIN sur votre téléphone.',
+    'pay.success': 'Paiement confirmé, abonnement activé.',
+    'pay.failed': 'Paiement échoué. Réessayez.',
+    'pay.timeout': "En attente de confirmation. Votre abonnement s'activera dès réception du paiement.",
+
     // Abonnements (back-office)
     'admin.nav.subs': 'Abonnements',
     'admin.subs.title': 'Abonnements',
