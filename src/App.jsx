@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck } from 'react-icons/fa'
+import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck, FaCamera, FaStore, FaMapMarkerAlt, FaTruck } from 'react-icons/fa'
 import { HiOutlineChatAlt2, HiOutlineSearch, HiOutlineCurrencyDollar } from 'react-icons/hi'
 import tindisaLogo from './assets/tindisa-logo.png'
 import tindisaFooterLogo from './assets/tindisa.png'
@@ -11,6 +11,23 @@ function App() {
   const { t } = useT()
   const [menuOpen, setMenuOpen] = useState(false)
   const [pricingTab, setPricingTab] = useState('tindisa')
+  const [howProfile, setHowProfile] = useState('client')
+
+  // « Comment ça marche » — ce que Tindisa fait vraiment, selon le profil.
+  const howBubbles = {
+    client: [
+      { ic: <FaCamera />, t: 'Cherchez par photo', s: 'Envoyez une photo, on trouve le produit' },
+      { ic: <FaStore />, t: 'Tout le marché ici', s: 'Plus besoin de courir les boutiques' },
+      { ic: <FaMapMarkerAlt />, t: 'Infos + adresse', s: 'Prix, disponibilité, où l’acheter' },
+      { ic: <HiOutlineCurrencyDollar />, t: 'On négocie pour vous', s: 'Le meilleur prix, en sécurité' },
+    ],
+    merchant: [
+      { ic: <FaStore />, t: 'Vendez sans site web', s: 'Votre boutique dans la messagerie' },
+      { ic: <FaCamera />, t: 'Trouvable par photo', s: 'Vos produits remontent dans les recherches' },
+      { ic: <HiOutlineCurrencyDollar />, t: 'L’agent négocie', s: 'Jamais sous votre prix plancher' },
+      { ic: <FaTruck />, t: 'Payé après livraison', s: 'Paiement sécurisé + livraison organisée' },
+    ],
+  }
 
   const handleNavClick = (e, targetId) => {
     e.preventDefault()
@@ -167,27 +184,38 @@ function App() {
       <section className="how-it-works" id="how">
         <div className="container">
           <h2 className="section-title">{t('how.title')}</h2>
-          <p className="section-subtitle">{t('how.subtitle')}</p>
+          <p className="section-subtitle">
+            Tout le marché dans votre messagerie — cherchez même par photo, plus besoin de courir les boutiques.
+          </p>
+
+          <div className="how-toggle" role="tablist">
+            <button
+              className={`how-toggle-btn${howProfile === 'client' ? ' active' : ''}`}
+              onClick={() => setHowProfile('client')}
+            >
+              <FaUserCheck /> Je suis acheteur
+            </button>
+            <button
+              className={`how-toggle-btn${howProfile === 'merchant' ? ' active' : ''}`}
+              onClick={() => setHowProfile('merchant')}
+            >
+              <FaStore /> Je suis commerçant
+            </button>
+          </div>
 
           <div className="how-stage">
             <img
-              src="/Design sans titre (36).png"
-              alt="Une cliente discute avec Tindisa sur son téléphone"
+              src="/how-person.webp"
+              alt="Une cliente utilise Tindisa sur son téléphone"
               className="how-person"
               loading="lazy"
             />
-            <div className="how-bubble how-b1">
-              <HiOutlineChatAlt2 /> <span>Dites ce que vous cherchez</span>
-            </div>
-            <div className="how-bubble how-b2">
-              <HiOutlineSearch /> <span>On compare les meilleurs prix</span>
-            </div>
-            <div className="how-bubble how-b3">
-              <HiOutlineCurrencyDollar /> <span>On négocie à votre place</span>
-            </div>
-            <div className="how-bubble how-b4">
-              <FaShieldAlt /> <span>Payez et recevez en sécurité</span>
-            </div>
+            {howBubbles[howProfile].map((b, i) => (
+              <div className={`how-bubble how-b${i + 1}`} key={`${howProfile}-${i}`}>
+                <span className="how-bubble-ic">{b.ic}</span>
+                <span className="how-bubble-tx"><b>{b.t}</b>{b.s}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
