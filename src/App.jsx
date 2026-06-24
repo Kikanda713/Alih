@@ -119,7 +119,7 @@ function App() {
             {/* Platform CTAs */}
             <div className="platforms">
               <a
-                href="https://wa.me/243991880037"
+                href="https://wa.me/243803828428"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="platform-btn whatsapp"
@@ -482,7 +482,7 @@ function App() {
           </p>
           <div className="platforms">
             <a
-              href="https://wa.me/243991880037"
+              href="https://wa.me/243803828428"
               target="_blank"
               rel="noopener noreferrer"
               className="platform-btn whatsapp"
