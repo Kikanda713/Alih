@@ -99,7 +99,6 @@ function WanzoTab({ t }) {
   const api = useTindisaApi()
   const { notify } = useToast()
   const [state, setState] = useState({ loading: true, link: null, products: [] })
-  const [companyId, setCompanyId] = useState('')
   const [busy, setBusy] = useState('')
   const wp = usePaged(state.products, 10)
 
@@ -126,11 +125,12 @@ function WanzoTab({ t }) {
   const linked = state.link?.linked
   const verified = state.link?.link?.verified
 
+  // Liaison automatique : le backend résout le companyId via l'email (vérifié)
+  // du marchand connecté — aucune saisie d'ID requise.
   const connect = async () => {
-    if (!companyId.trim()) return notify(t('merchant.connect.empty'), 'error')
     setBusy('connect')
     try {
-      await api.post('/v1/wanzo/link', { companyId: companyId.trim() })
+      await api.post('/v1/wanzo/link', {})
       notify(t('merchant.connect.success'), 'success')
       await load()
     } catch (e) {
@@ -162,10 +162,10 @@ function WanzoTab({ t }) {
         </div>
         {!linked ? (
           <div className="cat-wanzo-connect">
-            <Field label={t('merchant.connect.title')}>
-              <Input value={companyId} onChange={(e) => setCompanyId(e.target.value)} placeholder={t('merchant.connect.placeholder')} />
-            </Field>
-            <Button variant="primary" onClick={connect} disabled={busy === 'connect'}>{t('merchant.connect.button')}</Button>
+            <p className="cat-wanzo-hint">{t('merchant.connect.title')}</p>
+            <Button variant="primary" onClick={connect} disabled={busy === 'connect'}>
+              <FaLink /> {t('merchant.connect.button')}
+            </Button>
           </div>
         ) : (
           <Button variant="primary" onClick={sync} disabled={busy === 'sync'}><FaSyncAlt /> {t('merchant.sync.button')}</Button>
