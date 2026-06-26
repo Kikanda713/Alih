@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import App from './App.jsx'
 import Callback from './auth/Callback.jsx'
+import LinkPage from './pages/LinkPage.jsx'
 import DashboardLayout from './pages/dashboard/DashboardLayout.jsx'
 import ChatHome from './pages/dashboard/ChatHome.jsx'
 import CataloguePage from './pages/dashboard/CataloguePage.jsx'
@@ -17,6 +18,7 @@ export default function Root() {
     <Routes>
       <Route path="/" element={<App />} />
       <Route path="/auth/callback" element={<Callback />} />
+      <Route path="/link" element={<LinkPage />} />
       <Route path="/dashboard" element={<DashboardLayout />}>
         <Route index element={<ChatHome />} />
         <Route path="catalogue" element={<CataloguePage />} />
