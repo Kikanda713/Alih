@@ -671,6 +671,7 @@ section[id] {
   max-width: 100%;
   object-fit: contain;
   filter: drop-shadow(0 22px 40px rgba(18, 18, 18, 0.16));
+  animation: how-fade-in 0.45s ease both;
 }
 .how-bubble {
   position: absolute;
@@ -684,7 +685,7 @@ section[id] {
   border-radius: var(--radius-card);
   padding: 13px 16px;
   box-shadow: var(--shadow-md);
-  animation: how-float 5s ease-in-out infinite;
+  animation: how-bubble-in 0.5s ease both, how-float 5s ease-in-out infinite 0.5s;
 }
 .how-bubble-ic {
   flex-shrink: 0;
@@ -719,6 +720,14 @@ section[id] {
 @keyframes how-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
+}
+@keyframes how-fade-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes how-bubble-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* Tablette : on resserre les bulles */

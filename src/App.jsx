@@ -217,6 +217,7 @@ function App() {
 
           <div className="how-stage">
             <img
+              key={howProfile}
               src={howProfile === 'merchant' ? '/TINDISA Persone H1.webp' : '/TINDISA Persone F.webp'}
               alt={howProfile === 'merchant' ? 'Un commerçant utilise Tindisa' : 'Une cliente utilise Tindisa sur son téléphone'}
               className="how-person"
