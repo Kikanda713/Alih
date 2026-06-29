@@ -21,14 +21,19 @@ export default function SubscriptionPage() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
   const [sub, setSub] = useState(null)
+  const [ent, setEnt] = useState(null)
   const [cancelOpen, setCancelOpen] = useState(false)
   const [payModal, setPayModal] = useState({ open: false, plan: null, amount: 0 })
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const r = await api.get('/v1/merchant/subscription')
+      const [r, e] = await Promise.all([
+        api.get('/v1/merchant/subscription'),
+        api.get('/v1/merchant/entitlements').catch(() => null),
+      ])
       setSub(r?.subscription || null)
+      setEnt(e || null)
     } catch {
       setSub(null)
     } finally {
@@ -101,6 +106,29 @@ export default function SubscriptionPage() {
           </Button>
         </Card>
       )}
+
+      {/* Consommation / palier (freemium) */}
+      {ent && (() => {
+        const max = ent.limits?.maxItems ?? 0
+        const unlimited = max >= 1000000
+        const used = ent.usage?.items ?? 0
+        const pct = unlimited ? 0 : Math.min(100, Math.round((used / Math.max(1, max)) * 100))
+        const near = !unlimited && used >= max - 3
+        return (
+          <Card className="sub-usage">
+            <div className="sub-usage-head">
+              <span>Offre actuelle : <b>{ent.plan?.label}</b></span>
+              <span>Catalogue : <b>{used}</b> / {unlimited ? '∞' : max} articles</span>
+            </div>
+            {!unlimited && (
+              <div className="usage-bar"><div className="usage-bar-fill" style={{ width: pct + '%', background: near ? '#d9822b' : '#635dff' }} /></div>
+            )}
+            {near && (
+              <p className="sub-usage-nudge">⚡ Vous approchez de la limite de votre offre. Passez à une offre supérieure pour ajouter plus d'articles, proposer des services et débloquer les certificats.</p>
+            )}
+          </Card>
+        )
+      })()}
 
       {/* Plans */}
       <div className="sub-grid">

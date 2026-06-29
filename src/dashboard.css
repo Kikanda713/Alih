@@ -689,3 +689,10 @@
 }
 .collapse-toggle .rot { transform: rotate(180deg); }
 .form-success { color: #1a9e54; font-weight: 600; }
+
+/* ===== Abonnement : consommation / palier ===== */
+.sub-usage { margin-bottom: 16px; }
+.sub-usage-head { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: .95rem; }
+.usage-bar { margin-top: 10px; height: 10px; border-radius: 6px; background: #eee; overflow: hidden; }
+.usage-bar-fill { height: 100%; transition: width .3s; }
+.sub-usage-nudge { margin-top: 10px; font-size: .9rem; color: #8a5a16; background: #fff6e9; border-radius: 8px; padding: 8px 10px; }
