@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import { useNavigate } from 'react-router-dom'
-import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck, FaCamera, FaStore, FaMapMarkerAlt, FaTruck, FaMoneyBillWave } from 'react-icons/fa'
+import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck, FaCamera, FaStore, FaMapMarkerAlt, FaTruck, FaMoneyBillWave, FaCertificate, FaBalanceScale, FaClipboardCheck } from 'react-icons/fa'
 import tindisaLogo from './assets/tindisa-logo.png'
 import tindisaFooterLogo from './assets/tindisa.png'
 import mpesaLogo from './assets/MPESA.png'
@@ -276,31 +276,60 @@ function App() {
         <div className="network-pattern"></div>
         <div className="container">
           <h2 className="section-title">{t('trust.title')}</h2>
-          <p className="section-subtitle">Sécurité, transparence et intelligence à chaque transaction</p>
+          <p className="section-subtitle">
+            Vendeurs et produits certifiés, paiements garantis, accompagnement juridique — la confiance à chaque transaction.
+          </p>
+
+          {/* Illustration simple de la stratégie de certification (parcours en 3 temps) */}
+          <div className="trust-flow">
+            <div className="trust-flow-step">
+              <span className="trust-flow-num">1</span>
+              <FaClipboardCheck className="trust-flow-ic" />
+              <span>Vérification &amp; inspection</span>
+            </div>
+            <span className="trust-flow-arrow">→</span>
+            <div className="trust-flow-step">
+              <span className="trust-flow-num">2</span>
+              <FaCertificate className="trust-flow-ic" />
+              <span>Certification</span>
+            </div>
+            <span className="trust-flow-arrow">→</span>
+            <div className="trust-flow-step">
+              <span className="trust-flow-num">3</span>
+              <FaShieldAlt className="trust-flow-ic" />
+              <span>Transaction garantie</span>
+            </div>
+          </div>
 
           <div className="trust-grid">
             <div className="trust-card">
-              <div className="trust-icon">
-                <FaShieldAlt size={24} color="#C65D2E" />
-              </div>
-              <h3>{t('trust.card1.title')}</h3>
-              <p>{t('trust.card1.text')}</p>
+              <div className="trust-icon"><FaUserCheck size={24} color="#C65D2E" /></div>
+              <h3>Vendeurs vérifiés &amp; certifiés</h3>
+              <p>Identité et informations vérifiées, inspection technique : chaque vendeur reçoit son <strong>certificat d'authentification</strong>.</p>
             </div>
 
             <div className="trust-card">
-              <div className="trust-icon">
-                <FaUserCheck size={24} color="#C65D2E" />
-              </div>
-              <h3>{t('trust.card2.title')}</h3>
-              <p>{t('trust.card2.text')}</p>
+              <div className="trust-icon"><FaCertificate size={24} color="#C65D2E" /></div>
+              <h3>Certificats produits</h3>
+              <p>Certificat numérique d'authenticité et <strong>fiche de contrôle technique</strong> (véhicules, électronique, smartphones).</p>
             </div>
 
             <div className="trust-card">
-              <div className="trust-icon">
-                <FaRobot size={24} color="#C65D2E" />
-              </div>
-              <h3>{t('trust.card3.title')}</h3>
-              <p>{t('trust.card3.text')}</p>
+              <div className="trust-icon"><FaShieldAlt size={24} color="#C65D2E" /></div>
+              <h3>Paiement garanti</h3>
+              <p>Votre argent est protégé en <strong>séquestre</strong> : le vendeur n'est payé qu'après votre confirmation de réception.</p>
+            </div>
+
+            <div className="trust-card">
+              <div className="trust-icon"><FaBalanceScale size={24} color="#C65D2E" /></div>
+              <h3>Assistance juridique</h3>
+              <p>En cas de litige, Tindisa vous <strong>accompagne et facilite la médiation</strong> entre acheteur et vendeur.</p>
+            </div>
+
+            <div className="trust-card">
+              <div className="trust-icon"><FaRobot size={24} color="#C65D2E" /></div>
+              <h3>Assistant honnête</h3>
+              <p>L'assistant négocie pour vous avec des <strong>prix clairs</strong>, sans piège ni surprise.</p>
             </div>
           </div>
         </div>

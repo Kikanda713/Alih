@@ -899,9 +899,28 @@ section[id] {
 
 .trust-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 24px;
 }
+
+/* Parcours de certification (illustration simple) */
+.trust-flow {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: 10px; margin: 8px auto 32px; max-width: 760px;
+}
+.trust-flow-step {
+  display: flex; align-items: center; gap: 8px; position: relative;
+  background: #fff; border: 1px solid #f0e3da; border-radius: 999px;
+  padding: 8px 16px 8px 12px; font-weight: 600; color: #3a3a4a;
+}
+.trust-flow-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%; background: #C65D2E; color: #fff;
+  font-size: .8rem; font-weight: 700;
+}
+.trust-flow-ic { color: #C65D2E; }
+.trust-flow-arrow { color: #C65D2E; font-weight: 700; font-size: 1.2rem; }
+@media (max-width: 640px) { .trust-flow-arrow { transform: rotate(90deg); } }
 
 .trust-card {
   background: var(--white);
