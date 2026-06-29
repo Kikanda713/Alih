@@ -25,7 +25,7 @@ export default function BoutiquePage() {
         const s = r?.shop || {}
         if (alive) setForm({
           name: s.name || '', shopType: s.shopType || '', logoUrl: s.logoUrl || '',
-          ownerName: s.ownerName || '', phone: s.phone || '', description: s.description || '',
+          ownerName: s.ownerName || '', phone: s.phone || '', email: s.email || '', description: s.description || '',
           city: s.city || '', province: s.province || '', address: s.address || '',
           rccm: s.rccm || '', nif: s.nif || '', idNat: s.idNat || '', patente: s.patente || '',
         })
@@ -102,12 +102,16 @@ export default function BoutiquePage() {
             </Field>
           </div>
 
+          <Field label="Nom du propriétaire">
+            <Input value={form.ownerName} onChange={set('ownerName')} placeholder="Prénom Nom" />
+          </Field>
+
           <div className="form-row">
-            <Field label="Nom du propriétaire">
-              <Input value={form.ownerName} onChange={set('ownerName')} placeholder="Prénom Nom" />
-            </Field>
-            <Field label="Téléphone">
+            <Field label="Téléphone (contact)">
               <Input value={form.phone} onChange={set('phone')} placeholder="+243…" />
+            </Field>
+            <Field label="Email (contact)">
+              <Input type="email" value={form.email} onChange={set('email')} placeholder="boutique@exemple.cd" />
             </Field>
           </div>
 
