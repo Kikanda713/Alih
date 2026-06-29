@@ -401,6 +401,28 @@ function App() {
           {pricingTab === 'tindisa' && (
             <>
               <div className="pricing-grid">
+                {/* Gratuit */}
+                <div className="pricing-card">
+                  <div className="pricing-header">
+                    <h3 className="pricing-plan-name">Gratuit</h3>
+                    <div className="pricing-price">
+                      <span className="pricing-amount">0$</span>
+                      <span className="pricing-period">/ mois</span>
+                    </div>
+                    <p className="pricing-desc">Pour démarrer et tester, sans payer.</p>
+                  </div>
+                  <ul className="pricing-features">
+                    <li><FaCheck className="pricing-check" /> 5 articles</li>
+                    <li><FaCheck className="pricing-check" /> 150 recommandations / mois</li>
+                    <li><FaCheck className="pricing-check" /> Vente de base</li>
+                    <li><FaCheck className="pricing-check" /> Paiement sécurisé</li>
+                    <li><FaCheck className="pricing-check" /> WhatsApp & Telegram</li>
+                  </ul>
+                  <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
+                    Commencer gratuitement
+                  </a>
+                </div>
+
                 {/* Basic */}
                 <div className="pricing-card">
                   <div className="pricing-header">
@@ -412,10 +434,10 @@ function App() {
                     <p className="pricing-desc">Pour les petits vendeurs qui se lancent.</p>
                   </div>
                   <ul className="pricing-features">
-                    <li><FaCheck className="pricing-check" /> Accès complet au catalogue</li>
-                    <li><FaCheck className="pricing-check" /> 50 conversations / mois</li>
-                    <li><FaCheck className="pricing-check" /> Négociation de prix incluse</li>
-                    <li><FaCheck className="pricing-check" /> Paiement sécurisé</li>
+                    <li><FaCheck className="pricing-check" /> 80 articles</li>
+                    <li><FaCheck className="pricing-check" /> 1 500 recommandations / mois</li>
+                    <li><FaCheck className="pricing-check" /> Produits ET services</li>
+                    <li><FaCheck className="pricing-check" /> Publication Facebook</li>
                     <li><FaCheck className="pricing-check" /> Support WhatsApp & Telegram</li>
                   </ul>
                   <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
@@ -437,11 +459,11 @@ function App() {
                   </div>
                   <ul className="pricing-features">
                     <li><FaCheck className="pricing-check" /> 1 mois offert, sans engagement</li>
-                    <li><FaCheck className="pricing-check" /> Conversations illimitées</li>
+                    <li><FaCheck className="pricing-check" /> 500 articles</li>
+                    <li><FaCheck className="pricing-check" /> 8 000 recommandations / mois</li>
+                    <li><FaCheck className="pricing-check" /> Certificats Wanzo</li>
                     <li><FaCheck className="pricing-check" /> Mise en avant des produits</li>
-                    <li><FaCheck className="pricing-check" /> Négociation avancée</li>
-                    <li><FaCheck className="pricing-check" /> Paiement sécurisé prioritaire</li>
-                    <li><FaCheck className="pricing-check" /> Rapports d'activité mensuels</li>
+                    <li><FaCheck className="pricing-check" /> Statistiques avancées</li>
                     <li><FaCheck className="pricing-check" /> Support prioritaire 24/7</li>
                   </ul>
                   <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-primary">
@@ -462,8 +484,8 @@ function App() {
                   <ul className="pricing-features">
                     <li><FaCheck className="pricing-check" /> Tout du plan Pro</li>
                     <li><FaCheck className="pricing-check" /> Catalogue illimité</li>
+                    <li><FaCheck className="pricing-check" /> 50 000 recommandations / mois</li>
                     <li><FaCheck className="pricing-check" /> Marketing automatique</li>
-                    <li><FaCheck className="pricing-check" /> API d'intégration catalogue</li>
                     <li><FaCheck className="pricing-check" /> Dashboard & analytics complets</li>
                     <li><FaCheck className="pricing-check" /> Gestionnaire de compte dédié</li>
                   </ul>
