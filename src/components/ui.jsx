@@ -47,6 +47,25 @@ export function Textarea({ className = '', ...props }) {
   return <textarea className={`ui-input ui-textarea ${className}`.trim()} {...props} />
 }
 
+// Select natif stylé comme Input. `options` = [{ id|value, label }] ou [string].
+// `placeholder` ajoute une option vide en tête.
+export function Select({ className = '', options = [], placeholder, ...props }) {
+  return (
+    <select className={`ui-input ui-select ${className}`.trim()} {...props}>
+      {placeholder != null && <option value="">{placeholder}</option>}
+      {options.map((o) => {
+        const value = typeof o === 'string' ? o : (o.id ?? o.value)
+        const label = typeof o === 'string' ? o : o.label
+        return (
+          <option key={value} value={value}>
+            {o.icon ? `${o.icon} ` : ''}{label}
+          </option>
+        )
+      })}
+    </select>
+  )
+}
+
 export function Spinner({ label }) {
   return (
     <div className="ui-spinner" role="status" aria-live="polite">

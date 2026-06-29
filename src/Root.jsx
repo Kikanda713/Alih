@@ -5,6 +5,7 @@ import LinkPage from './pages/LinkPage.jsx'
 import DashboardLayout from './pages/dashboard/DashboardLayout.jsx'
 import ChatHome from './pages/dashboard/ChatHome.jsx'
 import CataloguePage from './pages/dashboard/CataloguePage.jsx'
+import BoutiquePage from './pages/dashboard/BoutiquePage.jsx'
 import VentesPage from './pages/dashboard/VentesPage.jsx'
 import WalletPage from './pages/dashboard/WalletPage.jsx'
 import SubscriptionPage from './pages/dashboard/SubscriptionPage.jsx'
@@ -22,6 +23,7 @@ export default function Root() {
       <Route path="/dashboard" element={<DashboardLayout />}>
         <Route index element={<ChatHome />} />
         <Route path="catalogue" element={<CataloguePage />} />
+        <Route path="boutique" element={<BoutiquePage />} />
         <Route path="ventes" element={<VentesPage />} />
         <Route path="wallet" element={<WalletPage />} />
         <Route path="abonnement" element={<SubscriptionPage />} />
