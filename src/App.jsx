@@ -325,12 +325,6 @@ function App() {
               <h3>Assistance juridique</h3>
               <p>En cas de litige, Tindisa vous <strong>accompagne et facilite la médiation</strong> entre acheteur et vendeur.</p>
             </div>
-
-            <div className="trust-card">
-              <div className="trust-icon"><FaRobot size={24} color="#C65D2E" /></div>
-              <h3>Assistant honnête</h3>
-              <p>L'assistant négocie pour vous avec des <strong>prix clairs</strong>, sans piège ni surprise.</p>
-            </div>
           </div>
         </div>
       </section>
@@ -531,28 +525,7 @@ function App() {
                   </PlanCTA>
                 </div>
 
-                {/* Business */}
-                <div className="pricing-card">
-                  <div className="pricing-header">
-                    <h3 className="pricing-plan-name">Business</h3>
-                    <div className="pricing-price">
-                      <span className="pricing-amount">59$</span>
-                      <span className="pricing-period">/ mois</span>
-                    </div>
-                    <p className="pricing-desc">Pour les entreprises avec un gros volume de ventes mensuel.</p>
-                  </div>
-                  <ul className="pricing-features">
-                    <li><FaCheck className="pricing-check" /> Tout du plan Pro</li>
-                    <li><FaCheck className="pricing-check" /> Catalogue illimité</li>
-                    <li><FaCheck className="pricing-check" /> 50 000 recommandations / mois</li>
-                    <li><FaCheck className="pricing-check" /> Marketing automatique</li>
-                    <li><FaCheck className="pricing-check" /> Dashboard & analytics complets</li>
-                    <li><FaCheck className="pricing-check" /> Gestionnaire de compte dédié</li>
-                  </ul>
-                  <PlanCTA planId="business" className="pricing-btn pricing-btn-secondary">
-                    Choisir Business
-                  </PlanCTA>
-                </div>
+                {/* Business — masqué sur la landing (reste disponible sur le dashboard). */}
               </div>
 
               <p className="pricing-note">
