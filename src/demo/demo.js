@@ -16,11 +16,9 @@
  * configuré. Ainsi la prod ne peut jamais accorder le compte démo (qui cumule
  * les rôles merchant + Admin-tindisa) par simple oubli de variable d'env.
  * ============================================================ */
-import { isAuth0Configured } from '../auth/config'
-
-export const DEMO_MODE =
-  !import.meta.env.PROD &&
-  (import.meta.env.VITE_DEMO_MODE === 'true' || !isAuth0Configured)
+// Mock/démo DÉSACTIVÉ partout (prod ET dev) — à la demande. Les branches
+// `if (DEMO_MODE)` restantes deviennent mortes ; aucun mock ne peut s'activer.
+export const DEMO_MODE = false
 
 const SESSION_KEY = 'tindisa_demo_session'
 
