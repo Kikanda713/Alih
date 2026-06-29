@@ -48,9 +48,37 @@ function StatsFloat({ stats }) {
   )
 }
 
+/* ---------------- Carrousel de produits dans le chat ----------------
+   L'agent émet un bloc ```tindisa-products contenant un tableau JSON
+   [{id,name,price,currency,city,image,condition,type}] → rendu en cartes. */
+function ProductCarousel({ items }) {
+  if (!Array.isArray(items) || items.length === 0) return null
+  return (
+    <div className="chat-products">
+      {items.map((p, i) => (
+        <div className="chat-product-card" key={p.id || i}>
+          {p.image ? (
+            <img src={p.image} alt={p.name || ''} loading="lazy" />
+          ) : (
+            <div className="chat-product-noimg">{p.type === 'service' ? '🧰' : '🛍️'}</div>
+          )}
+          <div className="chat-product-body">
+            <div className="chat-product-name" title={p.name}>{p.name}</div>
+            {p.price != null && p.price !== '' && (
+              <div className="chat-product-price">{p.price} {p.currency || '$'}</div>
+            )}
+            {(p.city || p.condition) && (
+              <div className="chat-product-meta">{[p.city, p.condition].filter(Boolean).join(' · ')}</div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 /* ---------------- Rendu Markdown (assistant) ----------------
-   Tableaux GFM (scroll horizontal si large), liens (nouvel onglet),
-   images responsives, code en bloc scrollable. */
+   Tableaux GFM, liens (nouvel onglet), images responsives, et bloc produit. */
 const mdComponents = {
   table: ({ node, ...props }) => (
     <div className="md-table-wrap"><table {...props} /></div>
@@ -59,6 +87,19 @@ const mdComponents = {
     <a {...props} target="_blank" rel="noopener noreferrer" />
   ),
   img: ({ node, ...props }) => <img {...props} className="md-img" alt={props.alt || ''} />,
+  code: ({ node, inline, className, children, ...props }) => {
+    const lang = /language-([\w-]+)/.exec(className || '')?.[1]
+    if (!inline && lang === 'tindisa-products') {
+      const raw = String(children || '').trim()
+      try {
+        return <ProductCarousel items={JSON.parse(raw)} />
+      } catch {
+        // JSON encore incomplet (streaming) → placeholder discret.
+        return <div className="chat-products-loading">🛍️ produits…</div>
+      }
+    }
+    return <code className={className} {...props}>{children}</code>
+  },
 }
 
 function MarkdownContent({ text }) {

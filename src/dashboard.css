@@ -698,3 +698,23 @@
 .sub-usage-nudge { margin-top: 10px; font-size: .9rem; color: #8a5a16; background: #fff6e9; border-radius: 8px; padding: 8px 10px; }
 .sub-usage-month { margin-top: 14px; padding-top: 12px; border-top: 1px dashed #eee; }
 .sub-usage-month small { color: #999; }
+
+/* ===== Carrousel produits dans le chat ===== */
+.chat-md pre:has(.chat-products),
+.chat-md pre:has(.chat-products-loading) { background: none; padding: 0; border: none; margin: 8px 0; }
+.chat-products {
+  display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 8px;
+  scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+}
+.chat-product-card {
+  flex: 0 0 150px; scroll-snap-align: start; border: 1px solid #ececf3;
+  border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  display: flex; flex-direction: column;
+}
+.chat-product-card img { width: 100%; height: 110px; object-fit: cover; background: #f5f5fa; }
+.chat-product-noimg { width: 100%; height: 110px; display: flex; align-items: center; justify-content: center; font-size: 2rem; background: #f5f5fa; }
+.chat-product-body { padding: 8px 10px; }
+.chat-product-name { font-weight: 600; font-size: .9rem; line-height: 1.2; max-height: 2.4em; overflow: hidden; }
+.chat-product-price { color: #635dff; font-weight: 700; margin-top: 4px; }
+.chat-product-meta { color: #888; font-size: .78rem; margin-top: 2px; }
+.chat-products-loading { color: #999; font-size: .85rem; font-style: italic; }
