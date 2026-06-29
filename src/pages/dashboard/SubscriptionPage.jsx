@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { FaCheck, FaCrown, FaTimesCircle, FaBolt } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
@@ -43,6 +44,18 @@ export default function SubscriptionPage() {
   }, [])
 
   useEffect(() => { load() }, [load])
+
+  // Arrivée depuis la landing (CTA d'un plan) : ouvrir directement le paiement.
+  const [searchParams, setSearchParams] = useSearchParams()
+  useEffect(() => {
+    const plan = searchParams.get('plan')
+    if (plan && plan !== 'free') {
+      const p = planById(plan)
+      if (p) setPayModal({ open: true, plan, amount: p.price })
+    }
+    if (plan) { searchParams.delete('plan'); setSearchParams(searchParams, { replace: true }) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const active = sub && sub.status !== 'cancelled' && sub.status !== 'expired'
 

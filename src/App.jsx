@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { useAuth0 } from '@auth0/auth0-react'
+import { useNavigate } from 'react-router-dom'
 import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck, FaCamera, FaStore, FaMapMarkerAlt, FaTruck, FaMoneyBillWave } from 'react-icons/fa'
 import tindisaLogo from './assets/tindisa-logo.png'
 import tindisaFooterLogo from './assets/tindisa.png'
@@ -7,7 +9,36 @@ import airtelLogo from './assets/AIRTEL.png'
 import orangeLogo from './assets/ORANGE.png'
 import { LanguageSwitcher, useT } from './i18n'
 import ProfileMenu from './components/ProfileMenu'
+import { isAuth0Configured } from './auth/config'
+import { DEMO_MODE } from './demo/demo'
 import './App.css'
+
+/* CTA d'un plan d'abonnement (landing) :
+   - non connecté → login/inscription Auth0 natif, retour vers la page Abonnement
+     (avec le plan présélectionné) ;
+   - connecté → va directement à la page Abonnement (form de paiement) avec le plan.
+   Fallback (Auth0 non configuré / démo) → lien WhatsApp. */
+function PlanCTA({ planId, className, children }) {
+  if (!isAuth0Configured || DEMO_MODE) {
+    return (
+      <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className={className}>
+        {children}
+      </a>
+    )
+  }
+  return <PlanCTAAuth planId={planId} className={className}>{children}</PlanCTAAuth>
+}
+
+function PlanCTAAuth({ planId, className, children }) {
+  const { isAuthenticated, loginWithRedirect } = useAuth0()
+  const navigate = useNavigate()
+  const dest = planId === 'free' ? '/dashboard' : `/dashboard/abonnement?plan=${planId}`
+  const onClick = () => {
+    if (isAuthenticated) navigate(dest)
+    else loginWithRedirect({ appState: { returnTo: dest } })
+  }
+  return <button type="button" className={className} onClick={onClick}>{children}</button>
+}
 
 function App() {
   const { t } = useT()
@@ -418,9 +449,9 @@ function App() {
                     <li><FaCheck className="pricing-check" /> Paiement sécurisé</li>
                     <li><FaCheck className="pricing-check" /> WhatsApp & Telegram</li>
                   </ul>
-                  <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
+                  <PlanCTA planId="free" className="pricing-btn pricing-btn-secondary">
                     Commencer gratuitement
-                  </a>
+                  </PlanCTA>
                 </div>
 
                 {/* Basic */}
@@ -440,9 +471,9 @@ function App() {
                     <li><FaCheck className="pricing-check" /> Publication Facebook</li>
                     <li><FaCheck className="pricing-check" /> Support WhatsApp & Telegram</li>
                   </ul>
-                  <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
+                  <PlanCTA planId="basic" className="pricing-btn pricing-btn-secondary">
                     S'abonner
-                  </a>
+                  </PlanCTA>
                 </div>
 
                 {/* Pro (Featured) */}
@@ -466,9 +497,9 @@ function App() {
                     <li><FaCheck className="pricing-check" /> Statistiques avancées</li>
                     <li><FaCheck className="pricing-check" /> Support prioritaire 24/7</li>
                   </ul>
-                  <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-primary">
+                  <PlanCTA planId="pro" className="pricing-btn pricing-btn-primary">
                     Essayer 1 mois gratuit
-                  </a>
+                  </PlanCTA>
                 </div>
 
                 {/* Business */}
@@ -489,9 +520,9 @@ function App() {
                     <li><FaCheck className="pricing-check" /> Dashboard & analytics complets</li>
                     <li><FaCheck className="pricing-check" /> Gestionnaire de compte dédié</li>
                   </ul>
-                  <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
-                    Contacter l'équipe
-                  </a>
+                  <PlanCTA planId="business" className="pricing-btn pricing-btn-secondary">
+                    Choisir Business
+                  </PlanCTA>
                 </div>
               </div>
 
