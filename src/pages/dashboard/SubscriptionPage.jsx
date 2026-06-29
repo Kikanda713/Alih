@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { FaCheck, FaCrown, FaTimesCircle } from 'react-icons/fa'
+import { FaCheck, FaCrown, FaTimesCircle, FaBolt } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
 import { useToast } from '../../components/Toast.jsx'
@@ -140,7 +140,7 @@ export default function SubscriptionPage() {
               )
             })()}
             {near && (
-              <p className="sub-usage-nudge">⚡ Vous approchez de la limite de votre offre. Passez à une offre supérieure pour ajouter plus d'articles, proposer des services et débloquer les certificats.</p>
+              <p className="sub-usage-nudge"><FaBolt /> Vous approchez de la limite de votre offre. Passez à une offre supérieure pour ajouter plus d'articles, proposer des services et débloquer les certificats.</p>
             )}
           </Card>
         )

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { FaPlus, FaEdit, FaTrash, FaBoxOpen, FaSyncAlt, FaLink, FaStore, FaImage } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
@@ -190,6 +190,7 @@ export default function CataloguePage() {
   const { t } = useT()
   const { notify } = useToast()
   const [params, setParams] = useSearchParams()
+  const navigate = useNavigate()
   const [tab, setTab] = useState('local')
   const [loading, setLoading] = useState(true)
   const [shop, setShop] = useState(null)
@@ -267,7 +268,11 @@ export default function CataloguePage() {
           <h1 className="dash-h1">{t('cat.title')}</h1>
           <p className="dash-sub">{t('cat.subtitle')}</p>
           {shop && (
-            <button className="cat-shop-chip" onClick={() => setRenaming(true)}>
+            <button
+              className="cat-shop-chip"
+              onClick={() => navigate('/dashboard/boutique')}
+              title="Gérer ma boutique"
+            >
               <FaStore /> {shop.name} <FaEdit className="cat-shop-edit" />
             </button>
           )}

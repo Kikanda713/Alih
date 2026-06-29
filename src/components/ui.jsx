@@ -58,7 +58,7 @@ export function Select({ className = '', options = [], placeholder, ...props }) 
         const label = typeof o === 'string' ? o : o.label
         return (
           <option key={value} value={value}>
-            {o.icon ? `${o.icon} ` : ''}{label}
+            {label}
           </option>
         )
       })}

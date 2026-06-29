@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import { useNavigate } from 'react-router-dom'
-import { FaChevronDown, FaThLarge, FaSignOutAlt, FaUserShield } from 'react-icons/fa'
+import { FaChevronDown, FaThLarge, FaSignOutAlt, FaUserShield, FaStore } from 'react-icons/fa'
 import { auth0Config, isAuth0Configured } from '../auth/config'
 import AuthButtons from '../auth/AuthButtons.jsx'
 import { useT } from '../i18n/index.jsx'
@@ -60,6 +60,13 @@ function ProfileMenuInner() {
             }}
           >
             <FaThLarge /> {t('profile.dashboard')}
+          </button>
+          <button
+            className="profile-dropdown-item"
+            role="menuitem"
+            onClick={() => { setOpen(false); navigate('/dashboard/boutique') }}
+          >
+            <FaStore /> Ma boutique
           </button>
           {isAdmin && (
             <button

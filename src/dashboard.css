@@ -718,3 +718,4 @@
 .chat-product-price { color: #635dff; font-weight: 700; margin-top: 4px; }
 .chat-product-meta { color: #888; font-size: .78rem; margin-top: 2px; }
 .chat-products-loading { color: #999; font-size: .85rem; font-style: italic; }
+.chat-product-cert { display: inline-block; margin-top: 4px; font-size: .72rem; font-weight: 700; color: #1a9e54; background: #e9f8ef; border-radius: 6px; padding: 1px 6px; }

@@ -1,6 +1,6 @@
 import { useAuth0 } from '@auth0/auth0-react'
 import { Link, Navigate } from 'react-router-dom'
-import { FaHome, FaBoxOpen, FaHandshake, FaWallet, FaCreditCard, FaStore } from 'react-icons/fa'
+import { FaHome, FaBoxOpen, FaHandshake, FaWallet, FaCreditCard } from 'react-icons/fa'
 import { isAuth0Configured } from '../../auth/config'
 import { useT } from '../../i18n/index.jsx'
 import { Spinner } from '../../components/ui.jsx'
@@ -13,7 +13,6 @@ function MerchantShell() {
   const nav = [
     { to: '/dashboard', end: true, icon: <FaHome />, label: t('dash.nav.home') },
     { to: '/dashboard/catalogue', icon: <FaBoxOpen />, label: t('dash.nav.catalogue') },
-    { to: '/dashboard/boutique', icon: <FaStore />, label: 'Ma boutique' },
     { to: '/dashboard/ventes', icon: <FaHandshake />, label: t('dash.nav.sales') },
     { to: '/dashboard/wallet', icon: <FaWallet />, label: t('dash.nav.wallet') },
     { to: '/dashboard/abonnement', icon: <FaCreditCard />, label: t('dash.nav.subscription') },

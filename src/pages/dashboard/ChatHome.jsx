@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm'
 import {
   FaPaperPlane, FaPaperclip, FaPlus, FaRegComments, FaTrash, FaTimes,
   FaChartBar, FaChevronDown, FaBoxOpen, FaHandshake, FaTags, FaImage, FaFileAlt,
+  FaConciergeBell, FaShoppingBag, FaCheckCircle,
 } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
@@ -60,10 +61,13 @@ function ProductCarousel({ items }) {
           {p.image ? (
             <img src={p.image} alt={p.name || ''} loading="lazy" />
           ) : (
-            <div className="chat-product-noimg">{p.type === 'service' ? '🧰' : '🛍️'}</div>
+            <div className="chat-product-noimg">{p.type === 'service' ? <FaConciergeBell /> : <FaShoppingBag />}</div>
           )}
           <div className="chat-product-body">
             <div className="chat-product-name" title={p.name}>{p.name}</div>
+            {(p.certified || p.certificate) && (
+              <div className="chat-product-cert" title="Authentifié par Wanzo"><FaCheckCircle /> Certifié</div>
+            )}
             {p.price != null && p.price !== '' && (
               <div className="chat-product-price">{p.price} {p.currency || '$'}</div>
             )}
@@ -95,7 +99,7 @@ const mdComponents = {
         return <ProductCarousel items={JSON.parse(raw)} />
       } catch {
         // JSON encore incomplet (streaming) → placeholder discret.
-        return <div className="chat-products-loading">🛍️ produits…</div>
+        return <div className="chat-products-loading">Chargement des produits…</div>
       }
     }
     return <code className={className} {...props}>{children}</code>

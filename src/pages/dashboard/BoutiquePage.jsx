@@ -15,6 +15,7 @@ export default function BoutiquePage() {
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [msg, setMsg] = useState('')
+  const [msgOk, setMsgOk] = useState(false)
   const [showIds, setShowIds] = useState(false)
   const fileRef = useRef(null)
 
@@ -59,8 +60,8 @@ export default function BoutiquePage() {
     setSaving(true); setMsg('')
     try {
       await api.put('/v1/merchant/shop', form)
-      setMsg('✅ Boutique enregistrée.')
-    } catch (e2) { setMsg(e2?.message || 'Erreur. Réessayez.') }
+      setMsg('Boutique enregistrée.'); setMsgOk(true)
+    } catch (e2) { setMsg(e2?.message || 'Erreur. Réessayez.'); setMsgOk(false) }
     finally { setSaving(false) }
   }
 
@@ -136,7 +137,7 @@ export default function BoutiquePage() {
             </div>
           )}
 
-          {msg && <p className={msg.startsWith('✅') ? 'form-success' : 'form-error'}>{msg}</p>}
+          {msg && <p className={msgOk ? 'form-success' : 'form-error'}>{msg}</p>}
 
           <div className="ui-modal-foot">
             <Button type="submit" variant="primary" disabled={saving || uploading}>

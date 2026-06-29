@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { FaImage, FaSpinner, FaTrash, FaPlus } from 'react-icons/fa'
+import { FaImage, FaSpinner, FaTrash, FaPlus, FaBoxOpen, FaConciergeBell } from 'react-icons/fa'
 import { Modal, Field, Input, Textarea, Select, Button } from '../../components/ui.jsx'
 import { uploadImage, isCloudinaryConfigured } from '../../api/cloudinary'
 import { useTaxonomy, categoriesByType, findCategory, attributesFor } from '../../api/taxonomy'
@@ -130,8 +130,8 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
       <form className="product-form" onSubmit={submit}>
         {/* Type : Produit / Service (segmenté, simple) */}
         <div className="seg-toggle">
-          <button type="button" className={`seg-btn ${!isService ? 'active' : ''}`} onClick={setType('product')}>📦 Produit</button>
-          <button type="button" className={`seg-btn ${isService ? 'active' : ''}`} onClick={setType('service')}>🧰 Service</button>
+          <button type="button" className={`seg-btn ${!isService ? 'active' : ''}`} onClick={setType('product')}><FaBoxOpen /> Produit</button>
+          <button type="button" className={`seg-btn ${isService ? 'active' : ''}`} onClick={setType('service')}><FaConciergeBell /> Service</button>
         </div>
 
         {/* Photos (jusqu'à maxImages) */}
