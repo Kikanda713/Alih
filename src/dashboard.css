@@ -719,3 +719,6 @@
 .chat-product-meta { color: #888; font-size: .78rem; margin-top: 2px; }
 .chat-products-loading { color: #999; font-size: .85rem; font-style: italic; }
 .chat-product-cert { display: inline-block; margin-top: 4px; font-size: .72rem; font-weight: 700; color: #1a9e54; background: #e9f8ef; border-radius: 6px; padding: 1px 6px; }
+.cat-views { color: #8a8a99; font-size: .85rem; white-space: nowrap; }
+.cat-views-ic { opacity: .6; margin-right: 3px; vertical-align: -1px; }
+.cat-col-views { color: #8a8a99; font-weight: 600; }

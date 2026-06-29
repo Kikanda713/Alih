@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm'
 import {
   FaPaperPlane, FaPaperclip, FaPlus, FaRegComments, FaTrash, FaTimes,
   FaChartBar, FaChevronDown, FaBoxOpen, FaHandshake, FaTags, FaImage, FaFileAlt,
-  FaConciergeBell, FaShoppingBag, FaCheckCircle,
+  FaConciergeBell, FaShoppingBag, FaCheckCircle, FaEye,
 } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
@@ -41,6 +41,7 @@ function StatsFloat({ stats }) {
       {!min && (
         <div className="stats-float-body">
           <div className="stats-float-row"><FaBoxOpen /> <span>{stats.products}</span> {t('dash.home.products')}</div>
+          <div className="stats-float-row"><FaEye /> <span>{stats.views}</span> vues</div>
           <div className="stats-float-row"><FaHandshake /> <span>{stats.sales}</span> {t('chat.stats.sales')}</div>
           <div className="stats-float-row"><FaTags /> <span>{money(stats.balance)}</span></div>
         </div>
@@ -204,7 +205,7 @@ export default function ChatHome() {
   const [uploading, setUploading] = useState(false)
   const [sending, setSending] = useState(false)
   const [convOpen, setConvOpen] = useState(false)
-  const [stats, setStats] = useState({ products: 0, sales: 0, balance: 0 })
+  const [stats, setStats] = useState({ products: 0, views: 0, sales: 0, balance: 0 })
   const [ready, setReady] = useState(false)
   const endRef = useRef(null)
 
@@ -225,8 +226,10 @@ export default function ChatHome() {
         api.get('/v1/merchant/wallet'),
       ])
       if (conv.status === 'fulfilled') setConversations(conv.value?.conversations || [])
+      const prodList = prod.status === 'fulfilled' ? (prod.value?.products || []) : []
       setStats({
-        products: prod.status === 'fulfilled' ? (prod.value?.products || []).length : 0,
+        products: prodList.length,
+        views: prodList.reduce((s, p) => s + (Number(p.views) || 0), 0),
         sales: off.status === 'fulfilled' ? (off.value?.offers || []).length : 0,
         balance: wal.status === 'fulfilled' ? wal.value?.balance || 0 : 0,
       })

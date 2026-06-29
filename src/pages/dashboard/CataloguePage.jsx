@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { FaPlus, FaEdit, FaTrash, FaBoxOpen, FaSyncAlt, FaLink, FaStore, FaImage } from 'react-icons/fa'
+import { FaPlus, FaEdit, FaTrash, FaBoxOpen, FaSyncAlt, FaLink, FaStore, FaImage, FaEye } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
 import { useToast } from '../../components/Toast.jsx'
@@ -35,6 +35,7 @@ function ProductTable({ products, readOnly, onEdit, onDelete, t }) {
             <th>{t('cat.col.price')}</th>
             {!readOnly && <th>{t('cat.col.floor')}</th>}
             <th>{t('cat.col.stock')}</th>
+            {!readOnly && <th className="cat-col-views" title="Recommandations / vues">Vues</th>}
             {!readOnly && <th className="cat-col-actions">{t('cat.col.actions')}</th>}
           </tr>
         </thead>
@@ -50,6 +51,9 @@ function ProductTable({ products, readOnly, onEdit, onDelete, t }) {
               <td>{fmtPrice(p.pricing?.displayPrice)}</td>
               {!readOnly && <td className="cat-floor">{fmtPrice(p.pricing?.minPrice)}</td>}
               <td><Badge tone={(p.quantity || 0) > 0 ? 'success' : 'danger'}>{p.quantity ?? 0}</Badge></td>
+              {!readOnly && (
+                <td className="cat-views"><FaEye className="cat-views-ic" /> {p.views ?? 0}</td>
+              )}
               {!readOnly && (
                 <td className="cat-col-actions">
                   <button className="cat-icon-btn" onClick={() => onEdit(p)} aria-label={t('cat.edit')}><FaEdit /></button>
