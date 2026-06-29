@@ -4,9 +4,40 @@ import { FaPlus, FaEdit, FaTrash, FaBoxOpen, FaSyncAlt, FaLink, FaStore, FaImage
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
 import { useToast } from '../../components/Toast.jsx'
-import { Card, Button, Badge, Spinner, EmptyState, Field, Input, Modal, ConfirmModal } from '../../components/ui.jsx'
+import { Card, Button, Badge, Spinner, EmptyState, Field, Input, Select, Modal, ConfirmModal } from '../../components/ui.jsx'
 import { usePaged, Pagination } from '../../components/Pagination.jsx'
+import { useTaxonomy, categoriesByType } from '../../api/taxonomy'
 import ProductFormModal from './ProductFormModal.jsx'
+
+/* Barre de filtres pour que le commerçant prenne en main son catalogue. */
+function CatalogueFilters({ value, onChange, taxonomy }) {
+  const cats = value.type ? categoriesByType(taxonomy, value.type) : (taxonomy?.categories || [])
+  const set = (k) => (e) => onChange({ ...value, [k]: e.target.value })
+  return (
+    <div className="cat-filters">
+      <Input placeholder="Rechercher un article…" value={value.q} onChange={set('q')} />
+      <Select value={value.type} onChange={(e) => onChange({ ...value, type: e.target.value, category: '' })}
+        options={taxonomy?.itemTypes || []} placeholder="Type" />
+      <Select value={value.category} onChange={set('category')} options={cats} placeholder="Catégorie" />
+      <Select value={value.condition} onChange={set('condition')} options={taxonomy?.conditions || []} placeholder="État" />
+      <Select value={value.stock} onChange={set('stock')}
+        options={[{ id: 'in', label: 'En stock' }, { id: 'out', label: 'Rupture' }]} placeholder="Stock" />
+    </div>
+  )
+}
+
+function applyFilters(products, f) {
+  const q = (f.q || '').trim().toLowerCase()
+  return products.filter((p) => {
+    if (q && !`${p.name || ''} ${p.sku || ''} ${p.category || ''}`.toLowerCase().includes(q)) return false
+    if (f.type && (p.type || 'product') !== f.type) return false
+    if (f.category && p.category !== f.category) return false
+    if (f.condition && p.condition !== f.condition) return false
+    if (f.stock === 'in' && !((p.quantity || 0) > 0)) return false
+    if (f.stock === 'out' && (p.quantity || 0) > 0) return false
+    return true
+  })
+}
 
 function fmtPrice(v) {
   if (v == null || v === '') return '—'
@@ -203,7 +234,10 @@ export default function CataloguePage() {
   const [confirm, setConfirm] = useState({ open: false, product: null, busy: false })
   const [renaming, setRenaming] = useState(false)
   const [error, setError] = useState('')
-  const lp = usePaged(products, 10)
+  const [filters, setFilters] = useState({ q: '', type: '', category: '', condition: '', stock: '' })
+  const taxonomy = useTaxonomy()
+  const filtered = applyFilters(products, filters)
+  const lp = usePaged(filtered, 10)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -307,8 +341,15 @@ export default function CataloguePage() {
           />
         ) : (
           <>
-            <ProductTable products={lp.pageItems} onEdit={(p) => setModal({ open: true, product: p })} onDelete={(p) => setConfirm({ open: true, product: p, busy: false })} t={t} />
-            <Pagination page={lp.page} totalPages={lp.totalPages} count={lp.count} onChange={lp.setPage} />
+            <CatalogueFilters value={filters} onChange={setFilters} taxonomy={taxonomy} />
+            {filtered.length === 0 ? (
+              <Card><p className="cat-empty-filter">Aucun article ne correspond à ces filtres.</p></Card>
+            ) : (
+              <>
+                <ProductTable products={lp.pageItems} onEdit={(p) => setModal({ open: true, product: p })} onDelete={(p) => setConfirm({ open: true, product: p, busy: false })} t={t} />
+                <Pagination page={lp.page} totalPages={lp.totalPages} count={lp.count} onChange={lp.setPage} />
+              </>
+            )}
           </>
         )
       ) : (

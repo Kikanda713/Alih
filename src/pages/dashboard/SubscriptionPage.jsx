@@ -149,7 +149,9 @@ export default function SubscriptionPage() {
       {/* Plans */}
       <div className="sub-grid">
         {PLANS.map((p) => {
-          const isCurrent = active && sub.plan === p.id
+          // Sans abonnement actif, l'utilisateur est sur le palier GRATUIT.
+          const isCurrent = active ? sub.plan === p.id : p.id === 'free'
+          const isFree = p.id === 'free'
           return (
             <Card key={p.id} className={`sub-card${p.featured ? ' featured' : ''}${isCurrent ? ' current' : ''}`}>
               {p.featured && <span className="sub-card-badge">{t('sub.popular')}</span>}
@@ -161,6 +163,8 @@ export default function SubscriptionPage() {
               </ul>
               {isCurrent ? (
                 <Button variant="secondary" disabled>{t('sub.currentPlan')}</Button>
+              ) : isFree ? (
+                <Button variant="ghost" disabled>Inclus</Button>
               ) : (
                 <Button
                   variant={p.featured ? 'primary' : 'secondary'}

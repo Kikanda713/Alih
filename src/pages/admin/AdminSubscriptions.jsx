@@ -18,6 +18,7 @@ export default function AdminSubscriptions() {
   const { t } = useT()
   const [loading, setLoading] = useState(true)
   const [subs, setSubs] = useState([])
+  const [summary, setSummary] = useState(null)
   const { pageItems, page, setPage, totalPages, count } = usePaged(subs, 10)
 
   const load = useCallback(async () => {
@@ -25,6 +26,7 @@ export default function AdminSubscriptions() {
     try {
       const r = await api.get('/v1/admin/subscriptions')
       setSubs(r?.subscriptions || [])
+      setSummary(r?.summary || null)
     } catch {
       setSubs([])
     } finally {
@@ -41,6 +43,28 @@ export default function AdminSubscriptions() {
         <h1 className="dash-h1">{t('admin.subs.title')}</h1>
         <p className="dash-sub">{t('admin.subs.subtitle')}</p>
       </header>
+
+      {/* Suivi par plan + revenu mensuel récurrent (MRR) */}
+      {summary && (
+        <div className="admin-subs-summary">
+          {(summary.byPlan || []).map((r) => (
+            <div className="admin-sub-card" key={r.plan}>
+              <div className="admin-sub-plan">{planById(r.plan)?.name || r.plan}</div>
+              <div className="admin-sub-total">{r.total}</div>
+              <div className="admin-sub-meta">
+                <span className="ok">{r.active} actifs</span>
+                {r.trialing > 0 && <span> · {r.trialing} essais</span>}
+              </div>
+              {r.mrrUsd > 0 && <div className="admin-sub-mrr">{r.mrrUsd}$/mois</div>}
+            </div>
+          ))}
+          <div className="admin-sub-card total">
+            <div className="admin-sub-plan">MRR total</div>
+            <div className="admin-sub-total">{summary.mrrUsd || 0}$</div>
+            <div className="admin-sub-meta">{summary.total} abonnés</div>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <Spinner label={t('cat.loading')} />

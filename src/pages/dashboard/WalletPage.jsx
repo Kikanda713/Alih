@@ -21,16 +21,19 @@ export default function WalletPage() {
   const api = useTindisaApi()
   const { t } = useT()
   const [loading, setLoading] = useState(true)
-  const [wallet, setWallet] = useState({ balance: 0, currency: 'CDF', transactions: [] })
+  const [wallet, setWallet] = useState({ balances: [], transactions: [] })
   const { pageItems, page, setPage, totalPages, count } = usePaged(wallet.transactions, 10)
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
       const r = await api.get('/v1/merchant/wallet')
-      setWallet({ balance: r?.balance ?? 0, currency: r?.currency || 'CDF', transactions: r?.transactions || [] })
+      const balances = Array.isArray(r?.balances) && r.balances.length
+        ? r.balances
+        : (r?.balance != null ? [{ currency: r.currency || 'CDF', balance: r.balance }] : [])
+      setWallet({ balances, transactions: r?.transactions || [] })
     } catch {
-      setWallet({ balance: 0, currency: 'CDF', transactions: [] })
+      setWallet({ balances: [], transactions: [] })
     } finally {
       setLoading(false)
     }
@@ -55,13 +58,17 @@ export default function WalletPage() {
         <p className="dash-sub">{t('wallet.subtitle')}</p>
       </header>
 
-      <Card className="wallet-balance">
-        <div className="wallet-balance-icon"><FaWallet /></div>
-        <div>
-          <span className="wallet-balance-label">{t('wallet.balance')}</span>
-          <span className="wallet-balance-value">{fmt(wallet.balance, wallet.currency)}</span>
-        </div>
-      </Card>
+      <div className="wallet-balances">
+        {(wallet.balances.length ? wallet.balances : [{ currency: 'CDF', balance: 0 }]).map((b) => (
+          <Card className="wallet-balance" key={b.currency}>
+            <div className="wallet-balance-icon"><FaWallet /></div>
+            <div>
+              <span className="wallet-balance-label">{t('wallet.balance')} ({b.currency})</span>
+              <span className="wallet-balance-value">{fmt(b.balance, b.currency)}</span>
+            </div>
+          </Card>
+        ))}
+      </div>
 
       <div>
         <h2 className="dash-h2 wallet-tx-title">{t('wallet.history')}</h2>
@@ -90,7 +97,7 @@ export default function WalletPage() {
                     <td>{tx.description || (isCredit(tx.type) ? t('wallet.credit') : t('wallet.debit'))}</td>
                     <td>{fmtDate(tx.createdAt)}</td>
                     <td className={isCredit(tx.type) ? 'wallet-amount-credit' : 'wallet-amount-debit'}>
-                      {isCredit(tx.type) ? '+' : '−'} {fmt(tx.amount, wallet.currency)}
+                      {isCredit(tx.type) ? '+' : '−'} {fmt(tx.amount, tx.currency || 'CDF')}
                     </td>
                   </tr>
                 ))}
