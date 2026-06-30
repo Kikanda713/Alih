@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck, FaCamera, FaStore, FaMapMarkerAlt, FaTruck, FaMoneyBillWave, FaCertificate, FaBalanceScale, FaClipboardCheck } from 'react-icons/fa'
 import tindisaLogo from './assets/tindisa-logo.png'
 import tindisaFooterLogo from './assets/tindisa.png'
@@ -101,6 +101,14 @@ function App() {
           </ul>
 
           <div className="nav-auth">
+            <Link
+              to="/verify"
+              className="nav-verify"
+              title="Vérifier l'authenticité d'un certificat produit (blockchain)"
+              aria-label="Vérifier un certificat"
+            >
+              <FaShieldAlt />
+            </Link>
             <LanguageSwitcher />
             <ProfileMenu />
           </div>
@@ -115,6 +123,9 @@ function App() {
               <li><a href="#contact" onClick={(e) => handleNavClick(e, 'contact')}>{t('nav.contact')}</a></li>
             </ul>
             <div className="mobile-menu-auth">
+              <Link to="/verify" className="nav-verify" aria-label="Vérifier un certificat" onClick={() => { setMenuOpen(false); document.body.style.overflow = '' }}>
+                <FaShieldAlt /> <span>Vérifier un certificat</span>
+              </Link>
               <LanguageSwitcher />
               <ProfileMenu />
             </div>
@@ -325,6 +336,13 @@ function App() {
               <h3>Assistance juridique</h3>
               <p>En cas de litige, Tindisa vous <strong>accompagne et facilite la médiation</strong> entre acheteur et vendeur.</p>
             </div>
+          </div>
+
+          {/* Accès subtil : vérifier un certificat (PDF / hash / QR → blockchain) */}
+          <div className="trust-verify-cta">
+            <Link to="/verify" className="trust-verify-btn" title="Vérifier l'authenticité d'un certificat (blockchain)">
+              <FaShieldAlt /> Vérifier un certificat
+            </Link>
           </div>
         </div>
       </section>
