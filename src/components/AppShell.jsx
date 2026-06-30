@@ -4,17 +4,15 @@ import { FaArrowLeft, FaBars, FaAngleLeft, FaAngleRight } from 'react-icons/fa'
 import ProfileMenu from './ProfileMenu.jsx'
 import { LanguageSwitcher, useT } from '../i18n/index.jsx'
 import { DEMO_MODE } from '../demo/demo' // DEMO: retirer en production
+import tindisaLogo from '../assets/tindisa-logo.png'
 
 const COLLAPSE_KEY = 'tindisa_sidebar_collapsed'
 
 function Logo() {
+  // Même logo que la landing (cohérence de marque).
   return (
     <Link to="/" className="dash-logo">
-      <svg width="34" height="34" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="40" height="40" rx="8" fill="#C65D2E" />
-        <text x="50%" y="54%" dominantBaseline="middle" textAnchor="middle" fill="#FFFFFF" fontFamily="Space Grotesk, sans-serif" fontWeight="700" fontSize="22">T</text>
-      </svg>
-      <span className="dash-logo-text" translate="no">Tindisa</span>
+      <img src={tindisaLogo} alt="Tindisa" className="dash-logo-img" />
     </Link>
   )
 }

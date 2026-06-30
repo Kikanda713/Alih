@@ -160,12 +160,12 @@
 .profile-dropdown-item.danger:hover { background: rgba(192,57,43,0.06); }
 
 /* ---------- Dashboard layout ---------- */
-.dash { min-height: 100vh; background: var(--ivory); }
+.dash { min-height: 100vh; min-height: 100dvh; background: var(--ivory); }
 .dash-loading { min-height: 60vh; display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center; color: var(--gray); }
 .dash-header { position: sticky; top: 0; z-index: 50; background: var(--white); border-bottom: 1px solid var(--border); }
 .dash-header-inner { max-width: var(--container); margin: 0 auto; height: var(--nav-height); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; }
 .dash-logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
-.dash-logo-text { font-family: var(--font-heading); font-weight: 700; font-size: 1.25rem; color: var(--ebony); }
+.dash-logo-img { height: 34px; width: auto; display: block; }
 .dash-header-right { display: flex; align-items: center; gap: 14px; }
 .dash-header-left { display: flex; align-items: center; gap: 10px; }
 .dash-hamburger {
@@ -450,7 +450,10 @@
 .chat-home {
   position: relative;
   display: flex; flex-direction: column;
+  /* dvh (dynamic viewport) : évite que le bas (composeur) passe sous la barre
+     du navigateur mobile et bloque le scroll. Repli vh pour vieux navigateurs. */
   min-height: calc(100vh - var(--nav-height) - 60px);
+  min-height: calc(100dvh - var(--nav-height) - 60px);
 }
 .chat-home.is-empty { justify-content: center; }
 
