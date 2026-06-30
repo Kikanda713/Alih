@@ -741,3 +741,7 @@
 .admin-sub-meta { font-size: .8rem; color: #888; }
 .admin-sub-meta .ok { color: #1a9e54; font-weight: 600; }
 .admin-sub-mrr { font-size: .82rem; color: #635dff; font-weight: 700; margin-top: 2px; }
+
+/* Activités récentes (admin overview) */
+.admin-act-type { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--ebony); white-space: nowrap; }
+.admin-act-type svg { color: var(--terracotta); flex-shrink: 0; }

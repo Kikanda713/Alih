@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { FaChevronDown, FaThLarge, FaSignOutAlt, FaUserShield, FaStore } from 'react-icons/fa'
 import { auth0Config, isAuth0Configured } from '../auth/config'
 import AuthButtons from '../auth/AuthButtons.jsx'
@@ -19,6 +19,9 @@ function ProfileMenuInner() {
   const { t } = useT()
   const navigate = useNavigate()
   const isAdmin = useIsAdmin()
+  // En back-office (/admin), on ne montre PAS les entrées marchand (Dashboard,
+  // Ma boutique) : un admin n'a pas de boutique, c'est du back-office.
+  const inBackoffice = useLocation().pathname.startsWith('/admin')
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -51,23 +54,27 @@ function ProfileMenuInner() {
             <span className="profile-dropdown-name">{user?.name}</span>
             <span className="profile-dropdown-email">{user?.email}</span>
           </div>
-          <button
-            className="profile-dropdown-item"
-            role="menuitem"
-            onClick={() => {
-              setOpen(false)
-              navigate('/dashboard')
-            }}
-          >
-            <FaThLarge /> {t('profile.dashboard')}
-          </button>
-          <button
-            className="profile-dropdown-item"
-            role="menuitem"
-            onClick={() => { setOpen(false); navigate('/dashboard/boutique') }}
-          >
-            <FaStore /> Ma boutique
-          </button>
+          {!inBackoffice && (
+            <button
+              className="profile-dropdown-item"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false)
+                navigate('/dashboard')
+              }}
+            >
+              <FaThLarge /> {t('profile.dashboard')}
+            </button>
+          )}
+          {!inBackoffice && (
+            <button
+              className="profile-dropdown-item"
+              role="menuitem"
+              onClick={() => { setOpen(false); navigate('/dashboard/boutique') }}
+            >
+              <FaStore /> Ma boutique
+            </button>
+          )}
           {isAdmin && (
             <button
               className="profile-dropdown-item"
