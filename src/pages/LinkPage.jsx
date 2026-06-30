@@ -11,7 +11,12 @@ import { auth0Config } from '../auth/config'
 // qui associe son numéro à son compte (sub) — donc à sa boutique unique.
 export default function LinkPage() {
   const [params] = useSearchParams()
+  // Nouveau format : ?c=CODE (code court stable). Legacy : ?state=TOKEN signé.
+  const code = params.get('c') || ''
   const state = params.get('state') || ''
+  const linkParam = code
+    ? `c=${encodeURIComponent(code)}`
+    : `state=${encodeURIComponent(state)}`
   const { isAuthenticated, isLoading, loginWithRedirect, getAccessTokenSilently } =
     useAuth0()
   const [status, setStatus] = useState('init') // init | linking | done | error
@@ -20,7 +25,7 @@ export default function LinkPage() {
 
   useEffect(() => {
     if (isLoading || ran.current) return
-    if (!state) {
+    if (!code && !state) {
       setStatus('error')
       setMsg('Lien invalide ou incomplet.')
       return
@@ -29,7 +34,7 @@ export default function LinkPage() {
       // Connexion / inscription NATIVE Auth0, puis retour ici pour finaliser.
       ran.current = true
       loginWithRedirect({
-        appState: { returnTo: `/link?state=${encodeURIComponent(state)}` },
+        appState: { returnTo: `/link?${linkParam}` },
       })
       return
     }
@@ -44,16 +49,16 @@ export default function LinkPage() {
         )
         await apiFetch('/v1/link/complete', {
           method: 'POST',
-          body: { state },
+          body: code ? { code } : { state },
           token,
         })
         setStatus('done')
       } catch (e) {
         setStatus('error')
-        setMsg(e?.message || 'Échec de la liaison. Le lien a peut-être expiré.')
+        setMsg(e?.message || 'Échec de la liaison. Demandez un nouveau lien sur WhatsApp.')
       }
     })()
-  }, [isAuthenticated, isLoading, state])
+  }, [isAuthenticated, isLoading, code, state])
 
   return (
     <div
