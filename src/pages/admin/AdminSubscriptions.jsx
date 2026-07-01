@@ -22,7 +22,10 @@ function fmtDate(d) {
   try { return new Date(d).toLocaleDateString('fr-FR', { dateStyle: 'medium' }) } catch { return '—' }
 }
 const EXPORT_COLS = [
-  { key: 'userName', label: 'Utilisateur' },
+  { key: 'userName', label: 'Vendeur' },
+  { key: 'email', label: 'Email' },
+  { key: 'shopName', label: 'Boutique' },
+  { key: 'city', label: 'Ville' },
   { key: 'plan', label: 'Plan', map: (s) => planById(s.plan)?.name || s.plan },
   { key: 'priceUsd', label: 'Prix (USD/mois)', map: (s) => Number(s.priceUsd) || 0 },
   { key: 'status', label: 'Statut' },
@@ -109,6 +112,7 @@ export default function AdminSubscriptions() {
               <thead>
                 <tr>
                   <th>{t('admin.subs.col.user')}</th>
+                  <th>Ville</th>
                   <th>{t('admin.subs.col.plan')}</th>
                   <th>{t('admin.subs.col.price')}</th>
                   <th>{t('admin.subs.col.status')}</th>
@@ -118,7 +122,11 @@ export default function AdminSubscriptions() {
               <tbody>
                 {pageItems.map((s) => (
                   <tr key={s.id}>
-                    <td><span className="cat-pname">{s.userName || s.userId}</span></td>
+                    <td>
+                      <span className="cat-pname">{s.userName || s.userId}</span>
+                      {s.email && s.email !== s.userName && <span className="cat-sku">{s.email}</span>}
+                    </td>
+                    <td>{s.city || '—'}</td>
                     <td>{planById(s.plan)?.name || s.plan}</td>
                     <td>{Number(s.priceUsd) || 0}$ / {t('sub.month')}</td>
                     <td><Badge tone={STATUS_TONE[s.status] || 'neutral'}>{t(`sub.status.${s.status}`)}</Badge></td>

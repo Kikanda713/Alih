@@ -1,12 +1,14 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { FaCheck, FaCrown, FaTimesCircle, FaBolt } from 'react-icons/fa'
+import { useAuth0 } from '@auth0/auth0-react'
+import { FaCheck, FaCrown, FaTimesCircle, FaBolt, FaFileInvoiceDollar, FaDownload } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
 import { useToast } from '../../components/Toast.jsx'
-import { Card, Button, Badge, Spinner, ConfirmModal } from '../../components/ui.jsx'
+import { Card, Button, Badge, Spinner, EmptyState, ConfirmModal } from '../../components/ui.jsx'
 import PaymentModal from '../../components/PaymentModal.jsx'
 import { PLANS, planById } from '../../data/plans'
+import { downloadInvoice, invoiceRef } from '../../utils/invoice'
 
 const STATUS_TONE = { trialing: 'warn', active: 'success', cancelled: 'danger', expired: 'neutral' }
 
@@ -19,12 +21,42 @@ export default function SubscriptionPage() {
   const api = useTindisaApi()
   const { t } = useT()
   const { notify } = useToast()
+  const { user } = useAuth0()
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
   const [sub, setSub] = useState(null)
   const [ent, setEnt] = useState(null)
+  const [tab, setTab] = useState('abo') // 'abo' | 'history'
   const [cancelOpen, setCancelOpen] = useState(false)
   const [payModal, setPayModal] = useState({ open: false, plan: null, amount: 0 })
+
+  // Historique de paiement : monté sur l'abonnement courant (un paiement/renouv.
+  // par abonnement). Chaque ligne payante donne une facture téléchargeable.
+  const payments = (() => {
+    if (!sub || !sub.plan || sub.plan === 'free') return []
+    const paid = ['active', 'trialing'].includes(sub.status) || sub.priceUsd > 0
+    if (!paid) return []
+    return [{
+      ref: invoiceRef(sub),
+      date: sub.currentPeriodEnd || sub.updatedAt || sub.createdAt,
+      plan: planById(sub.plan)?.name || sub.plan,
+      ttc: Number(sub.priceUsd) || planById(sub.plan)?.price || 0,
+      status: sub.status,
+      trial: sub.status === 'trialing',
+      method: sub.telecom ? `Mobile Money (${sub.telecom})` : '—',
+    }]
+  })()
+
+  const getInvoice = (p) => downloadInvoice({
+    ref: p.ref,
+    dateStr: fmtDate(p.date),
+    clientName: user?.name || user?.email || 'Client Tindisa',
+    paidBy: user?.name || user?.email || '',
+    planName: p.plan,
+    priceTtc: p.ttc,
+    status: p.trial ? 'Essai' : p.status,
+    method: p.method,
+  })
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -97,6 +129,51 @@ export default function SubscriptionPage() {
         <h1 className="dash-h1">{t('sub.title')}</h1>
         <p className="dash-sub">{t('sub.subtitle')}</p>
       </header>
+
+      <div className="cat-tabs">
+        <button className={`cat-tab${tab === 'abo' ? ' active' : ''}`} onClick={() => setTab('abo')}>Mon abonnement</button>
+        <button className={`cat-tab${tab === 'history' ? ' active' : ''}`} onClick={() => setTab('history')}>
+          <FaFileInvoiceDollar /> Historique &amp; factures
+        </button>
+      </div>
+
+      {tab === 'history' ? (
+        payments.length === 0 ? (
+          <EmptyState icon={<FaFileInvoiceDollar />} title="Aucun paiement" text="Vos paiements et factures apparaîtront ici après votre premier abonnement payant." />
+        ) : (
+          <div className="cat-table-wrap">
+            <table className="cat-table">
+              <thead>
+                <tr>
+                  <th>Réf. facture</th>
+                  <th>Date</th>
+                  <th>Formule</th>
+                  <th>Montant TTC</th>
+                  <th>Statut</th>
+                  <th className="cat-col-actions">Facture</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payments.map((p) => (
+                  <tr key={p.ref}>
+                    <td><span className="cat-pname">{p.ref}</span></td>
+                    <td>{fmtDate(p.date)}</td>
+                    <td>{p.plan}</td>
+                    <td>{p.ttc}$ {p.trial && <small>(essai)</small>}</td>
+                    <td><Badge tone={STATUS_TONE[p.status] || 'neutral'}>{t(`sub.status.${p.status}`)}</Badge></td>
+                    <td className="cat-col-actions">
+                      <button className="cat-icon-btn" title="Télécharger la facture" onClick={() => getInvoice(p)}>
+                        <FaDownload />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      ) : (
+      <>
 
       {/* Abonnement courant */}
       {active && (
@@ -196,6 +273,8 @@ export default function SubscriptionPage() {
       </div>
 
       <p className="sub-note">{t('sub.note')}</p>
+      </>
+      )}
 
       <ConfirmModal
         open={cancelOpen}
