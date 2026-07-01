@@ -1,17 +1,33 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { FaCreditCard } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
-import { Badge, Spinner, EmptyState } from '../../components/ui.jsx'
+import { Badge, Spinner, EmptyState, Select } from '../../components/ui.jsx'
 import { usePaged, Pagination } from '../../components/Pagination.jsx'
+import ExportButtons from '../../components/ExportButtons.jsx'
 import { planById } from '../../data/plans'
 
 const STATUS_TONE = { trialing: 'warn', active: 'success', cancelled: 'danger', expired: 'neutral' }
+const STATUS_OPTS = [
+  { id: 'active', label: 'Actif' }, { id: 'trialing', label: 'Essai' },
+  { id: 'cancelled', label: 'Annulé' }, { id: 'expired', label: 'Expiré' },
+]
+const PLAN_OPTS = [
+  { id: 'free', label: 'Gratuit' }, { id: 'basic', label: 'Basic' },
+  { id: 'pro', label: 'Pro' }, { id: 'business', label: 'Business' },
+]
 
 function fmtDate(d) {
   if (!d) return '—'
   try { return new Date(d).toLocaleDateString('fr-FR', { dateStyle: 'medium' }) } catch { return '—' }
 }
+const EXPORT_COLS = [
+  { key: 'userName', label: 'Utilisateur' },
+  { key: 'plan', label: 'Plan', map: (s) => planById(s.plan)?.name || s.plan },
+  { key: 'priceUsd', label: 'Prix (USD/mois)', map: (s) => Number(s.priceUsd) || 0 },
+  { key: 'status', label: 'Statut' },
+  { key: 'period', label: 'Période', map: (s) => (s.status === 'trialing' ? fmtDate(s.trialEndsAt) : fmtDate(s.currentPeriodEnd)) },
+]
 
 export default function AdminSubscriptions() {
   const api = useTindisaApi()
@@ -19,7 +35,13 @@ export default function AdminSubscriptions() {
   const [loading, setLoading] = useState(true)
   const [subs, setSubs] = useState([])
   const [summary, setSummary] = useState(null)
-  const { pageItems, page, setPage, totalPages, count } = usePaged(subs, 10)
+  const [fStatus, setFStatus] = useState('')
+  const [fPlan, setFPlan] = useState('')
+  const filtered = useMemo(
+    () => subs.filter((s) => (!fStatus || s.status === fStatus) && (!fPlan || s.plan === fPlan)),
+    [subs, fStatus, fPlan],
+  )
+  const { pageItems, page, setPage, totalPages, count } = usePaged(filtered, 10)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -66,9 +88,19 @@ export default function AdminSubscriptions() {
         </div>
       )}
 
+      {!loading && subs.length > 0 && (
+        <div className="admin-toolbar">
+          <div className="admin-filters">
+            <Select value={fStatus} onChange={(e) => setFStatus(e.target.value)} options={STATUS_OPTS} placeholder="Tous statuts" />
+            <Select value={fPlan} onChange={(e) => setFPlan(e.target.value)} options={PLAN_OPTS} placeholder="Tous plans" />
+          </div>
+          <ExportButtons baseName="tindisa-abonnements" columns={EXPORT_COLS} rows={filtered} sheetName="Abonnements" />
+        </div>
+      )}
+
       {loading ? (
         <Spinner label={t('cat.loading')} />
-      ) : subs.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <EmptyState icon={<FaCreditCard />} title={t('admin.subs.empty.title')} text={t('admin.subs.empty.text')} />
       ) : (
         <>

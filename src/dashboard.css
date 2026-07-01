@@ -745,3 +745,18 @@
 /* Activités récentes (admin overview) */
 .admin-act-type { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--ebony); white-space: nowrap; }
 .admin-act-type svg { color: var(--terracotta); flex-shrink: 0; }
+
+/* Export back-office (Excel/CSV) + filtres */
+.export-btns { display: inline-flex; gap: 8px; }
+.export-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 14px; border-radius: var(--radius-btn); cursor: pointer;
+  background: var(--white); border: 1px solid var(--border); color: var(--gray);
+  font-weight: 600; font-size: 0.85rem; transition: all var(--duration) var(--ease);
+}
+.export-btn:hover:not(:disabled) { border-color: var(--terracotta); color: var(--terracotta); }
+.export-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.export-btn svg { font-size: 1rem; }
+.admin-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.admin-filters .ui-select, .admin-filters select { min-width: 150px; }
+.admin-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }

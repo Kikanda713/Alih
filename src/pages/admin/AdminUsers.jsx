@@ -5,6 +5,7 @@ import { useT } from '../../i18n/index.jsx'
 import { useToast } from '../../components/Toast.jsx'
 import { Card, Badge, Spinner, EmptyState, Input, ConfirmModal } from '../../components/ui.jsx'
 import { usePaged, Pagination } from '../../components/Pagination.jsx'
+import ExportButtons from '../../components/ExportButtons.jsx'
 
 function name(u) {
   const n = [u.firstname, u.lastname].filter(Boolean).join(' ').trim()
@@ -14,6 +15,18 @@ function fmtDate(d) {
   if (!d) return '—'
   try { return new Date(d).toLocaleDateString('fr-FR', { dateStyle: 'medium' }) } catch { return '—' }
 }
+// Colonnes d'export (données déjà chargées, filtrées à l'écran).
+const EXPORT_COLS = [
+  { key: 'name', label: 'Nom', map: (u) => name(u) },
+  { key: 'email', label: 'Email' },
+  { key: 'phone', label: 'Téléphone' },
+  { key: 'type', label: 'Type', map: (u) => (u.type === 'merchant' ? 'Commerçant' : 'Acheteur') },
+  { key: 'shopName', label: 'Boutique' },
+  { key: 'city', label: 'Ville' },
+  { key: 'province', label: 'Province' },
+  { key: 'status', label: 'Statut' },
+  { key: 'createdAt', label: 'Inscrit le', map: (u) => fmtDate(u.createdAt) },
+]
 const TYPE_TONE = { merchant: 'success', buyer: 'neutral', both: 'warn' }
 const STATUS_TONE = { active: 'success', suspended: 'danger', guest: 'warn' }
 
@@ -90,6 +103,7 @@ export default function AdminUsers() {
           ))}
         </div>
         <Input className="admin-search" placeholder={t('admin.users.search')} value={q} onChange={(e) => setQ(e.target.value)} />
+        <ExportButtons baseName="tindisa-utilisateurs" columns={EXPORT_COLS} rows={filtered} sheetName="Utilisateurs" />
       </div>
 
       {loading ? (
@@ -105,6 +119,8 @@ export default function AdminUsers() {
                   <th>{t('admin.users.col.user')}</th>
                   <th>{t('admin.users.col.contact')}</th>
                   <th>{t('admin.users.col.type')}</th>
+                  <th>Boutique</th>
+                  <th>Ville</th>
                   <th>{t('admin.users.col.status')}</th>
                   <th>{t('admin.users.col.joined')}</th>
                   <th className="cat-col-actions">{t('cat.col.actions')}</th>
@@ -116,6 +132,8 @@ export default function AdminUsers() {
                     <td><span className="cat-pname">{name(u)}</span></td>
                     <td><span className="cat-sku">{u.email || u.phone || '—'}</span></td>
                     <td><Badge tone={TYPE_TONE[u.type] || 'neutral'}>{t(`admin.type.${u.type || 'buyer'}`)}</Badge></td>
+                    <td>{u.shopName || '—'}</td>
+                    <td>{u.city || '—'}</td>
                     <td><Badge tone={STATUS_TONE[u.status] || 'neutral'}>{t(`admin.status.${u.status || 'active'}`)}</Badge></td>
                     <td>{fmtDate(u.createdAt)}</td>
                     <td className="cat-col-actions">
