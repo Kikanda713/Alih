@@ -33,6 +33,6 @@ export const isCloudinaryConfigured = Boolean(
 // la page Facebook gérée par Tindisa peut être propre à chaque marchand.
 export const channels = {
   whatsapp: import.meta.env.VITE_WHATSAPP_URL || 'https://web.whatsapp.com',
-  telegram: import.meta.env.VITE_TELEGRAM_URL || 'https://web.telegram.org',
+  telegram: import.meta.env.VITE_TELEGRAM_URL || 'https://t.me/Tindisa_tbot',
   facebook: import.meta.env.VITE_FACEBOOK_PAGE_URL || 'https://www.facebook.com',
 };

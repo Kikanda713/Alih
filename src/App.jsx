@@ -172,7 +172,7 @@ function App() {
                 <FaWhatsapp className="platform-icon" />
                 <span>{t('cta.whatsapp')}</span>
               </a>
-              <a href="#telegram" className="platform-btn telegram">
+              <a href="https://t.me/Tindisa_tbot" target="_blank" rel="noopener noreferrer" className="platform-btn telegram">
                 <FaTelegramPlane className="platform-icon" />
                 <span>{t('cta.telegram')}</span>
               </a>
@@ -574,7 +574,7 @@ function App() {
               <FaWhatsapp className="platform-icon" />
               <span>WhatsApp</span>
             </a>
-            <a href="#telegram" className="platform-btn telegram">
+            <a href="https://t.me/Tindisa_tbot" target="_blank" rel="noopener noreferrer" className="platform-btn telegram">
               <FaTelegramPlane className="platform-icon" />
               <span>Telegram</span>
             </a>
