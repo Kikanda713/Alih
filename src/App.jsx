@@ -21,7 +21,7 @@ import './App.css'
 function PlanCTA({ planId, className, children }) {
   if (!isAuth0Configured || DEMO_MODE) {
     return (
-      <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className={className}>
+      <a href="https://wa.me/243995193113" target="_blank" rel="noopener noreferrer" className={className}>
         {children}
       </a>
     )
@@ -164,7 +164,7 @@ function App() {
             {/* Platform CTAs */}
             <div className="platforms">
               <a
-                href="https://wa.me/243803828428"
+                href="https://wa.me/243995193113"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="platform-btn whatsapp"
@@ -399,7 +399,7 @@ function App() {
                     <li><FaCheck className="pricing-check" /> Paiement sécurisé</li>
                     <li><FaCheck className="pricing-check" /> Support WhatsApp</li>
                   </ul>
-                  <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
+                  <a href="https://wa.me/243995193113" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
                     Démarrer
                   </a>
                 </div>
@@ -428,7 +428,7 @@ function App() {
                     <li><FaCheck className="pricing-check" /> Rapports d'activité hebdo</li>
                     <li><FaCheck className="pricing-check" /> Support prioritaire 24/7</li>
                   </ul>
-                  <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-primary">
+                  <a href="https://wa.me/243995193113" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-primary">
                     Choisir Croissance
                   </a>
                 </div>
@@ -456,7 +456,7 @@ function App() {
                     <li><FaCheck className="pricing-check" /> Dashboard & analytics complets</li>
                     <li><FaCheck className="pricing-check" /> Gestionnaire de compte dédié</li>
                   </ul>
-                  <a href="https://wa.me/243991880037" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
+                  <a href="https://wa.me/243995193113" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
                     Contacter l'équipe
                   </a>
                 </div>
@@ -566,7 +566,7 @@ function App() {
           </p>
           <div className="platforms">
             <a
-              href="https://wa.me/243803828428"
+              href="https://wa.me/243995193113"
               target="_blank"
               rel="noopener noreferrer"
               className="platform-btn whatsapp"

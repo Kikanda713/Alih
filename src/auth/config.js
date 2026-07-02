@@ -34,7 +34,7 @@ export const isCloudinaryConfigured = Boolean(
 // Canaux du marchand — accès direct depuis le dashboard. Surcharge via env ;
 // la page Facebook gérée par Tindisa peut être propre à chaque marchand.
 export const channels = {
-  whatsapp: import.meta.env.VITE_WHATSAPP_URL || 'https://web.whatsapp.com',
+  whatsapp: import.meta.env.VITE_WHATSAPP_URL || 'https://wa.me/243995193113',
   telegram: import.meta.env.VITE_TELEGRAM_URL || 'https://t.me/Tindisa_tbot',
   facebook: import.meta.env.VITE_FACEBOOK_PAGE_URL || 'https://www.facebook.com',
 };
