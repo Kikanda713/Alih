@@ -61,6 +61,10 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
 
   const isService = form.type === 'service'
   const maxImages = taxonomy?.maxImages || 4
+  // Unité de vente (produits) ou de facturation (services) — le prix est PAR unité.
+  const unitOptions = isService ? (taxonomy?.billingUnits || []) : (taxonomy?.saleUnits || [])
+  const unitLabel = unitOptions.find((u) => u.id === form.billingUnit)?.label
+  const priceHint = unitLabel ? `Prix ${unitLabel}` : 'Prix par unité'
   const cats = categoriesByType(taxonomy, form.type)
   const cat = findCategory(taxonomy, form.category)
   const subcats = cat?.subcategories || []
@@ -119,7 +123,8 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
         category: form.category || undefined,
         subcategory: form.subcategory || undefined,
         condition: !isService ? form.condition || undefined : undefined,
-        billingUnit: isService ? form.billingUnit || undefined : undefined,
+        // Unité (vente pour produit, facturation pour service) — prix par unité.
+        billingUnit: form.billingUnit || undefined,
         description: form.description.trim() || undefined,
         images: form.images.length ? form.images : undefined,
         imageUrl: form.images[0] || undefined,
@@ -176,9 +181,14 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
         </div>
 
         {!isService ? (
-          <Field label="État">
-            <Select value={form.condition} onChange={set('condition')} options={taxonomy?.conditions || []} placeholder="Choisir…" />
-          </Field>
+          <div className="form-row">
+            <Field label="État">
+              <Select value={form.condition} onChange={set('condition')} options={taxonomy?.conditions || []} placeholder="Choisir…" />
+            </Field>
+            <Field label="Unité de vente" hint="Le prix est PAR unité">
+              <Select value={form.billingUnit} onChange={set('billingUnit')} options={taxonomy?.saleUnits || []} placeholder="à la pièce…" />
+            </Field>
+          </div>
         ) : (
           <Field label="Facturation">
             <Select value={form.billingUnit} onChange={set('billingUnit')} options={taxonomy?.billingUnits || []} placeholder="Choisir…" />
@@ -190,7 +200,7 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
         </Field>
 
         <div className="form-row">
-          <Field label={t('form.displayPrice')}>
+          <Field label={t('form.displayPrice')} hint={priceHint}>
             <Input type="number" min="0" value={form.displayPrice} onChange={set('displayPrice')} placeholder="0" />
           </Field>
           <Field label={t('form.minPrice')} hint={t('form.minPriceHint')}>
@@ -199,7 +209,7 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
         </div>
 
         {!isService && (
-          <Field label={t('form.quantity')}>
+          <Field label={t('form.quantity')} hint={unitLabel ? `Nombre d'unités en stock (${unitLabel.replace(/^(à la|au|à l')\s*/, '')})` : "Nombre d'unités en stock"}>
             <Input type="number" min="0" value={form.quantity} onChange={set('quantity')} placeholder="0" />
           </Field>
         )}
