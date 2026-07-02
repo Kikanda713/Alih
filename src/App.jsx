@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import { useNavigate, Link } from 'react-router-dom'
-import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck, FaCamera, FaStore, FaMapMarkerAlt, FaTruck, FaMoneyBillWave, FaCertificate, FaBalanceScale, FaClipboardCheck } from 'react-icons/fa'
+import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck, FaCamera, FaStore, FaMapMarkerAlt, FaTruck, FaMoneyBillWave, FaCertificate, FaBalanceScale, FaClipboardCheck, FaInfoCircle } from 'react-icons/fa'
 import tindisaLogo from './assets/tindisa-logo.png'
 import tindisaFooterLogo from './assets/tindisa.png'
 import mpesaLogo from './assets/MPESA.png'
@@ -463,7 +463,7 @@ function App() {
               </div>
 
               <p className="pricing-note">
-                ◈ &nbsp;Une <strong>interaction</strong> = une conversation initiée par un acheteur (recherche, négociation ou commande).<br />
+                <FaInfoCircle className="pricing-note-ic" />&nbsp;Une <strong>interaction</strong> = une conversation initiée par un acheteur (recherche, négociation ou commande).<br />
                 Aucun frais fixe. Commission uniquement sur les transactions conclues.
               </p>
             </>
@@ -547,7 +547,7 @@ function App() {
               </div>
 
               <p className="pricing-note">
-                ◈ &nbsp;Abonnement sans engagement, résiliable à tout moment. Paiement par Mobile Money ou cash.<br />
+                <FaInfoCircle className="pricing-note-ic" />&nbsp;Abonnement sans engagement, résiliable à tout moment. Paiement par Mobile Money ou cash.<br />
                 Côté acheteur, Tindisa reste 100% gratuit.
               </p>
             </>

@@ -1639,3 +1639,6 @@ section[id] {
 @media (max-width: 520px) {
   .verify-cert-grid { grid-template-columns: 1fr; }
 }
+
+/* Icône inline des notes de tarification (remplace l'ancien ◈). */
+.pricing-note-ic { color: var(--terracotta); vertical-align: -1px; margin-right: 2px; }

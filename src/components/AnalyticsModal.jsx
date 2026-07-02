@@ -88,7 +88,7 @@ export default function AnalyticsModal({ open, product, onClose }) {
           {data?.series?.length ? (
             <Histogram series={data.series} />
           ) : (
-            <p className="an-empty">Pas encore de données journalières — le suivi des vues par jour démarre maintenant. Reviens dans quelques jours pour voir la tendance 📈</p>
+            <p className="an-empty">Pas encore de données journalières : le suivi des vues par jour démarre maintenant. Revenez dans quelques jours pour voir la tendance.</p>
           )}
 
           <div className="an-section-title"><FaHandshake /> Conversion des leads ({days} j)</div>

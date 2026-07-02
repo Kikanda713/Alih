@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
+import { FaStore, FaCheckCircle } from 'react-icons/fa'
 import { apiFetch } from '../api/client'
 import { auth0Config } from '../auth/config'
 
@@ -87,7 +88,7 @@ export default function LinkPage() {
   return (
     <div style={wrap}>
       <div style={{ maxWidth: 420, width: '100%' }}>
-        <h1 style={{ fontSize: '1.4rem', marginBottom: 8 }}>🛍️ Tindisa</h1>
+        <h1 style={{ fontSize: '1.4rem', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><FaStore style={{ color: '#C65D2E' }} /> Tindisa</h1>
 
         {status === 'confirm' && (
           <>
@@ -103,7 +104,7 @@ export default function LinkPage() {
 
         {status === 'done' && (
           <>
-            <p style={{ fontSize: '1.1rem', color: '#1a9e54', fontWeight: 600 }}>✅ Votre compte est lié !</p>
+            <p style={{ fontSize: '1.1rem', color: '#1a9e54', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><FaCheckCircle /> Votre compte est lié !</p>
             <p>Vous pouvez maintenant gérer votre boutique depuis WhatsApp. Retournez à votre conversation Tindisa.</p>
             <Link to="/dashboard" style={{ color: '#635dff' }}>Ouvrir mon tableau de bord</Link>
           </>

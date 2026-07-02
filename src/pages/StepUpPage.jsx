@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
+import { FaLock, FaCheckCircle } from 'react-icons/fa'
 import { apiFetch } from '../api/client'
 import { auth0Config } from '../auth/config'
 
@@ -64,11 +65,11 @@ export default function StepUpPage() {
       textAlign: 'center', background: '#F8F5EF',
     }}>
       <div style={{ maxWidth: 420 }}>
-        <div style={{ fontSize: 44, marginBottom: 6 }}>🔐</div>
+        <div style={{ fontSize: 44, marginBottom: 6, color: '#C65D2E' }}><FaLock /></div>
         <h1 style={{ fontSize: '1.3rem', marginBottom: 8 }}>Confirmation d'identité</h1>
         {status === 'done' ? (
           <>
-            <p style={{ color: '#1a9e54', fontWeight: 600 }}>✅ Identité confirmée !</p>
+            <p style={{ color: '#1a9e54', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><FaCheckCircle /> Identité confirmée !</p>
             <p>Vous pouvez retourner à votre conversation Tindisa et valider votre commande.</p>
             <Link to="/dashboard" style={{ color: '#635dff' }}>Ouvrir mon tableau de bord</Link>
           </>

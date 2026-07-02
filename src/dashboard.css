@@ -779,3 +779,14 @@
 .an-funnel-val { font-weight: 700; font-family: var(--font-heading); }
 .an-funnel-rate { min-width: 56px; text-align: right; color: #1a9e54; font-weight: 700; font-size: 0.9rem; }
 .an-hint { color: var(--gray); font-size: 0.82rem; margin-top: 12px; line-height: 1.5; }
+
+/* ---------- Forms : anti-débordement + responsive ---------- */
+/* Les enfants d'une grille débordent si min-width=auto ; on force min-width:0. */
+.form-row > * { min-width: 0; }
+.ui-input, .ui-select, .ui-textarea { max-width: 100%; box-sizing: border-box; }
+@media (max-width: 560px) {
+  .form-row { grid-template-columns: 1fr; }
+  .product-images-grid { grid-template-columns: repeat(3, 1fr); }
+  .ui-modal-body { padding: 16px; }
+  .ui-modal-head { padding: 14px 16px; }
+}
