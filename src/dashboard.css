@@ -814,3 +814,14 @@
 .map-popup-actions button { font-size: 0.8rem; padding: 4px 10px; border: 1px solid var(--border, #e2e8f0); border-radius: 6px; background: var(--surface, #fff); cursor: pointer; }
 .map-popup-actions button.danger { color: #dc2626; border-color: #fecaca; }
 @media (max-width: 640px) { .admin-map-canvas { height: 56vh; } .map-widget { top: 8px; right: 8px; padding: 8px; } }
+
+/* ===== Localisation boutique (marchand) ===== */
+.shop-map-field { margin: 8px 0 4px; }
+.shop-map-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; }
+.shop-map-head > span { display: inline-flex; align-items: center; gap: 6px; }
+.shop-map-actions { display: flex; align-items: center; gap: 6px; }
+.shop-map-canvas { height: 320px; width: 100%; border-radius: 12px; z-index: 0; }
+.shop-map-loading { height: 320px; display: flex; align-items: center; justify-content: center; background: var(--surface-2, #f8fafc); border-radius: 12px; }
+.shop-lm-add { display: flex; gap: 8px; margin-top: 8px; align-items: stretch; flex-wrap: wrap; }
+.shop-lm-add .ui-input { flex: 1 1 200px; }
+@media (max-width: 640px) { .shop-map-canvas, .shop-map-loading { height: 260px; } }
