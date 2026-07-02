@@ -8,6 +8,7 @@ import { Card, Button, Badge, Spinner, EmptyState, Field, Input, Select, Modal, 
 import { usePaged, Pagination } from '../../components/Pagination.jsx'
 import { useTaxonomy, categoriesByType } from '../../api/taxonomy'
 import ProductFormModal from './ProductFormModal.jsx'
+import AnalyticsModal from '../../components/AnalyticsModal.jsx'
 
 /* Barre de filtres pour que le commerçant prenne en main son catalogue. */
 function CatalogueFilters({ value, onChange, taxonomy }) {
@@ -54,7 +55,7 @@ function Thumb({ url }) {
   )
 }
 
-function ProductTable({ products, readOnly, onEdit, onDelete, t }) {
+function ProductTable({ products, readOnly, onEdit, onDelete, onViews, t }) {
   return (
     <div className="cat-table-wrap">
       <table className="cat-table">
@@ -83,7 +84,15 @@ function ProductTable({ products, readOnly, onEdit, onDelete, t }) {
               <td>{fmtPrice(p.pricing?.displayPrice)}</td>
               {!readOnly && <td className="cat-floor">{fmtPrice(p.pricing?.minPrice)}</td>}
               <td><Badge tone={(p.quantity || 0) > 0 ? 'success' : 'danger'}>{p.quantity ?? 0}</Badge></td>
-              <td className="cat-views"><FaEye className="cat-views-ic" /> {p.views ?? 0}</td>
+              <td className="cat-views">
+                {onViews ? (
+                  <button className="cat-views-btn" title="Voir l'analytics" onClick={() => onViews(p)}>
+                    <FaEye className="cat-views-ic" /> {p.views ?? 0}
+                  </button>
+                ) : (
+                  <><FaEye className="cat-views-ic" /> {p.views ?? 0}</>
+                )}
+              </td>
               {!readOnly && (
                 <td className="cat-col-actions">
                   <button className="cat-icon-btn" onClick={() => onEdit(p)} aria-label={t('cat.edit')}><FaEdit /></button>
@@ -231,6 +240,7 @@ export default function CataloguePage() {
   const [products, setProducts] = useState([])
   const [modal, setModal] = useState({ open: false, product: null })
   const [confirm, setConfirm] = useState({ open: false, product: null, busy: false })
+  const [analytics, setAnalytics] = useState({ open: false, product: null })
   const [renaming, setRenaming] = useState(false)
   const [error, setError] = useState('')
   const [filters, setFilters] = useState({ q: '', type: '', category: '', condition: '', stock: '' })
@@ -345,7 +355,7 @@ export default function CataloguePage() {
               <Card><p className="cat-empty-filter">Aucun article ne correspond à ces filtres.</p></Card>
             ) : (
               <>
-                <ProductTable products={lp.pageItems} onEdit={(p) => setModal({ open: true, product: p })} onDelete={(p) => setConfirm({ open: true, product: p, busy: false })} t={t} />
+                <ProductTable products={lp.pageItems} onEdit={(p) => setModal({ open: true, product: p })} onDelete={(p) => setConfirm({ open: true, product: p, busy: false })} onViews={(p) => setAnalytics({ open: true, product: p })} t={t} />
                 <Pagination page={lp.page} totalPages={lp.totalPages} count={lp.count} onChange={lp.setPage} />
               </>
             )}
@@ -375,6 +385,12 @@ export default function CataloguePage() {
       />
 
       <ShopRenameModal open={renaming} current={shop?.name} onClose={() => setRenaming(false)} onSave={renameShop} />
+
+      <AnalyticsModal
+        open={analytics.open}
+        product={analytics.product}
+        onClose={() => setAnalytics({ open: false, product: null })}
+      />
     </div>
   )
 }

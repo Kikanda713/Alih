@@ -760,3 +760,22 @@
 .admin-filters { display: flex; gap: 8px; flex-wrap: wrap; }
 .admin-filters .ui-select, .admin-filters select { min-width: 150px; }
 .admin-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+
+/* ---------- Modal Analytics produit ---------- */
+.cat-views-btn { background: none; border: 0; cursor: pointer; color: var(--terracotta); font: inherit; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; padding: 2px 4px; border-radius: 6px; }
+.cat-views-btn:hover { background: rgba(198,93,46,0.08); text-decoration: underline; }
+.an-periods { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.an-period { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--white); cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--gray); }
+.an-period.active { border-color: var(--terracotta); color: var(--terracotta); background: rgba(198,93,46,0.06); }
+.an-total { margin-left: auto; color: var(--gray); font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; }
+.an-section-title { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--ebony); margin: 16px 0 8px; font-size: 0.95rem; }
+.an-section-title svg { color: var(--terracotta); }
+.an-hist { width: 100%; height: auto; display: block; background: var(--ivory); border-radius: 10px; padding: 6px; }
+.an-empty { color: var(--gray); font-size: 0.9rem; background: var(--ivory); border-radius: 10px; padding: 16px; text-align: center; }
+.an-funnel { display: flex; flex-direction: column; gap: 6px; }
+.an-funnel-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--ivory); }
+.an-funnel-ic { color: var(--terracotta); display: inline-flex; }
+.an-funnel-label { flex: 1; font-weight: 600; color: var(--ebony); }
+.an-funnel-val { font-weight: 700; font-family: var(--font-heading); }
+.an-funnel-rate { min-width: 56px; text-align: right; color: #1a9e54; font-weight: 700; font-size: 0.9rem; }
+.an-hint { color: var(--gray); font-size: 0.82rem; margin-top: 12px; line-height: 1.5; }
