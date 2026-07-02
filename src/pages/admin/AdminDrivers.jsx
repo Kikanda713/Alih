@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { FaMotorcycle, FaPlus, FaEdit, FaTrash, FaImage, FaSpinner, FaIdCard, FaChartLine, FaToggleOn, FaToggleOff } from 'react-icons/fa'
+import { FaMotorcycle, FaPlus, FaEdit, FaTrash, FaImage, FaSpinner, FaIdCard, FaChartLine, FaToggleOn, FaToggleOff, FaCamera, FaTruck, FaUserCircle } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useToast } from '../../components/Toast.jsx'
 import { Card, Button, Badge, Spinner, EmptyState, Field, Input, Select, Textarea, Modal, ConfirmModal, ActionMenu } from '../../components/ui.jsx'
@@ -20,10 +20,13 @@ const vehLabel = (v) => VEHICLES.find((x) => x.id === v)?.label || v || '—'
 
 const EMPTY = {
   name: '', phone: '', sex: '', idNumber: '', vehicleType: '', active: true,
+  photoUrl: '', vehiclePhotoUrl: '', matricule: '',
   costPerKmMin: '', costPerKmMax: '', capacityKg: '',
   city: '', commune: '', quartier: '', avenue: '', parcelle: '', landmark: '',
   emergencyName: '', emergencyPhone: '', idCardUrl: '', residenceProofUrl: '', notes: '',
 }
+// Date lisible (fr) — suivi de fraîcheur des profils.
+const fmtDate = (d) => (d ? new Date(d).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—')
 // Capacité par défaut (kg) selon le moyen — repère affiché dans le form.
 const CAP_DEFAULT = { pied: 10, velo: 15, moto: 50, voiture: 200, moto_tricycle: 300, bus: 500, camionnette: 1000 }
 
@@ -47,6 +50,32 @@ function DocUpload({ label, url, onChange }) {
   )
 }
 
+// Photo avec aperçu (livreur / véhicule).
+function PhotoUpload({ label, icon, url, onChange }) {
+  const { notify } = useToast()
+  const [busy, setBusy] = useState(false)
+  const onFile = async (e) => {
+    const f = e.target.files?.[0]; if (!f) return
+    setBusy(true)
+    try { onChange(await uploadImage(f)) } catch (err) { notify(err?.message || 'Échec upload', 'error') } finally { setBusy(false); e.target.value = '' }
+  }
+  return (
+    <div className="driver-photo">
+      <div className="driver-photo-preview">
+        {url ? <img src={url} alt="" /> : <span className="driver-photo-ph">{icon}</span>}
+      </div>
+      <div className="driver-photo-body">
+        <span className="driver-photo-label">{label}</span>
+        <label className="driver-doc-btn">
+          {busy ? <FaSpinner className="spin" /> : <FaCamera />} {url ? 'Remplacer' : 'Ajouter'}
+          <input type="file" accept="image/*" hidden disabled={busy || !isCloudinaryConfigured} onChange={onFile} />
+        </label>
+        {url && <button type="button" className="driver-photo-clear" onClick={() => onChange('')}>Retirer</button>}
+      </div>
+    </div>
+  )
+}
+
 function DriverForm({ open, driver, onClose, onSave }) {
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
@@ -64,7 +93,16 @@ function DriverForm({ open, driver, onClose, onSave }) {
   return (
     <Modal open={open} title={driver ? 'Modifier le livreur' : 'Ajouter un livreur'} onClose={saving ? undefined : onClose}>
       <div className="product-form">
+        {/* Matricule Tindisa + suivi de fraîcheur (édition) */}
+        {driver && (
+          <div className="driver-meta">
+            <span className="driver-mat">{driver.matricule || 'Matricule à l\'enregistrement'}</span>
+            <span className="driver-upd">Mis à jour : {fmtDate(driver.updatedAt)}</span>
+          </div>
+        )}
+
         <div className="driver-section">Identité</div>
+        <PhotoUpload label="Photo du livreur" icon={<FaUserCircle />} url={form.photoUrl} onChange={(u) => setForm((f) => ({ ...f, photoUrl: u }))} />
         <div className="form-row">
           <Field label="Nom complet"><Input value={form.name} onChange={set('name')} autoFocus /></Field>
           <Field label="Téléphone"><Input value={form.phone} onChange={set('phone')} placeholder="+243…" /></Field>
@@ -74,6 +112,7 @@ function DriverForm({ open, driver, onClose, onSave }) {
           <Field label="N° pièce d'identité"><Input value={form.idNumber} onChange={set('idNumber')} /></Field>
         </div>
         <Field label="Moyen de livraison"><Select value={form.vehicleType} onChange={set('vehicleType')} options={VEHICLES} placeholder="Choisir…" /></Field>
+        <PhotoUpload label="Photo du véhicule" icon={<FaTruck />} url={form.vehiclePhotoUrl} onChange={(u) => setForm((f) => ({ ...f, vehiclePhotoUrl: u }))} />
 
         <div className="driver-section">Tarification & capacité</div>
         <div className="form-row">
@@ -172,14 +211,23 @@ export default function AdminDrivers() {
         <>
           <div className="cat-table-wrap">
             <table className="cat-table">
-              <thead><tr><th>Livreur</th><th>Moyen</th><th>Contact</th><th>Localisation</th><th>Statut</th><th className="cat-col-actions">Actions</th></tr></thead>
+              <thead><tr><th>Livreur</th><th>Moyen</th><th>Contact</th><th>Localisation</th><th>Mis à jour</th><th>Statut</th><th className="cat-col-actions">Actions</th></tr></thead>
               <tbody>
                 {pageItems.map((d) => (
                   <tr key={d.id}>
-                    <td><span className="cat-pname">{d.name}</span>{d.idNumber && <span className="cat-sku">Pièce : {d.idNumber}</span>}</td>
+                    <td>
+                      <div className="driver-cell">
+                        <span className="driver-avatar">{d.photoUrl ? <img src={d.photoUrl} alt="" /> : <FaUserCircle />}</span>
+                        <span className="driver-cell-txt">
+                          <span className="cat-pname">{d.name}</span>
+                          <span className="cat-sku">{d.matricule || '—'}</span>
+                        </span>
+                      </div>
+                    </td>
                     <td><span className="driver-veh"><FaMotorcycle /> {vehLabel(d.vehicleType)}</span></td>
                     <td><span className="cat-sku">{d.phone || '—'}</span></td>
                     <td><span className="cat-sku">{[d.commune, d.city].filter(Boolean).join(', ') || '—'}</span></td>
+                    <td><span className="cat-sku">{fmtDate(d.updatedAt)}</span></td>
                     <td><Badge tone={d.active ? 'success' : 'neutral'}>{d.active ? 'Actif' : 'Inactif'}</Badge></td>
                     <td className="cat-col-actions">
                       <ActionMenu items={[
