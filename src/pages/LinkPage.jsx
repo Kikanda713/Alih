@@ -19,7 +19,11 @@ export default function LinkPage() {
   const [params] = useSearchParams()
   const code = params.get('c') || ''
   const state = params.get('state') || ''
-  const linkParam = code ? `c=${encodeURIComponent(code)}` : `state=${encodeURIComponent(state)}`
+  // Conserve les deux jetons présents (double jeton = liaison robuste).
+  const linkParam = [
+    code ? `c=${encodeURIComponent(code)}` : '',
+    state ? `state=${encodeURIComponent(state)}` : '',
+  ].filter(Boolean).join('&')
   const { isAuthenticated, isLoading, loginWithRedirect, getAccessTokenSilently, user } = useAuth0()
   const [status, setStatus] = useState('init') // init | confirm | linking | done | error
   const [msg, setMsg] = useState('')
@@ -60,7 +64,8 @@ export default function LinkPage() {
       )
       await apiFetch('/v1/link/complete', {
         method: 'POST',
-        body: code ? { code } : { state },
+        // Envoie les DEUX jetons disponibles : le backend tente le code puis le state.
+        body: { ...(code ? { code } : {}), ...(state ? { state } : {}) },
         token,
       })
       setStatus('done')
