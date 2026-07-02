@@ -20,9 +20,12 @@ const vehLabel = (v) => VEHICLES.find((x) => x.id === v)?.label || v || '—'
 
 const EMPTY = {
   name: '', phone: '', sex: '', idNumber: '', vehicleType: '', active: true,
+  costPerKmMin: '', costPerKmMax: '', capacityKg: '',
   city: '', commune: '', quartier: '', avenue: '', parcelle: '', landmark: '',
   emergencyName: '', emergencyPhone: '', idCardUrl: '', residenceProofUrl: '', notes: '',
 }
+// Capacité par défaut (kg) selon le moyen — repère affiché dans le form.
+const CAP_DEFAULT = { pied: 10, velo: 15, moto: 50, voiture: 200, moto_tricycle: 300, bus: 500, camionnette: 1000 }
 
 function DocUpload({ label, url, onChange }) {
   const { notify } = useToast()
@@ -50,10 +53,13 @@ function DriverForm({ open, driver, onClose, onSave }) {
   const [wasOpen, setWasOpen] = useState(false)
   if (open !== wasOpen) { setWasOpen(open); if (open) setForm(driver ? { ...EMPTY, ...driver } : EMPTY) }
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target?.value ?? e }))
+  const num = (v) => (v === '' || v == null ? undefined : Number(v))
   const save = async () => {
     if (!form.name.trim()) return
     setSaving(true)
-    try { await onSave(form) } finally { setSaving(false) }
+    // Coercition des champs numériques (le DTO backend attend des nombres).
+    const payload = { ...form, costPerKmMin: num(form.costPerKmMin), costPerKmMax: num(form.costPerKmMax), capacityKg: num(form.capacityKg) }
+    try { await onSave(payload) } finally { setSaving(false) }
   }
   return (
     <Modal open={open} title={driver ? 'Modifier le livreur' : 'Ajouter un livreur'} onClose={saving ? undefined : onClose}>
@@ -68,6 +74,15 @@ function DriverForm({ open, driver, onClose, onSave }) {
           <Field label="N° pièce d'identité"><Input value={form.idNumber} onChange={set('idNumber')} /></Field>
         </div>
         <Field label="Moyen de livraison"><Select value={form.vehicleType} onChange={set('vehicleType')} options={VEHICLES} placeholder="Choisir…" /></Field>
+
+        <div className="driver-section">Tarification & capacité</div>
+        <div className="form-row">
+          <Field label="Prix/km min (CDF)"><Input type="number" min="0" value={form.costPerKmMin} onChange={set('costPerKmMin')} placeholder="0" /></Field>
+          <Field label="Prix/km max (CDF)"><Input type="number" min="0" value={form.costPerKmMax} onChange={set('costPerKmMax')} placeholder="0" /></Field>
+        </div>
+        <Field label="Capacité de charge (kg)" hint={form.vehicleType && CAP_DEFAULT[form.vehicleType] ? `Défaut ${form.vehicleType} : ${CAP_DEFAULT[form.vehicleType]} kg si laissé vide` : 'Laisser vide = défaut selon le véhicule'}>
+          <Input type="number" min="0" value={form.capacityKg} onChange={set('capacityKg')} placeholder={form.vehicleType && CAP_DEFAULT[form.vehicleType] ? String(CAP_DEFAULT[form.vehicleType]) : '0'} />
+        </Field>
 
         <div className="driver-section">Adresse physique</div>
         <div className="form-row">
