@@ -825,3 +825,27 @@
 .shop-lm-add { display: flex; gap: 8px; margin-top: 8px; align-items: stretch; flex-wrap: wrap; }
 .shop-lm-add .ui-input { flex: 1 1 200px; }
 @media (max-width: 640px) { .shop-map-canvas, .shop-map-loading { height: 260px; } }
+
+/* ===== Menu d'actions kebab (⋯) ===== */
+.action-menu-btn { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; border: 1px solid transparent; background: transparent; color: var(--gray, #64748b); cursor: pointer; }
+.action-menu-btn:hover { background: rgba(18,18,18,0.06); color: var(--ebony, #121212); }
+.action-menu-list { position: fixed; z-index: 1000; min-width: 190px; background: #fff; border: 1px solid var(--border, #e2e8f0); border-radius: 10px; box-shadow: 0 8px 28px rgba(0,0,0,0.16); padding: 6px; display: flex; flex-direction: column; }
+.action-menu-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; background: transparent; border-radius: 7px; font-size: 0.9rem; color: var(--ebony, #121212); cursor: pointer; text-align: left; }
+.action-menu-item svg { width: 15px; flex: 0 0 auto; color: var(--gray, #64748b); }
+.action-menu-item:hover { background: rgba(18,18,18,0.05); }
+.action-menu-item.danger { color: #c0392b; }
+.action-menu-item.danger svg { color: #c0392b; }
+.action-menu-item.danger:hover { background: rgba(192,57,43,0.07); }
+.action-menu-item:disabled { opacity: 0.5; cursor: default; }
+
+/* ===== Performances livreur ===== */
+.perf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.perf-card { display: flex; flex-direction: column; gap: 2px; padding: 12px; border: 1px solid var(--border, #e2e8f0); border-radius: 10px; background: var(--surface-2, #f8fafc); }
+.perf-val { font-size: 1.35rem; font-weight: 700; color: var(--ebony, #121212); }
+.perf-lbl { font-size: 0.78rem; color: var(--gray, #64748b); }
+.perf-recent { margin-top: 16px; }
+.perf-recent-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 8px; }
+.perf-recent-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--border, #e2e8f0); font-size: 0.85rem; }
+.perf-recent-dest { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.perf-recent-cost { color: var(--gray, #64748b); white-space: nowrap; }
+@media (max-width: 520px) { .perf-grid { grid-template-columns: repeat(2, 1fr); } }

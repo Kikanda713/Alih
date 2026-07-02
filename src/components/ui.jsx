@@ -1,5 +1,6 @@
-import { useEffect } from 'react'
-import { FaTimes } from 'react-icons/fa'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { FaTimes, FaEllipsisH } from 'react-icons/fa'
 
 /*
  * Petit kit de composants réutilisables Tindisa — CSS pur (App.css, classes .ui-*),
@@ -128,5 +129,64 @@ export function ConfirmModal({ open, title, message, confirmLabel, cancelLabel, 
         </Button>
       </div>
     </Modal>
+  )
+}
+
+/**
+ * Menu d'actions « ⋯ » (kebab). Positionné en portail (document.body) pour ne
+ * jamais être rogné par un conteneur en overflow (ex. tableaux scrollables).
+ * items: [{ label, icon?, onClick, danger?, disabled? }] — les entrées falsy sont ignorées.
+ */
+export function ActionMenu({ items = [], label = 'Actions' }) {
+  const [pos, setPos] = useState(null)
+  const btnRef = useRef(null)
+  const open = !!pos
+  const list = items.filter(Boolean)
+
+  const toggle = () => {
+    if (open) { setPos(null); return }
+    const r = btnRef.current?.getBoundingClientRect()
+    if (r) setPos({ top: r.bottom + 4, left: Math.max(8, r.right - 190) })
+  }
+
+  useEffect(() => {
+    if (!open) return
+    const close = () => setPos(null)
+    const onDown = (e) => {
+      if (!e.target.closest?.('.action-menu-list') && !e.target.closest?.('.action-menu-btn')) close()
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('scroll', close, true)
+    window.addEventListener('resize', close)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('scroll', close, true)
+      window.removeEventListener('resize', close)
+    }
+  }, [open])
+
+  return (
+    <>
+      <button ref={btnRef} type="button" className="action-menu-btn" aria-label={label} aria-haspopup="menu" onClick={toggle}>
+        <FaEllipsisH />
+      </button>
+      {open && createPortal(
+        <div className="action-menu-list" role="menu" style={{ top: pos.top, left: pos.left }}>
+          {list.map((it, i) => (
+            <button
+              key={i}
+              type="button"
+              role="menuitem"
+              className={`action-menu-item ${it.danger ? 'danger' : ''}`}
+              disabled={it.disabled}
+              onClick={() => { setPos(null); it.onClick?.() }}
+            >
+              {it.icon}<span>{it.label}</span>
+            </button>
+          ))}
+        </div>,
+        document.body,
+      )}
+    </>
   )
 }

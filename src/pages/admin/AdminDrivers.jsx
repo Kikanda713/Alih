@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react'
-import { FaMotorcycle, FaPlus, FaEdit, FaTrash, FaImage, FaSpinner, FaIdCard } from 'react-icons/fa'
+import { FaMotorcycle, FaPlus, FaEdit, FaTrash, FaImage, FaSpinner, FaIdCard, FaChartLine, FaToggleOn, FaToggleOff } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useToast } from '../../components/Toast.jsx'
-import { Card, Button, Badge, Spinner, EmptyState, Field, Input, Select, Textarea, Modal, ConfirmModal } from '../../components/ui.jsx'
+import { Card, Button, Badge, Spinner, EmptyState, Field, Input, Select, Textarea, Modal, ConfirmModal, ActionMenu } from '../../components/ui.jsx'
 import { usePaged, Pagination } from '../../components/Pagination.jsx'
 import { uploadImage, isCloudinaryConfigured } from '../../api/cloudinary'
 
@@ -111,6 +111,7 @@ export default function AdminDrivers() {
   const [drivers, setDrivers] = useState([])
   const [modal, setModal] = useState({ open: false, driver: null })
   const [confirm, setConfirm] = useState({ open: false, driver: null, busy: false })
+  const [perf, setPerf] = useState({ open: false, driver: null, loading: false, data: null })
   const { pageItems, page, setPage, totalPages, count } = usePaged(drivers, 10)
 
   const load = useCallback(async () => {
@@ -132,6 +133,15 @@ export default function AdminDrivers() {
     setConfirm((c) => ({ ...c, busy: true }))
     try { await api.del(`/v1/admin/drivers/${confirm.driver.id}`); notify('Livreur supprimé', 'success'); setConfirm({ open: false, driver: null, busy: false }); await load() }
     catch (e) { notify(e?.message || 'Erreur', 'error'); setConfirm((c) => ({ ...c, busy: false })) }
+  }
+  const toggleActive = async (d) => {
+    try { await api.put(`/v1/admin/drivers/${d.id}`, { active: !d.active }); notify(d.active ? 'Livreur désactivé' : 'Livreur activé', 'success'); await load() }
+    catch (e) { notify(e?.message || 'Erreur', 'error') }
+  }
+  const openPerf = async (d) => {
+    setPerf({ open: true, driver: d, loading: true, data: null })
+    try { const data = await api.get(`/v1/admin/drivers/${d.id}/performance`); setPerf((p) => ({ ...p, loading: false, data })) }
+    catch { setPerf((p) => ({ ...p, loading: false, data: null })) }
   }
 
   return (
@@ -157,8 +167,12 @@ export default function AdminDrivers() {
                     <td><span className="cat-sku">{[d.commune, d.city].filter(Boolean).join(', ') || '—'}</span></td>
                     <td><Badge tone={d.active ? 'success' : 'neutral'}>{d.active ? 'Actif' : 'Inactif'}</Badge></td>
                     <td className="cat-col-actions">
-                      <button className="cat-icon-btn" title="Modifier" onClick={() => setModal({ open: true, driver: d })}><FaEdit /></button>
-                      <button className="cat-icon-btn danger" title="Supprimer" onClick={() => setConfirm({ open: true, driver: d, busy: false })}><FaTrash /></button>
+                      <ActionMenu items={[
+                        { label: 'Modifier', icon: <FaEdit />, onClick: () => setModal({ open: true, driver: d }) },
+                        { label: 'Performances', icon: <FaChartLine />, onClick: () => openPerf(d) },
+                        { label: d.active ? 'Désactiver' : 'Activer', icon: d.active ? <FaToggleOff /> : <FaToggleOn />, onClick: () => toggleActive(d) },
+                        { label: 'Supprimer', icon: <FaTrash />, danger: true, onClick: () => setConfirm({ open: true, driver: d, busy: false }) },
+                      ]} />
                     </td>
                   </tr>
                 ))}
@@ -173,6 +187,35 @@ export default function AdminDrivers() {
       <ConfirmModal open={confirm.open} danger busy={confirm.busy} title="Supprimer le livreur"
         message={confirm.driver ? `Supprimer ${confirm.driver.name} ?` : ''} confirmLabel="Supprimer" cancelLabel="Annuler"
         onConfirm={doDelete} onClose={() => setConfirm({ open: false, driver: null, busy: false })} />
+
+      <Modal open={perf.open} title={perf.driver ? `Performances — ${perf.driver.name}` : 'Performances'} onClose={() => setPerf({ open: false, driver: null, loading: false, data: null })}>
+        {perf.loading ? <Spinner label="Chargement…" /> : !perf.data ? (
+          <p className="dash-sub">Aucune donnée de livraison pour ce livreur.</p>
+        ) : (
+          <div className="perf-body">
+            <div className="perf-grid">
+              <div className="perf-card"><span className="perf-val">{perf.data.total}</span><span className="perf-lbl">Missions</span></div>
+              <div className="perf-card"><span className="perf-val">{perf.data.completed}</span><span className="perf-lbl">Livrées</span></div>
+              <div className="perf-card"><span className="perf-val">{perf.data.inTransit}</span><span className="perf-lbl">En cours</span></div>
+              <div className="perf-card"><span className="perf-val">{perf.data.cancelled}</span><span className="perf-lbl">Annulées</span></div>
+              <div className="perf-card"><span className="perf-val">{perf.data.completionRate}%</span><span className="perf-lbl">Taux réussite</span></div>
+              <div className="perf-card"><span className="perf-val">{(perf.data.revenue || 0).toLocaleString('fr-FR')}</span><span className="perf-lbl">CA {perf.data.currency}</span></div>
+            </div>
+            {perf.data.recent?.length > 0 && (
+              <div className="perf-recent">
+                <p className="perf-recent-title">Missions récentes</p>
+                {perf.data.recent.map((r) => (
+                  <div className="perf-recent-row" key={r.id}>
+                    <span className="perf-recent-dest">{r.destination || '—'}</span>
+                    <Badge tone={r.status === 'CONFIRMED' || r.status === 'DELIVERED' ? 'success' : r.status === 'CANCELLED' ? 'danger' : 'neutral'}>{r.status}</Badge>
+                    <span className="perf-recent-cost">{(r.cost || 0).toLocaleString('fr-FR')} {perf.data.currency}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }
