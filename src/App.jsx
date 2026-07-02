@@ -296,7 +296,7 @@ function App() {
             <div className="trust-flow-step">
               <span className="trust-flow-num">1</span>
               <FaClipboardCheck className="trust-flow-ic" />
-              <span>Vérification &amp; inspection</span>
+              <span>Vérification</span>
             </div>
             <span className="trust-flow-arrow">→</span>
             <div className="trust-flow-step">
@@ -308,7 +308,7 @@ function App() {
             <div className="trust-flow-step">
               <span className="trust-flow-num">3</span>
               <FaShieldAlt className="trust-flow-ic" />
-              <span>Transaction garantie</span>
+              <span>Garantie</span>
             </div>
           </div>
 

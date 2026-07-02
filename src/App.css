@@ -912,6 +912,7 @@ section[id] {
   display: flex; align-items: center; gap: 8px; position: relative;
   background: #fff; border: 1px solid #f0e3da; border-radius: 999px;
   padding: 8px 16px 8px 12px; font-weight: 600; color: #3a3a4a;
+  white-space: nowrap;
 }
 .trust-flow-num {
   display: inline-flex; align-items: center; justify-content: center;
