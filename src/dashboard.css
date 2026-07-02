@@ -790,3 +790,27 @@
   .ui-modal-body { padding: 16px; }
   .ui-modal-head { padding: 14px 16px; }
 }
+
+/* ===== Livreurs (fiche back-office) ===== */
+.driver-section { font-weight: 700; font-size: 0.82rem; letter-spacing: 0.02em; text-transform: uppercase; color: var(--muted, #64748b); margin: 14px 0 2px; padding-bottom: 4px; border-bottom: 1px solid var(--border, #e2e8f0); }
+.driver-section:first-child { margin-top: 0; }
+.driver-veh { display: inline-flex; align-items: center; gap: 6px; }
+.driver-doc { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; }
+.driver-doc-label { display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; flex: 1 1 auto; min-width: 140px; }
+.driver-doc-view { font-size: 0.85rem; color: var(--primary, #2563eb); text-decoration: underline; }
+.driver-doc-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; padding: 6px 12px; border: 1px solid var(--border, #e2e8f0); border-radius: 8px; cursor: pointer; background: var(--surface, #fff); }
+.driver-doc-btn:hover { background: var(--surface-2, #f8fafc); }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== Carte back-office ===== */
+.admin-map-wrap { position: relative; }
+.admin-map-canvas { height: 68vh; min-height: 420px; width: 100%; border-radius: 12px; z-index: 0; }
+.map-widget { position: absolute; top: 12px; right: 12px; z-index: 500; background: var(--surface, #fff); border: 1px solid var(--border, #e2e8f0); border-radius: 10px; padding: 10px 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; }
+.map-layer { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.map-layer em { color: var(--muted, #64748b); font-style: normal; margin-left: auto; }
+.map-dot, .map-pin-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 2px #fff, 0 1px 3px rgba(0,0,0,0.3); }
+.map-popup-actions { display: flex; gap: 8px; margin-top: 8px; }
+.map-popup-actions button { font-size: 0.8rem; padding: 4px 10px; border: 1px solid var(--border, #e2e8f0); border-radius: 6px; background: var(--surface, #fff); cursor: pointer; }
+.map-popup-actions button.danger { color: #dc2626; border-color: #fecaca; }
+@media (max-width: 640px) { .admin-map-canvas { height: 56vh; } .map-widget { top: 8px; right: 8px; padding: 8px; } }
