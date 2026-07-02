@@ -43,11 +43,20 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef(null)
 
+  // Réinitialise le form à CHAQUE ouverture (transition fermé→ouvert). Sinon, en
+  // "nouveau produit" (product = null, donc id toujours undefined), l'état restait
+  // figé sur la saisie précédente. On resète aussi si le produit édité change.
+  const [wasOpen, setWasOpen] = useState(false)
   const [lastId, setLastId] = useState(product?.id)
-  if (open && product?.id !== lastId) {
+  if (open && (!wasOpen || product?.id !== lastId)) {
+    setWasOpen(true)
     setLastId(product?.id)
     setForm(toForm(product))
     setErr('')
+    setSaving(false)
+    setUploading(false)
+  } else if (!open && wasOpen) {
+    setWasOpen(false)
   }
 
   const isService = form.type === 'service'
