@@ -138,7 +138,7 @@ function ShopRenameModal({ open, current, onClose, onSave }) {
   )
 }
 
-function WanzoTab({ t }) {
+function WanzoTab({ t, onViews }) {
   const api = useTindisaApi()
   const { notify } = useToast()
   const [state, setState] = useState({ loading: true, link: null, products: [] })
@@ -220,7 +220,7 @@ function WanzoTab({ t }) {
         <EmptyState icon={<FaBoxOpen />} text={t('cat.wanzo.empty')} />
       ) : (
         <>
-          <ProductTable products={wp.pageItems} readOnly t={t} />
+          <ProductTable products={wp.pageItems} readOnly onViews={onViews} t={t} />
           <Pagination page={wp.page} totalPages={wp.totalPages} count={wp.count} onChange={wp.setPage} />
         </>
       )}
@@ -362,7 +362,7 @@ export default function CataloguePage() {
           </>
         )
       ) : (
-        <WanzoTab t={t} />
+        <WanzoTab t={t} onViews={(p) => setAnalytics({ open: true, product: p })} />
       )}
 
       <ProductFormModal

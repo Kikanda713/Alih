@@ -19,11 +19,13 @@ export const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000
 // (and degrade the auth buttons gracefully) before Auth0 is configured.
 export const isAuth0Configured = Boolean(auth0Config.domain && auth0Config.clientId);
 
-// Cloudinary — upload non signé des images produit (comme Wanzo). Le preset
-// DOIT être de type "unsigned" pour l'upload depuis le navigateur.
+// Cloudinary — upload non signé des images produit. Le preset est de type
+// "unsigned" (conçu pour l'upload navigateur) → valeurs publiques sûres. Défauts =
+// la Cloudinary Tindisa (identiques au plugin OpenClaw) pour que l'upload marche
+// même si le build n'a pas les VITE_CLOUDINARY_* ; surchargeable par env.
 export const cloudinary = {
-  cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
-  uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
+  cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'en7ocjnd',
+  uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'tindisa_products',
 };
 export const isCloudinaryConfigured = Boolean(
   cloudinary.cloudName && cloudinary.uploadPreset,

@@ -159,20 +159,20 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
 
         <div className="form-row">
           <Field label="Catégorie">
-            <Select value={form.category} onChange={setCategory} options={cats} placeholder="— choisir —" />
+            <Select value={form.category} onChange={setCategory} options={cats} placeholder="Choisir…" />
           </Field>
           <Field label="Sous-catégorie">
-            <Select value={form.subcategory} onChange={set('subcategory')} options={subcats} placeholder={subcats.length ? '— choisir —' : '—'} disabled={!subcats.length} />
+            <Select value={form.subcategory} onChange={set('subcategory')} options={subcats} placeholder={subcats.length ? 'Choisir…' : 'Choisir une catégorie d’abord'} disabled={!subcats.length} />
           </Field>
         </div>
 
         {!isService ? (
           <Field label="État">
-            <Select value={form.condition} onChange={set('condition')} options={taxonomy?.conditions || []} placeholder="— choisir —" />
+            <Select value={form.condition} onChange={set('condition')} options={taxonomy?.conditions || []} placeholder="Choisir…" />
           </Field>
         ) : (
           <Field label="Facturation">
-            <Select value={form.billingUnit} onChange={set('billingUnit')} options={taxonomy?.billingUnits || []} placeholder="— choisir —" />
+            <Select value={form.billingUnit} onChange={set('billingUnit')} options={taxonomy?.billingUnits || []} placeholder="Choisir…" />
           </Field>
         )}
 
