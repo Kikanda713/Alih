@@ -111,7 +111,7 @@ section[id] {
 }
 
 .logo-img {
-  height: 94px;
+  height: 64px;
   width: auto;
   flex-shrink: 0;
   display: block;
@@ -1319,7 +1319,7 @@ section[id] {
 }
 
 .footer-logo-img {
-  height: 94px;
+  height: 74px;
   width: auto;
   flex-shrink: 0;
   display: block;
