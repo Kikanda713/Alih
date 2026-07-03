@@ -8,7 +8,7 @@ import { useT } from '../../i18n/index.jsx'
 const empty = {
   type: 'product',
   name: '', sku: '', category: '', subcategory: '', condition: '', billingUnit: '',
-  description: '', displayPrice: '', minPrice: '', quantity: '',
+  description: '', displayPrice: '', minPrice: '', quantity: '', currency: 'CDF',
   images: [], attributes: {},
 }
 
@@ -29,6 +29,7 @@ function toForm(product) {
     displayPrice: product.pricing?.displayPrice ?? '',
     minPrice: product.pricing?.minPrice ?? '',
     quantity: product.quantity ?? '',
+    currency: product.pricing?.currency || product.currency || 'CDF',
     images,
     attributes: product.attributes || {},
   }
@@ -130,6 +131,7 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
         imageUrl: form.images[0] || undefined,
         displayPrice: num(form.displayPrice),
         minPrice: num(form.minPrice),
+        currency: form.currency || undefined,
         quantity: num(form.quantity),
         attributes: Object.keys(attributes).length ? attributes : undefined,
       })
@@ -197,6 +199,10 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
 
         <Field label={t('form.description')}>
           <Textarea value={form.description} onChange={set('description')} rows={2} />
+        </Field>
+
+        <Field label="Devise" hint="Franc congolais (FC) ou Dollar US ($)">
+          <Select value={form.currency} onChange={set('currency')} options={taxonomy?.currencies || [{ id: 'CDF', label: 'Franc congolais (FC)' }, { id: 'USD', label: 'Dollar US ($)' }]} />
         </Field>
 
         <div className="form-row">

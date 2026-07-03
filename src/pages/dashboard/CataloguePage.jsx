@@ -40,11 +40,16 @@ function applyFilters(products, f) {
   })
 }
 
-function fmtPrice(v) {
+// Symbole/suffixe selon la devise (CDF → FC, USD → $).
+function curLabel(currency) {
+  const c = String(currency || 'CDF').toUpperCase()
+  return c === 'USD' ? '$' : 'FC'
+}
+function fmtPrice(v, currency) {
   if (v == null || v === '') return '—'
   const n = Number(v)
   if (Number.isNaN(n)) return '—'
-  return `${n.toLocaleString('fr-FR')} CDF`
+  return `${n.toLocaleString('fr-FR')} ${curLabel(currency)}`
 }
 
 function Thumb({ url }) {
@@ -81,8 +86,8 @@ function ProductTable({ products, readOnly, onEdit, onDelete, onViews, t }) {
                 {p.sku && <span className="cat-sku">{p.sku}</span>}
               </td>
               <td>{p.category || '—'}</td>
-              <td>{fmtPrice(p.pricing?.displayPrice)}</td>
-              {!readOnly && <td className="cat-floor">{fmtPrice(p.pricing?.minPrice)}</td>}
+              <td>{fmtPrice(p.pricing?.displayPrice, p.pricing?.currency)}</td>
+              {!readOnly && <td className="cat-floor">{fmtPrice(p.pricing?.minPrice, p.pricing?.currency)}</td>}
               <td><Badge tone={(p.quantity || 0) > 0 ? 'success' : 'danger'}>{p.quantity ?? 0}</Badge></td>
               <td className="cat-views">
                 {onViews ? (
