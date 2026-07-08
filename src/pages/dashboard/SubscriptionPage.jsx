@@ -201,7 +201,7 @@ export default function SubscriptionPage() {
       {ent?.bonus?.active && (
         <Card className="sub-bonus">
           <p><FaBolt /> <b>Bonus de lancement actif</b></p>
-          <p>Votre boutique profite du plan <b>Business</b> — articles et recommandations <b>illimités</b>, toutes fonctionnalités débloquées — jusqu'au <b>{new Date(ent.bonus.until).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</b>.</p>
+          <p>Jusqu'au <b>{new Date(ent.bonus.until).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</b>, votre boutique profite du plan <b>Business</b> : articles et recommandations <b>illimités</b>, toutes fonctionnalités débloquées.</p>
           <p>Profitez-en pour charger un <b>maximum de produits</b> sans aucune contrainte !</p>
         </Card>
       )}
@@ -212,7 +212,10 @@ export default function SubscriptionPage() {
         const unlimited = max >= 1000000
         const used = ent.usage?.items ?? 0
         const pct = unlimited ? 0 : Math.min(100, Math.round((used / Math.max(1, max)) * 100))
-        const near = !unlimited && used >= max - 3
+        // « over » = au-delà de la limite du plan (typiquement après le bonus de
+        // lancement) : les articles sont CONSERVÉS, seul l'ajout de NOUVEAUX est bloqué.
+        const over = !unlimited && used > max
+        const near = !unlimited && !over && used >= max - 3
         return (
           <Card className="sub-usage">
             <div className="sub-usage-head">
@@ -220,7 +223,7 @@ export default function SubscriptionPage() {
               <span>Catalogue : <b>{used}</b> / {unlimited ? '∞' : max} articles</span>
             </div>
             {!unlimited && (
-              <div className="usage-bar"><div className="usage-bar-fill" style={{ width: pct + '%', background: near ? '#d9822b' : '#635dff' }} /></div>
+              <div className="usage-bar"><div className="usage-bar-fill" style={{ width: pct + '%', background: over ? '#0f7a3d' : near ? '#d9822b' : '#635dff' }} /></div>
             )}
             {/* Recommandations du mois = ressource LIMITÉE/monétisée (nb de fois où
                 l'agent expose la boutique aux acheteurs). Au-delà du quota, la
@@ -244,6 +247,9 @@ export default function SubscriptionPage() {
                 </div>
               )
             })()}
+            {over && (
+              <p className="sub-usage-nudge sub-usage-ok"><FaBolt /> Vos <b>{used}</b> articles sont <b>conservés</b> et restent en ligne, bien au-delà des {max} de l'offre « {ent.plan?.label} ». Pour <b>ajouter de nouveaux</b> articles, passez à une offre supérieure. Sinon, ce sont vos <b>recommandations</b> qui restent plafonnées à votre offre.</p>
+            )}
             {near && (
               <p className="sub-usage-nudge"><FaBolt /> Vous approchez de la limite d'articles de votre offre. Passez à une offre supérieure pour agrandir votre catalogue, proposer des services et débloquer les certificats.</p>
             )}

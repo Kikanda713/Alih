@@ -702,6 +702,7 @@
 .usage-bar { margin-top: 10px; height: 10px; border-radius: 6px; background: #eee; overflow: hidden; }
 .usage-bar-fill { height: 100%; transition: width .3s; }
 .sub-usage-nudge { margin-top: 10px; font-size: .9rem; color: #8a5a16; background: #fff6e9; border-radius: 8px; padding: 8px 10px; }
+.sub-usage-nudge.sub-usage-ok { color: #1a5e37; background: #eafff1; }
 .sub-usage-month { margin-top: 14px; padding-top: 12px; border-top: 1px dashed #eee; }
 .sub-usage-month small { color: #999; }
 
