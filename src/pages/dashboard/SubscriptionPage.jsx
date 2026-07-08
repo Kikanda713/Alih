@@ -213,24 +213,30 @@ export default function SubscriptionPage() {
             {!unlimited && (
               <div className="usage-bar"><div className="usage-bar-fill" style={{ width: pct + '%', background: near ? '#d9822b' : '#635dff' }} /></div>
             )}
-            {/* Consommation agent du mois (recommandations attribuées à la boutique) */}
+            {/* Recommandations du mois = ressource LIMITÉE/monétisée (nb de fois où
+                l'agent expose la boutique aux acheteurs). Au-delà du quota, la
+                boutique n'est plus recommandée jusqu'au mois suivant / à la montée en gamme. */}
             {ent.usage?.recommendationsThisMonth != null && (() => {
               const reco = ent.usage.recommendationsThisMonth
-              const q = ent.limits?.agentMessagesPerMonth || 0
+              const q = ent.limits?.maxRecommendationsPerMonth || 0
               const qUnl = q >= 1000000
               const rpct = qUnl ? 0 : Math.min(100, Math.round((reco / Math.max(1, q)) * 100))
+              const recoNear = !qUnl && reco >= q * 0.9
               return (
                 <div className="sub-usage-month">
                   <div className="sub-usage-head">
-                    <span>Activité agent ce mois</span>
+                    <span>Recommandations ce mois</span>
                     <span><b>{reco}</b>{qUnl ? '' : ` / ${q}`} recommandations <small>(~{ent.usage.tokenEquivalents} tokens-éq)</small></span>
                   </div>
                   {!qUnl && <div className="usage-bar"><div className="usage-bar-fill" style={{ width: rpct + '%', background: rpct >= 90 ? '#d9822b' : '#1a9e54' }} /></div>}
+                  {recoNear && (
+                    <p className="sub-usage-nudge"><FaBolt /> Vous approchez de votre quota de recommandations. Au-delà, votre boutique cesse d'être proposée aux acheteurs jusqu'au mois prochain. Passez à une offre supérieure pour rester visible.</p>
+                  )}
                 </div>
               )
             })()}
             {near && (
-              <p className="sub-usage-nudge"><FaBolt /> Vous approchez de la limite de votre offre. Passez à une offre supérieure pour ajouter plus d'articles, proposer des services et débloquer les certificats.</p>
+              <p className="sub-usage-nudge"><FaBolt /> Vous approchez de la limite d'articles de votre offre. Passez à une offre supérieure pour agrandir votre catalogue, proposer des services et débloquer les certificats.</p>
             )}
           </Card>
         )
