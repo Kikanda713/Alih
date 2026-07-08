@@ -547,7 +547,8 @@ function App() {
               </div>
 
               <p className="pricing-note">
-                <FaInfoCircle className="pricing-note-ic" />&nbsp;Chargez vos produits <strong>librement</strong> : une <strong>recommandation</strong> = une fois où l'agent propose votre boutique à un acheteur. Au-delà de votre quota mensuel, votre boutique reste visible mais n'est plus mise en avant.<br />
+                <FaInfoCircle className="pricing-note-ic" />&nbsp;<strong>2 semaines offertes en Business à l'inscription</strong> : articles et recommandations illimités pour remplir votre boutique sans contrainte.<br />
+                Ensuite : chargez vos produits <strong>librement</strong> à tous les paliers. Une <strong>recommandation</strong> = une fois où l'agent propose votre boutique à un acheteur ; au-delà de votre quota mensuel, votre boutique reste visible mais n'est plus mise en avant.<br />
                 Abonnement sans engagement, résiliable à tout moment. Paiement par Mobile Money ou cash. Côté acheteur, Tindisa reste 100% gratuit.
               </p>
             </>

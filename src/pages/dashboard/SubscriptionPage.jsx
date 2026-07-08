@@ -197,6 +197,15 @@ export default function SubscriptionPage() {
         </Card>
       )}
 
+      {/* Bonus de lancement : boutique traitée comme Business pendant 2 semaines. */}
+      {ent?.bonus?.active && (
+        <Card className="sub-bonus">
+          <p><FaBolt /> <b>Bonus de lancement actif</b></p>
+          <p>Votre boutique profite du plan <b>Business</b> — articles et recommandations <b>illimités</b>, toutes fonctionnalités débloquées — jusqu'au <b>{new Date(ent.bonus.until).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</b>.</p>
+          <p>Profitez-en pour charger un <b>maximum de produits</b> sans aucune contrainte !</p>
+        </Card>
+      )}
+
       {/* Consommation / palier (freemium) */}
       {ent && (() => {
         const max = ent.limits?.maxItems ?? 0

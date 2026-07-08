@@ -694,6 +694,9 @@
 .form-success { color: #1a9e54; font-weight: 600; }
 
 /* ===== Abonnement : consommation / palier ===== */
+.sub-bonus { margin-bottom: 16px; background: linear-gradient(135deg, #eafff1, #e8f0ff); border: 1px solid #bfe8cd; }
+.sub-bonus p { margin: 4px 0; font-size: .95rem; color: #1a5e37; }
+.sub-bonus p:first-child { font-size: 1.05rem; color: #0f7a3d; }
 .sub-usage { margin-bottom: 16px; }
 .sub-usage-head { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: .95rem; }
 .usage-bar { margin-top: 10px; height: 10px; border-radius: 6px; background: #eee; overflow: hidden; }
