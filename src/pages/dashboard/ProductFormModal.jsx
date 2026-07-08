@@ -75,6 +75,21 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
   const setAttr = (id) => (e) =>
     setForm((f) => ({ ...f, attributes: { ...f.attributes, [id]: e.target.value } }))
+
+  // Rend une caractéristique selon son type : date → sélecteur de date, select →
+  // liste, booléen → Oui/Non, nombre → clavier numérique, sinon texte.
+  const renderAttr = (a) => {
+    const val = form.attributes[a.id] || ''
+    if (a.type === 'select')
+      return <Select value={val} onChange={setAttr(a.id)} options={a.options || []} placeholder="—" />
+    if (a.type === 'boolean')
+      return <Select value={val} onChange={setAttr(a.id)} options={['Oui', 'Non']} placeholder="—" />
+    if (a.type === 'date')
+      return <Input type="date" value={val} onChange={setAttr(a.id)} />
+    if (a.type === 'number')
+      return <Input type="text" inputMode="decimal" value={val} onChange={setAttr(a.id)} />
+    return <Input type="text" value={val} onChange={setAttr(a.id)} />
+  }
   // Accepte la VIRGULE comme séparateur décimal (usage FR/RDC : « 1500,50 ») et les
   // espaces de milliers. Un input type=number rejette la virgule → on saisit en texte.
   const num = (v) =>
@@ -150,11 +165,24 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
   return (
     <Modal open={open} title={product ? t('form.edit.title') : t('form.create.title')} onClose={saving ? undefined : onClose}>
       <form className="product-form" onSubmit={submit}>
-        {/* Type : Produit / Service (segmenté, simple) */}
-        <div className="seg-toggle">
-          <button type="button" className={`seg-btn ${!isService ? 'active' : ''}`} onClick={setType('product')}><FaBoxOpen /> Produit</button>
-          <button type="button" className={`seg-btn ${isService ? 'active' : ''}`} onClick={setType('service')}><FaConciergeBell /> Service</button>
+        {/* Type : Produit / Service — switch explicite qui remodèle le formulaire. */}
+        <div className="type-switch">
+          <button type="button" className={`type-card ${!isService ? 'active' : ''}`} onClick={setType('product')} aria-pressed={!isService}>
+            <FaBoxOpen className="type-card-ic" />
+            <span className="type-card-title">Produit</span>
+            <span className="type-card-sub">Un article avec stock</span>
+          </button>
+          <button type="button" className={`type-card ${isService ? 'active' : ''}`} onClick={setType('service')} aria-pressed={isService}>
+            <FaConciergeBell className="type-card-ic" />
+            <span className="type-card-title">Service</span>
+            <span className="type-card-sub">Une prestation à facturer</span>
+          </button>
         </div>
+        <p className="type-switch-hint">
+          {isService
+            ? 'Prestation facturée par nuit, heure, forfait… (pas de stock ni d’état neuf/occasion).'
+            : 'Article physique : état (neuf/occasion), unité de vente et quantité en stock.'}
+        </p>
 
         {/* Photos (jusqu'à maxImages) */}
         <div className="product-images-grid">
@@ -233,11 +261,7 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
             <div className="form-row form-row-wrap">
               {attrDefs.map((a) => (
                 <Field key={a.id} label={a.unit ? `${a.label} (${a.unit})` : a.label}>
-                  {a.type === 'select' ? (
-                    <Select value={form.attributes[a.id] || ''} onChange={setAttr(a.id)} options={a.options || []} placeholder="—" />
-                  ) : (
-                    <Input type={a.type === 'number' ? 'number' : 'text'} value={form.attributes[a.id] || ''} onChange={setAttr(a.id)} />
-                  )}
+                  {renderAttr(a)}
                 </Field>
               ))}
             </div>
