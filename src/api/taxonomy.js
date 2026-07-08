@@ -56,6 +56,20 @@ export function attributesFor(taxonomy, categoryId, subcategoryId) {
   return [...(cat.attributes || []), ...((sub && sub.attributes) || [])]
 }
 
+// Unités à proposer pour une catégorie : les unités PERTINENTES de la catégorie
+// (cat.units) en tête, puis le reste de la liste globale (sans doublon). Repli =
+// liste globale complète (comportement historique si la catégorie n'en définit pas).
+export function unitsFor(taxonomy, categoryId, isService) {
+  const global = (isService ? taxonomy?.billingUnits : taxonomy?.saleUnits) || []
+  const cat = findCategory(taxonomy, categoryId)
+  const ids = cat?.units || []
+  if (!ids.length) return global
+  const byId = new Map(global.map((u) => [u.id, u]))
+  const preferred = ids.map((id) => byId.get(id)).filter(Boolean)
+  const prefIds = new Set(ids)
+  return [...preferred, ...global.filter((u) => !prefIds.has(u.id))]
+}
+
 const EMPTY_TAXONOMY = {
   itemTypes: [
     { id: 'product', label: 'Produit' },

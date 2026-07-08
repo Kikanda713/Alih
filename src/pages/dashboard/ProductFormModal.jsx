@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { FaImage, FaSpinner, FaTrash, FaPlus, FaBoxOpen, FaConciergeBell } from 'react-icons/fa'
 import { Modal, Field, Input, Textarea, Select, Button } from '../../components/ui.jsx'
 import { uploadImage, isCloudinaryConfigured } from '../../api/cloudinary'
-import { useTaxonomy, categoriesByType, findCategory, attributesFor } from '../../api/taxonomy'
+import { useTaxonomy, categoriesByType, findCategory, attributesFor, unitsFor } from '../../api/taxonomy'
 import { useT } from '../../i18n/index.jsx'
 
 const empty = {
@@ -63,7 +63,8 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
   const isService = form.type === 'service'
   const maxImages = taxonomy?.maxImages || 4
   // Unité de vente (produits) ou de facturation (services) — le prix est PAR unité.
-  const unitOptions = isService ? (taxonomy?.billingUnits || []) : (taxonomy?.saleUnits || [])
+  // Les unités pertinentes à la catégorie choisie sont proposées en tête.
+  const unitOptions = unitsFor(taxonomy, form.category, isService)
   const unitLabel = unitOptions.find((u) => u.id === form.billingUnit)?.label
   const priceHint = unitLabel ? `Prix ${unitLabel}` : 'Prix par unité'
   const cats = categoriesByType(taxonomy, form.type)
@@ -188,12 +189,12 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
               <Select value={form.condition} onChange={set('condition')} options={taxonomy?.conditions || []} placeholder="Choisir…" />
             </Field>
             <Field label="Unité de vente" hint="Le prix est PAR unité">
-              <Select value={form.billingUnit} onChange={set('billingUnit')} options={taxonomy?.saleUnits || []} placeholder="à la pièce…" />
+              <Select value={form.billingUnit} onChange={set('billingUnit')} options={unitOptions} placeholder="à la pièce…" />
             </Field>
           </div>
         ) : (
           <Field label="Facturation">
-            <Select value={form.billingUnit} onChange={set('billingUnit')} options={taxonomy?.billingUnits || []} placeholder="Choisir…" />
+            <Select value={form.billingUnit} onChange={set('billingUnit')} options={unitOptions} placeholder="Choisir…" />
           </Field>
         )}
 
