@@ -75,7 +75,12 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
   const setAttr = (id) => (e) =>
     setForm((f) => ({ ...f, attributes: { ...f.attributes, [id]: e.target.value } }))
-  const num = (v) => (v === '' || v == null ? undefined : Number(v))
+  // Accepte la VIRGULE comme séparateur décimal (usage FR/RDC : « 1500,50 ») et les
+  // espaces de milliers. Un input type=number rejette la virgule → on saisit en texte.
+  const num = (v) =>
+    v === '' || v == null
+      ? undefined
+      : Number(String(v).replace(/\s/g, '').replace(',', '.'))
 
   // Changer de type réinitialise catégorie/sous-catégorie/état (cohérence).
   const setType = (type) => () =>
@@ -208,16 +213,16 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
 
         <div className="form-row">
           <Field label={t('form.displayPrice')} hint={priceHint}>
-            <Input type="number" min="0" value={form.displayPrice} onChange={set('displayPrice')} placeholder="0" />
+            <Input type="text" inputMode="decimal" value={form.displayPrice} onChange={set('displayPrice')} placeholder="0" />
           </Field>
           <Field label={t('form.minPrice')} hint={t('form.minPriceHint')}>
-            <Input type="number" min="0" value={form.minPrice} onChange={set('minPrice')} placeholder="0" />
+            <Input type="text" inputMode="decimal" value={form.minPrice} onChange={set('minPrice')} placeholder="0" />
           </Field>
         </div>
 
         {!isService && (
           <Field label={t('form.quantity')} hint={unitLabel ? `Nombre d'unités en stock (${unitLabel.replace(/^(à la|au|à l')\s*/, '')})` : "Nombre d'unités en stock"}>
-            <Input type="number" min="0" value={form.quantity} onChange={set('quantity')} placeholder="0" />
+            <Input type="text" inputMode="decimal" value={form.quantity} onChange={set('quantity')} placeholder="0" />
           </Field>
         )}
 
