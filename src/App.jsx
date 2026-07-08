@@ -484,8 +484,8 @@ function App() {
                     <p className="pricing-desc">Pour démarrer et tester, sans payer.</p>
                   </div>
                   <ul className="pricing-features">
-                    <li><FaCheck className="pricing-check" /> 5 articles</li>
-                    <li><FaCheck className="pricing-check" /> 150 recommandations / mois</li>
+                    <li><FaCheck className="pricing-check" /> 100 articles</li>
+                    <li><FaCheck className="pricing-check" /> 300 recommandations / mois</li>
                     <li><FaCheck className="pricing-check" /> Vente de base</li>
                     <li><FaCheck className="pricing-check" /> Paiement sécurisé</li>
                     <li><FaCheck className="pricing-check" /> WhatsApp & Telegram</li>
@@ -506,8 +506,8 @@ function App() {
                     <p className="pricing-desc">Pour les petits vendeurs qui se lancent.</p>
                   </div>
                   <ul className="pricing-features">
-                    <li><FaCheck className="pricing-check" /> 80 articles</li>
-                    <li><FaCheck className="pricing-check" /> 1 500 recommandations / mois</li>
+                    <li><FaCheck className="pricing-check" /> 1 000 articles</li>
+                    <li><FaCheck className="pricing-check" /> 3 000 recommandations / mois</li>
                     <li><FaCheck className="pricing-check" /> Produits ET services</li>
                     <li><FaCheck className="pricing-check" /> Publication Facebook</li>
                     <li><FaCheck className="pricing-check" /> Support WhatsApp & Telegram</li>
@@ -531,8 +531,8 @@ function App() {
                   </div>
                   <ul className="pricing-features">
                     <li><FaCheck className="pricing-check" /> 1 mois offert, sans engagement</li>
-                    <li><FaCheck className="pricing-check" /> 500 articles</li>
-                    <li><FaCheck className="pricing-check" /> 8 000 recommandations / mois</li>
+                    <li><FaCheck className="pricing-check" /> 10 000 articles</li>
+                    <li><FaCheck className="pricing-check" /> 15 000 recommandations / mois</li>
                     <li><FaCheck className="pricing-check" /> Certificats Wanzo</li>
                     <li><FaCheck className="pricing-check" /> Mise en avant des produits</li>
                     <li><FaCheck className="pricing-check" /> Statistiques avancées</li>
@@ -547,8 +547,8 @@ function App() {
               </div>
 
               <p className="pricing-note">
-                <FaInfoCircle className="pricing-note-ic" />&nbsp;Abonnement sans engagement, résiliable à tout moment. Paiement par Mobile Money ou cash.<br />
-                Côté acheteur, Tindisa reste 100% gratuit.
+                <FaInfoCircle className="pricing-note-ic" />&nbsp;Chargez vos produits <strong>librement</strong> : une <strong>recommandation</strong> = une fois où l'agent propose votre boutique à un acheteur. Au-delà de votre quota mensuel, votre boutique reste visible mais n'est plus mise en avant.<br />
+                Abonnement sans engagement, résiliable à tout moment. Paiement par Mobile Money ou cash. Côté acheteur, Tindisa reste 100% gratuit.
               </p>
             </>
           )}
