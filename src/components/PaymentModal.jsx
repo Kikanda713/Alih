@@ -19,7 +19,7 @@ const OPERATORS = [
  * Le paiement réel est encaissé par Wanzo (SerdiPay) ; on attend la confirmation
  * (PIN) puis le callback relayé qui active l'abonnement -> on sonde le statut.
  */
-export default function PaymentModal({ open, plan, amount, onClose, onDone }) {
+export default function PaymentModal({ open, plan, amount, onClose, onDone, variant = 'subscription' }) {
   const api = useTindisaApi()
   const { notify } = useToast()
   const { t } = useT()
@@ -27,24 +27,35 @@ export default function PaymentModal({ open, plan, amount, onClose, onDone }) {
   const [phone, setPhone] = useState('')
   const [step, setStep] = useState('form')
   const [busy, setBusy] = useState(false)
+  const isFees = variant === 'fees'
 
   const poll = async () => {
     for (let i = 0; i < 16; i++) {
       await new Promise((r) => setTimeout(r, 2500))
       try {
-        const s = await api.get('/v1/merchant/subscription')
-        const st = s?.subscription?.status
-        if (st === 'active' || st === 'trialing') {
-          notify(t('pay.success'), 'success')
-          onDone?.()
-          onClose?.()
-          return
-        }
-        if (st === 'payment_failed') {
-          notify(t('pay.failed'), 'error')
-          setStep('form')
-          setBusy(false)
-          return
+        if (isFees) {
+          const c = await api.get('/v1/merchant/commissions')
+          if (Number(c?.owedUsd || 0) === 0) {
+            notify(t('pay.success'), 'success')
+            onDone?.()
+            onClose?.()
+            return
+          }
+        } else {
+          const s = await api.get('/v1/merchant/subscription')
+          const st = s?.subscription?.status
+          if (st === 'active' || st === 'trialing') {
+            notify(t('pay.success'), 'success')
+            onDone?.()
+            onClose?.()
+            return
+          }
+          if (st === 'payment_failed') {
+            notify(t('pay.failed'), 'error')
+            setStep('form')
+            setBusy(false)
+            return
+          }
         }
       } catch { /* continue polling */ }
     }
@@ -57,11 +68,13 @@ export default function PaymentModal({ open, plan, amount, onClose, onDone }) {
     if (!phone.trim()) return notify(t('pay.phoneRequired'), 'error')
     setBusy(true)
     try {
-      const r = await api.post('/v1/merchant/subscription/pay', {
-        plan,
-        phone: phone.trim(),
-        telecom,
-      })
+      const r = isFees
+        ? await api.post('/v1/merchant/commissions/pay', { phone: phone.trim(), telecom })
+        : await api.post('/v1/merchant/subscription/pay', {
+            plan,
+            phone: phone.trim(),
+            telecom,
+          })
       if (r?.status === 'failed') {
         notify(r?.message || t('pay.failed'), 'error')
         setBusy(false)

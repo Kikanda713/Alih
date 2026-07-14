@@ -1227,6 +1227,12 @@ section[id] {
 }
 
 /* Pricing note */
+.pricing-commission { max-width: 860px; margin: 0 auto; text-align: center; }
+.pricing-commission-lead { font-size: 1.05rem; color: var(--ebony); margin-bottom: 22px; }
+.pricing-tiers { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-bottom: 26px; }
+.pricing-tier { flex: 1 1 130px; max-width: 170px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 18px 12px; display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow-sm); }
+.pricing-tier .pt-rate { font-size: 1.7rem; font-weight: 800; color: var(--terracotta); }
+.pricing-tier .pt-range { font-size: .85rem; color: var(--gray); }
 .pricing-note {
   text-align: center;
   font-size: 13px;

@@ -2,8 +2,9 @@ import { useEffect, useState, useCallback } from 'react'
 import { FaWallet, FaArrowDown, FaArrowUp, FaMoneyBillWave } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
-import { Card, Spinner, EmptyState } from '../../components/ui.jsx'
+import { Card, Spinner, EmptyState, Button } from '../../components/ui.jsx'
 import { usePaged, Pagination } from '../../components/Pagination.jsx'
+import PaymentModal from '../../components/PaymentModal.jsx'
 
 function fmt(v, currency = 'CDF') {
   const n = Number(v)
@@ -23,6 +24,7 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(true)
   const [wallet, setWallet] = useState({ balances: [], transactions: [] })
   const [fees, setFees] = useState(null)
+  const [payFees, setPayFees] = useState(false)
   const { pageItems, page, setPage, totalPages, count } = usePaged(wallet.transactions, 10)
 
   const load = useCallback(async () => {
@@ -96,9 +98,22 @@ export default function WalletPage() {
             </div>
             <p className="wallet-fees-msg">{msg}</p>
             <p className="wallet-fees-note">Commission sur ventes conclues : 10% (0-10$), 3% (10-100$), 2% (100-1000$), 1,5% (1000-10000$), 0,5% (au-delà). {fees.paidUsd ? `Déjà réglé : ${fees.paidUsd} $.` : ''}</p>
+            {owed >= (th.pay || 10) && (
+              <div className="wallet-fees-actions">
+                <Button variant="primary" onClick={() => setPayFees(true)}>Régler mes frais ({owed} $)</Button>
+              </div>
+            )}
           </Card>
         )
       })()}
+
+      <PaymentModal
+        open={payFees}
+        variant="fees"
+        amount={Number(fees?.owedUsd || 0)}
+        onClose={() => setPayFees(false)}
+        onDone={load}
+      />
 
       <div>
         <h2 className="dash-h2 wallet-tx-title">{t('wallet.history')}</h2>

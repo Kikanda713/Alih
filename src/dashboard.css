@@ -351,9 +351,10 @@
 /* ---------- Wallet ---------- */
 .wallet-fees { margin: 16px 0; }
 .wallet-fees-head { display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
-.wallet-fees-msg { margin: 8px 0 4px; font-size: .92rem; color: #333; }
+.wallet-fees-msg { margin: 8px 0 4px; font-size: .92rem; color: var(--ebony); }
 .wallet-fees-note { font-size: .78rem; color: #888; margin: 0; }
-.wallet-fees-info { border-left: 4px solid #635dff; }
+.wallet-fees-actions { margin-top: 12px; }
+.wallet-fees-info { border-left: 4px solid var(--terracotta); }
 .wallet-fees-warn { border-left: 4px solid #d9822b; background: #fff8ef; }
 .wallet-fees-danger { border-left: 4px solid #d64545; background: #fdf0f0; }
 .wallet-balance { display: flex; align-items: center; gap: 18px; }
@@ -676,15 +677,15 @@
 .type-switch { display: flex; gap: 10px; }
 .type-card {
   flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
-  padding: 12px 14px; border: 1.5px solid var(--border, #e2e2ea); background: #fff;
-  border-radius: 12px; cursor: pointer; transition: all .15s; text-align: left;
+  padding: 12px 14px; border: 1.5px solid var(--border); background: var(--white);
+  border-radius: var(--radius-card); cursor: pointer; transition: all .15s; text-align: left;
 }
-.type-card:hover { border-color: #b9b6f0; }
-.type-card.active { border-color: #635dff; background: #f3f2ff; box-shadow: 0 0 0 3px rgba(99,93,255,.12); }
-.type-card-ic { font-size: 1.15rem; color: #635dff; }
-.type-card-title { font-weight: 700; color: #2b2b3a; }
-.type-card-sub { font-size: .78rem; color: #888; }
-.type-switch-hint { margin: 8px 0 2px; font-size: .82rem; color: #777; }
+.type-card:hover { border-color: var(--copper-gold); }
+.type-card.active { border-color: var(--terracotta); background: rgba(198, 93, 46, 0.07); box-shadow: 0 0 0 3px rgba(198, 93, 46, 0.12); }
+.type-card-ic { font-size: 1.15rem; color: var(--terracotta); }
+.type-card-title { font-weight: 700; color: var(--ebony); }
+.type-card-sub { font-size: .78rem; color: var(--gray); }
+.type-switch-hint { margin: 8px 0 2px; font-size: .82rem; color: var(--gray); }
 
 .product-images-grid {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 4px;

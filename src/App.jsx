@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import { useNavigate, Link } from 'react-router-dom'
-import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCheck, FaCamera, FaStore, FaMapMarkerAlt, FaTruck, FaMoneyBillWave, FaCertificate, FaBalanceScale, FaClipboardCheck, FaInfoCircle } from 'react-icons/fa'
+import { FaWhatsapp, FaTelegramPlane, FaBars, FaTimes, FaShieldAlt, FaUserCheck, FaRobot, FaCamera, FaStore, FaMapMarkerAlt, FaTruck, FaMoneyBillWave, FaCertificate, FaBalanceScale, FaClipboardCheck, FaInfoCircle } from 'react-icons/fa'
 import tindisaLogo from './assets/tindisa-logo.png'
 import tindisaFooterLogo from './assets/tindisa.png'
 import mpesaLogo from './assets/MPESA.png'
@@ -43,7 +43,6 @@ function PlanCTAAuth({ planId, className, children }) {
 function App() {
   const { t } = useT()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [pricingTab, setPricingTab] = useState('tindisa')
   const [howProfile, setHowProfile] = useState('client')
 
   // « Comment ça marche » — ce que Tindisa fait vraiment, selon le profil.
@@ -350,209 +349,27 @@ function App() {
       {/* ============ PRICING SECTION ============ */}
       <section className="pricing" id="pricing">
         <div className="container">
-          <h2 className="section-title">Tarifs pour les vendeurs</h2>
+          <h2 className="section-title">Facturation</h2>
           <p className="section-subtitle">
-            Acheter sur Tindisa est <strong>100% gratuit</strong>. Ces formules concernent uniquement les vendeurs : commission au volume ou abonnement mensuel.
+            Acheter sur Tindisa est <strong>100% gratuit</strong>. Côté vendeur, pas d abonnement : vous ne payez qu une <strong>commission sur les ventes conclues</strong>.
           </p>
 
-          {/* Pricing Tabs */}
-          <div className="pricing-tabs">
-
-            <button
-              className={`pricing-tab ${pricingTab === 'tindisa' ? 'active' : ''}`}
-              onClick={() => setPricingTab('tindisa')}
-            >
-              Tindisa Pure
-            </button>
-
-            <button
-              className={`pricing-tab ${pricingTab === 'wanzzo' ? 'active' : ''}`}
-              onClick={() => setPricingTab('wanzzo')}
-            >
-              Wanzo
-            </button>
-            
+          <div className="pricing-commission">
+            <p className="pricing-commission-lead">Commission dégressive selon le montant de la vente :</p>
+            <div className="pricing-tiers">
+              <div className="pricing-tier"><span className="pt-rate">10%</span><span className="pt-range">0 à 10 $</span></div>
+              <div className="pricing-tier"><span className="pt-rate">3%</span><span className="pt-range">10 à 100 $</span></div>
+              <div className="pricing-tier"><span className="pt-rate">2%</span><span className="pt-range">100 à 1 000 $</span></div>
+              <div className="pricing-tier"><span className="pt-rate">1,5%</span><span className="pt-range">1 000 à 10 000 $</span></div>
+              <div className="pricing-tier"><span className="pt-rate">0,5%</span><span className="pt-range">+ de 10 000 $</span></div>
+            </div>
+            <PlanCTA planId="free" className="pricing-btn pricing-btn-primary">Commencer à vendre</PlanCTA>
           </div>
 
-          {/* ===== WANZZO — Volume-based pricing ===== */}
-          {pricingTab === 'wanzzo' && (
-            <>
-              <div className="pricing-grid">
-                {/* Starter — Low Volume */}
-                <div className="pricing-card">
-                  <div className="pricing-header">
-                    <h3 className="pricing-plan-name">Starter</h3>
-                    <div className="pricing-price">
-                      <span className="pricing-amount">5%</span>
-                      <span className="pricing-period">par transaction</span>
-                    </div>
-                    <p className="pricing-desc">Pour les vendeurs occasionnels avec un faible volume d'activité.</p>
-                  </div>
-                  <div className="pricing-volume">
-                    <span className="pricing-volume-label">Volume mensuel</span>
-                    <span className="pricing-volume-value">Jusqu'à 100 interactions</span>
-                  </div>
-                  <ul className="pricing-features">
-                    <li><FaCheck className="pricing-check" /> 100 conversations / mois</li>
-                    <li><FaCheck className="pricing-check" /> 30 négociations automatisées</li>
-                    <li><FaCheck className="pricing-check" /> Recherche produits incluse</li>
-                    <li><FaCheck className="pricing-check" /> Paiement sécurisé</li>
-                    <li><FaCheck className="pricing-check" /> Support WhatsApp</li>
-                  </ul>
-                  <a href="https://wa.me/243995193113" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
-                    Démarrer
-                  </a>
-                </div>
-
-                {/* Croissance — Medium Volume (Featured) */}
-                <div className="pricing-card pricing-card-featured">
-                  <div className="pricing-badge">Recommandé</div>
-                  <div className="pricing-header">
-                    <h3 className="pricing-plan-name">Croissance</h3>
-                    <div className="pricing-price">
-                      <span className="pricing-amount">3.5%</span>
-                      <span className="pricing-period">par transaction</span>
-                    </div>
-                    <p className="pricing-desc">Pour les vendeurs actifs avec un volume significatif chaque mois.</p>
-                  </div>
-                  <div className="pricing-volume">
-                    <span className="pricing-volume-label">Volume mensuel</span>
-                    <span className="pricing-volume-value">100 à 500 interactions</span>
-                  </div>
-                  <ul className="pricing-features">
-                    <li><FaCheck className="pricing-check" /> 500 conversations / mois</li>
-                    <li><FaCheck className="pricing-check" /> 150 négociations automatisées</li>
-                    <li><FaCheck className="pricing-check" /> Négociation avancée</li>
-                    <li><FaCheck className="pricing-check" /> Prix dynamiques</li>
-                    <li><FaCheck className="pricing-check" /> Paiement sécurisé prioritaire</li>
-                    <li><FaCheck className="pricing-check" /> Rapports d'activité hebdo</li>
-                    <li><FaCheck className="pricing-check" /> Support prioritaire 24/7</li>
-                  </ul>
-                  <a href="https://wa.me/243995193113" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-primary">
-                    Choisir Croissance
-                  </a>
-                </div>
-
-                {/* Échelle — High Volume */}
-                <div className="pricing-card">
-                  <div className="pricing-header">
-                    <h3 className="pricing-plan-name">Échelle</h3>
-                    <div className="pricing-price">
-                      <span className="pricing-amount">2%</span>
-                      <span className="pricing-period">par transaction</span>
-                    </div>
-                    <p className="pricing-desc">Pour les entreprises et gros vendeurs avec un haut volume.</p>
-                  </div>
-                  <div className="pricing-volume">
-                    <span className="pricing-volume-label">Volume mensuel</span>
-                    <span className="pricing-volume-value">500+ interactions</span>
-                  </div>
-                  <ul className="pricing-features">
-                    <li><FaCheck className="pricing-check" /> Conversations illimitées</li>
-                    <li><FaCheck className="pricing-check" /> Négociations illimitées</li>
-                    <li><FaCheck className="pricing-check" /> Tous les services inclus</li>
-                    <li><FaCheck className="pricing-check" /> Marketing automatique</li>
-                    <li><FaCheck className="pricing-check" /> API d'intégration catalogue</li>
-                    <li><FaCheck className="pricing-check" /> Dashboard & analytics complets</li>
-                    <li><FaCheck className="pricing-check" /> Gestionnaire de compte dédié</li>
-                  </ul>
-                  <a href="https://wa.me/243995193113" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn-secondary">
-                    Contacter l'équipe
-                  </a>
-                </div>
-              </div>
-
-              <p className="pricing-note">
-                <FaInfoCircle className="pricing-note-ic" />&nbsp;Une <strong>interaction</strong> = une conversation initiée par un acheteur (recherche, négociation ou commande).<br />
-                Aucun frais fixe. Commission uniquement sur les transactions conclues.
-              </p>
-            </>
-          )}
-
-          {/* ===== TINDISA PURE — Monthly subscriptions ===== */}
-          {pricingTab === 'tindisa' && (
-            <>
-              <div className="pricing-grid">
-                {/* Gratuit */}
-                <div className="pricing-card">
-                  <div className="pricing-header">
-                    <h3 className="pricing-plan-name">Gratuit</h3>
-                    <div className="pricing-price">
-                      <span className="pricing-amount">0$</span>
-                      <span className="pricing-period">/ mois</span>
-                    </div>
-                    <p className="pricing-desc">Pour démarrer et tester, sans payer.</p>
-                  </div>
-                  <ul className="pricing-features">
-                    <li><FaCheck className="pricing-check" /> 100 articles</li>
-                    <li><FaCheck className="pricing-check" /> 300 recommandations / mois</li>
-                    <li><FaCheck className="pricing-check" /> Vente de base</li>
-                    <li><FaCheck className="pricing-check" /> Paiement sécurisé</li>
-                    <li><FaCheck className="pricing-check" /> WhatsApp & Telegram</li>
-                  </ul>
-                  <PlanCTA planId="free" className="pricing-btn pricing-btn-secondary">
-                    Commencer gratuitement
-                  </PlanCTA>
-                </div>
-
-                {/* Basic */}
-                <div className="pricing-card">
-                  <div className="pricing-header">
-                    <h3 className="pricing-plan-name">Basic</h3>
-                    <div className="pricing-price">
-                      <span className="pricing-amount">9$</span>
-                      <span className="pricing-period">/ mois</span>
-                    </div>
-                    <p className="pricing-desc">Pour les petits vendeurs qui se lancent.</p>
-                  </div>
-                  <ul className="pricing-features">
-                    <li><FaCheck className="pricing-check" /> 1 000 articles</li>
-                    <li><FaCheck className="pricing-check" /> 3 000 recommandations / mois</li>
-                    <li><FaCheck className="pricing-check" /> Produits ET services</li>
-                    <li><FaCheck className="pricing-check" /> Publication Facebook</li>
-                    <li><FaCheck className="pricing-check" /> Support WhatsApp & Telegram</li>
-                  </ul>
-                  <PlanCTA planId="basic" className="pricing-btn pricing-btn-secondary">
-                    S'abonner
-                  </PlanCTA>
-                </div>
-
-                {/* Pro (Featured) */}
-                <div className="pricing-card pricing-card-featured">
-                  <div className="pricing-badge">Populaire</div>
-                  <div className="pricing-header">
-                    <h3 className="pricing-plan-name">Pro</h3>
-                    <div className="pricing-price">
-                      <span className="pricing-amount">29$</span>
-                      <span className="pricing-period">/ mois</span>
-                    </div>
-                    <p className="pricing-trial">1 mois d'essai gratuit</p>
-                    <p className="pricing-desc">Pour les vendeurs réguliers qui veulent maximiser leurs ventes.</p>
-                  </div>
-                  <ul className="pricing-features">
-                    <li><FaCheck className="pricing-check" /> 1 mois offert, sans engagement</li>
-                    <li><FaCheck className="pricing-check" /> 10 000 articles</li>
-                    <li><FaCheck className="pricing-check" /> 15 000 recommandations / mois</li>
-                    <li><FaCheck className="pricing-check" /> Certificats Wanzo</li>
-                    <li><FaCheck className="pricing-check" /> Mise en avant des produits</li>
-                    <li><FaCheck className="pricing-check" /> Statistiques avancées</li>
-                    <li><FaCheck className="pricing-check" /> Support prioritaire 24/7</li>
-                  </ul>
-                  <PlanCTA planId="pro" className="pricing-btn pricing-btn-primary">
-                    Essayer 1 mois gratuit
-                  </PlanCTA>
-                </div>
-
-                {/* Business — masqué sur la landing (reste disponible sur le dashboard). */}
-              </div>
-
-              <p className="pricing-note">
-                <FaInfoCircle className="pricing-note-ic" />&nbsp;<strong>2 semaines offertes en Business à l'inscription</strong> : articles et recommandations illimités pour remplir votre boutique sans contrainte.<br />
-                Ensuite : chargez vos produits <strong>librement</strong> à tous les paliers. Une <strong>recommandation</strong> = une fois où l'agent propose votre boutique à un acheteur ; au-delà de votre quota mensuel, votre boutique reste visible mais n'est plus mise en avant.<br />
-                Abonnement sans engagement, résiliable à tout moment. Paiement par Mobile Money ou cash. Côté acheteur, Tindisa reste 100% gratuit.
-              </p>
-            </>
-          )}
+          <p className="pricing-note">
+            <FaInfoCircle className="pricing-note-ic" />&nbsp;Aucun abonnement : chargez vos produits <strong>sans limite</strong> et ne payez qu à la vente. Les frais se cumulent et se règlent par Mobile Money dès 10 $.<br />
+            Côté acheteur : <strong>100% gratuit</strong>. Il se connecte pour valider une commande et gagne des <strong>crédits Tinda</strong> (fidélité) à chaque achat, utilisables pour plus de recherches.
+          </p>
         </div>
       </section>
 
