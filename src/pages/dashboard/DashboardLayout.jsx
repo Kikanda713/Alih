@@ -15,7 +15,7 @@ function MerchantShell() {
     { to: '/dashboard/catalogue', icon: <FaBoxOpen />, label: t('dash.nav.catalogue') },
     { to: '/dashboard/ventes', icon: <FaHandshake />, label: t('dash.nav.sales') },
     { to: '/dashboard/wallet', icon: <FaWallet />, label: t('dash.nav.wallet') },
-    { to: '/dashboard/abonnement', icon: <FaCreditCard />, label: t('dash.nav.subscription') },
+    { to: '/dashboard/abonnement', icon: <FaCreditCard />, label: 'Facturation' },
   ]
   return <AppShell nav={nav} sidebarExtra={<SidebarChannels />} />
 }
