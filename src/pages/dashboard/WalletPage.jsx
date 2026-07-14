@@ -22,16 +22,21 @@ export default function WalletPage() {
   const { t } = useT()
   const [loading, setLoading] = useState(true)
   const [wallet, setWallet] = useState({ balances: [], transactions: [] })
+  const [fees, setFees] = useState(null)
   const { pageItems, page, setPage, totalPages, count } = usePaged(wallet.transactions, 10)
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const r = await api.get('/v1/merchant/wallet')
+      const [r, cf] = await Promise.all([
+        api.get('/v1/merchant/wallet'),
+        api.get('/v1/merchant/commissions').catch(() => null),
+      ])
       const balances = Array.isArray(r?.balances) && r.balances.length
         ? r.balances
         : (r?.balance != null ? [{ currency: r.currency || 'CDF', balance: r.balance }] : [])
       setWallet({ balances, transactions: r?.transactions || [] })
+      setFees(cf)
     } catch {
       setWallet({ balances: [], transactions: [] })
     } finally {
@@ -69,6 +74,31 @@ export default function WalletPage() {
           </Card>
         ))}
       </div>
+
+      {/* Frais de commission cumulés (modèle pay-as-you-sell) */}
+      {fees && (() => {
+        const owed = Number(fees.owedUsd || 0)
+        const th = fees.thresholds || { pay: 10, remind: 20, block: 50 }
+        const status = fees.status || 'ok'
+        const cls = status === 'blocked' ? 'danger' : status === 'reminder' ? 'warn' : status === 'due' ? 'info' : 'ok'
+        const msg = status === 'blocked'
+          ? `Compte bloqué : vos frais (${owed} $) dépassent ${th.block} $. Réglez-les par mobile money pour réactiver la vente.`
+          : status === 'reminder'
+            ? `Rappel : vous devez ${owed} $ de frais de commission. Merci de régler (blocage à ${th.block} $).`
+            : status === 'due'
+              ? `Vous devez ${owed} $ de frais. Vous pouvez déjà régler (versement dès ${th.pay} $).`
+              : `Frais de commission cumulés : ${owed} $. Rien à verser tant que vous êtes sous ${th.pay} $.`
+        return (
+          <Card className={`wallet-fees wallet-fees-${cls}`}>
+            <div className="wallet-fees-head">
+              <span><FaMoneyBillWave /> Frais de commission</span>
+              <b>{owed.toLocaleString('fr-FR')} $ dus</b>
+            </div>
+            <p className="wallet-fees-msg">{msg}</p>
+            <p className="wallet-fees-note">Commission sur ventes conclues : 10% (0-10$), 3% (10-100$), 2% (100-1000$), 1,5% (1000-10000$), 0,5% (au-delà). {fees.paidUsd ? `Déjà réglé : ${fees.paidUsd} $.` : ''}</p>
+          </Card>
+        )
+      })()}
 
       <div>
         <h2 className="dash-h2 wallet-tx-title">{t('wallet.history')}</h2>

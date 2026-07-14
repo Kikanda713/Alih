@@ -349,6 +349,13 @@
 }
 
 /* ---------- Wallet ---------- */
+.wallet-fees { margin: 16px 0; }
+.wallet-fees-head { display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
+.wallet-fees-msg { margin: 8px 0 4px; font-size: .92rem; color: #333; }
+.wallet-fees-note { font-size: .78rem; color: #888; margin: 0; }
+.wallet-fees-info { border-left: 4px solid #635dff; }
+.wallet-fees-warn { border-left: 4px solid #d9822b; background: #fff8ef; }
+.wallet-fees-danger { border-left: 4px solid #d64545; background: #fdf0f0; }
 .wallet-balance { display: flex; align-items: center; gap: 18px; }
 .wallet-balance-icon {
   width: 54px; height: 54px; border-radius: 14px; flex-shrink: 0;
