@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FaUsers, FaStore, FaShoppingBag, FaMotorcycle, FaCoins, FaCreditCard, FaHistory } from 'react-icons/fa'
+import { FaUsers, FaStore, FaShoppingBag, FaMotorcycle, FaCoins, FaCreditCard, FaHistory, FaChartLine, FaMicrochip } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
 import { Card, Button, Badge, Spinner, EmptyState } from '../../components/ui.jsx'
@@ -10,6 +10,14 @@ import { planById } from '../../data/plans'
 
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s }
 function money(n) { return `${Number(n || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 })} $` }
+function money2(n) { return `${Number(n || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} $` }
+function num(n) { return Number(n || 0).toLocaleString('fr-FR') }
+function tok(n) {
+  const v = Number(n || 0)
+  if (v >= 1e6) return `${(v / 1e6).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} M`
+  if (v >= 1e3) return `${(v / 1e3).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} k`
+  return String(v)
+}
 
 const ACCT_TONE = { active: 'success', suspended: 'danger', pending: 'warn' }
 const SUB_TONE = { trialing: 'warn', active: 'success', cancelled: 'danger', expired: 'neutral' }
@@ -33,6 +41,7 @@ export default function AdminHome() {
   const { t } = useT()
   const { city, global, withCity } = useAdminView()
   const [stats, setStats] = useState(null)
+  const [metrics, setMetrics] = useState(null)
   const [activities, setActivities] = useState([])
   const [loadingAct, setLoadingAct] = useState(true)
   const { pageItems, page, setPage, totalPages, count } = usePaged(activities, 8)
@@ -40,10 +49,15 @@ export default function AdminHome() {
   useEffect(() => {
     let alive = true
     setStats(null)
+    setMetrics(null)
     setLoadingAct(true)
     api.get(withCity('/v1/admin/stats'))
       .then((r) => alive && setStats(r || {}))
       .catch(() => alive && setStats({ boutiques: 0, acheteurs: 0, livreurs: 0, gmvUsd: 0 }))
+
+    api.get(withCity('/v1/admin/metrics'))
+      .then((r) => alive && setMetrics(r || {}))
+      .catch(() => alive && setMetrics({ business: {}, tokens: {} }))
 
     // Activités récentes — montées sur les données DÉJÀ disponibles (mêmes
     // endpoints que les pages Utilisateurs et Abonnements), agrégées + triées
@@ -95,6 +109,28 @@ export default function AdminHome() {
   ]
 
   const scopeLabel = city ? cap(city) : (global ? 'Tout le pays' : '')
+  const biz = metrics?.business || {}
+  const tk = metrics?.tokens || {}
+  const dailyMax = Math.max(1, ...(tk.daily || []).map((d) => (d.inputTokens || 0) + (d.outputTokens || 0)))
+
+  const bizItems = [
+    { label: 'Ventes conclues', value: num(biz.salesCount), sub: `${num(biz.sales30dCount)} sur 30j` },
+    { label: 'GMV (volume d’affaires)', value: money(biz.gmvUsd), sub: `${money(biz.gmv30dUsd)} sur 30j` },
+    { label: 'Panier moyen', value: money2(biz.avgOrderUsd) },
+    { label: 'MRR (commission 30j)', value: money2(biz.mrrUsd), sub: 'notre revenu récurrent' },
+    { label: 'Commissions dues', value: money2(biz.owedUsd), tone: Number(biz.owedUsd) > 0 ? 'warn' : null },
+    { label: 'Commissions versées', value: money2(biz.paidUsd) },
+    { label: 'Comptes bloqués', value: num(biz.blockedSellers), tone: Number(biz.blockedSellers) > 0 ? 'danger' : null, sub: `seuil ${biz.thresholds?.block ?? 50} $` },
+    { label: 'Churn vendeurs (30j)', value: `${num(biz.churnRatePct)} %`, sub: `${num(biz.inactiveSellers30d)} inactifs / ${num(biz.activeSellers)}` },
+  ]
+  const tokItems = [
+    { label: 'Tokens (total)', value: tok(tk.totalTokens), sub: `${tok(tk.inputTokens)} in · ${tok(tk.outputTokens)} out` },
+    { label: 'Tokens 30 jours', value: tok(tk.tokens30d) },
+    { label: 'Tokens 24 h', value: tok(tk.tokens24h) },
+    { label: 'Coût estimé', value: money2(tk.estCostUsd), sub: `${money2(tk.estCost30dUsd)} sur 30j` },
+    { label: 'Conversations', value: num(tk.sessions), sub: `${num(tk.turns)} tours` },
+    { label: 'Tarif gpt-4o', value: `${tk.pricing?.inPerMUsd ?? 2.5}/${tk.pricing?.outPerMUsd ?? 10} $`, sub: 'in/out par M tokens' },
+  ]
 
   return (
     <div className="dash-page">
@@ -119,6 +155,60 @@ export default function AdminHome() {
         <Button as={Link} to="/admin/users" variant="primary"><FaUsers /> {t('admin.home.manageUsers')}</Button>
         <Button as={Link} to="/admin/commissions" variant="secondary"><FaCreditCard /> Commissions</Button>
       </div>
+
+      {/* Performance commerciale (startup metrics) */}
+      <Card>
+        <div className="dash-page-head" style={{ marginBottom: 14 }}>
+          <h2 className="dash-h2"><FaChartLine style={{ marginRight: 8 }} />Performance commerciale</h2>
+        </div>
+        {!metrics ? <Spinner label={t('cat.loading')} /> : (
+          <div className="metric-grid">
+            {bizItems.map((m, i) => (
+              <div key={i} className="metric-item">
+                <span className="metric-item-label">{m.label}</span>
+                <span className={`metric-item-value${m.tone ? ' tone-' + m.tone : ''}`}>{m.value}</span>
+                {m.sub && <span className="metric-item-sub">{m.sub}</span>}
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      {/* Consommation IA (tokens) */}
+      <Card>
+        <div className="dash-page-head" style={{ marginBottom: 14 }}>
+          <h2 className="dash-h2"><FaMicrochip style={{ marginRight: 8 }} />Consommation IA (tokens)</h2>
+          <p className="dash-sub">Estimée — Azure ne renvoie pas l’usage exact en streaming. Coût indicatif.</p>
+        </div>
+        {!metrics ? <Spinner label={t('cat.loading')} /> : (
+          <>
+            <div className="metric-grid">
+              {tokItems.map((m, i) => (
+                <div key={i} className="metric-item">
+                  <span className="metric-item-label">{m.label}</span>
+                  <span className="metric-item-value">{m.value}</span>
+                  {m.sub && <span className="metric-item-sub">{m.sub}</span>}
+                </div>
+              ))}
+            </div>
+            {(tk.daily || []).length > 0 && (
+              <div className="metric-bars" title="Tokens / jour (14 derniers jours)">
+                {tk.daily.map((d, i) => {
+                  const total = (d.inputTokens || 0) + (d.outputTokens || 0)
+                  const h = Math.max(4, Math.round((total / dailyMax) * 100))
+                  const day = new Date(d.day).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+                  return (
+                    <div key={i} className="metric-bar-col" title={`${day} · ${tok(total)} tokens`}>
+                      <div className="metric-bar" style={{ height: `${h}%` }} />
+                      <span className="metric-bar-x">{day}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </>
+        )}
+      </Card>
 
       {/* Activités récentes : créations de comptes (boutiques/acheteurs) + abonnements */}
       <Card>
