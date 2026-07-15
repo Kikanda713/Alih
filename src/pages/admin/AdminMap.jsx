@@ -3,10 +3,12 @@ import { FaStore, FaMotorcycle, FaMapMarkerAlt, FaPlus, FaCrosshairs } from 'rea
 import { useTindisaApi } from '../../api/client'
 import { useToast } from '../../components/Toast.jsx'
 import { Spinner, Button, Modal, Field, Input, Select, Textarea, ConfirmModal } from '../../components/ui.jsx'
+import { useAdminView } from './AdminScopeContext.jsx'
 
 const MapCanvas = lazy(() => import('./MapCanvas.jsx'))
 
-// Kinshasa par défaut ; la carte reste centrée RDC.
+// Kinshasa UNIQUEMENT en dernier recours ; la carte est centrée sur la ville
+// effective (renvoyée par l'API : centroïde des boutiques ou centre de la ville).
 const CENTER = [-4.325, 15.322]
 const ZOOM = 11
 const KINDS = [
@@ -20,8 +22,9 @@ const EMPTY_LM = { name: '', kind: '', city: '', commune: '', quartier: '', note
 export default function AdminMap() {
   const api = useTindisaApi()
   const { notify } = useToast()
+  const { city, withCity } = useAdminView()
   const [loading, setLoading] = useState(true)
-  const [data, setData] = useState({ shops: [], drivers: [], landmarks: [] })
+  const [data, setData] = useState({ shops: [], drivers: [], landmarks: [], center: CENTER, zoom: ZOOM })
   const [layers, setLayers] = useState({ shops: true, drivers: true, landmarks: true })
   const [addMode, setAddMode] = useState(false)
   const [form, setForm] = useState(null) // null = fermé ; objet = édition/ajout
@@ -29,11 +32,14 @@ export default function AdminMap() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    try { const r = await api.get('/v1/admin/map'); setData({ shops: r?.shops || [], drivers: r?.drivers || [], landmarks: r?.landmarks || [] }) }
+    try {
+      const r = await api.get(withCity('/v1/admin/map'))
+      setData({ shops: r?.shops || [], drivers: r?.drivers || [], landmarks: r?.landmarks || [], center: r?.center || CENTER, zoom: r?.zoom || ZOOM })
+    }
     catch { /* garde l'état */ } finally { setLoading(false) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  useEffect(() => { load() }, [load])
+  }, [withCity])
+  useEffect(() => { load() }, [load, city])
 
   const onMapClick = ({ lat, lng }) => {
     if (!addMode) return
@@ -72,7 +78,8 @@ export default function AdminMap() {
         <div className="admin-map-wrap">
           <Suspense fallback={<Spinner label="Chargement de la carte…" />}>
             <MapCanvas
-              center={CENTER} zoom={ZOOM} layers={layers}
+              key={city || 'all'}
+              center={data.center || CENTER} zoom={data.zoom || ZOOM} layers={layers}
               shops={data.shops} drivers={data.drivers} landmarks={data.landmarks}
               onMapClick={onMapClick}
               onEditLandmark={(l) => setForm({ ...EMPTY_LM, ...l, gpsLat: String(l.gpsLat), gpsLng: String(l.gpsLng) })}

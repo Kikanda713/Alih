@@ -385,6 +385,17 @@
 .admin-tabs { border-bottom: none; }
 .admin-tabs .cat-tab { display: inline-flex; align-items: center; gap: 7px; }
 .admin-search { max-width: 280px; }
+/* Barre de portée ville (header back-office) — tokens uniquement */
+.admin-scope-bar { display: inline-flex; align-items: center; gap: 8px; }
+.admin-scope-ico { color: var(--gray); }
+.admin-scope-select { min-width: 160px; }
+.admin-scope-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.01em;
+  padding: 5px 11px; border-radius: var(--radius-pill);
+  border: 1px solid var(--border); background: var(--white); color: var(--ebony);
+}
+.admin-scope-chip.locked { color: var(--terracotta); border-color: var(--terracotta); }
 @media (max-width: 640px) {
   .admin-toolbar { flex-direction: column; align-items: stretch; }
   .admin-search { max-width: none; }

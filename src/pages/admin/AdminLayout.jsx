@@ -6,6 +6,7 @@ import { useT } from '../../i18n/index.jsx'
 import { Spinner } from '../../components/ui.jsx'
 import AppShell from '../../components/AppShell.jsx'
 import { useIsAdmin, isAdminRoles } from '../../auth/roles'
+import { AdminScopeProvider, CityScopeBar } from './AdminScopeContext.jsx'
 import { DEMO_MODE, isDemoSession, demoUser } from '../../demo/demo' // DEMO: retirer en production
 
 function AdminShell() {
@@ -18,7 +19,11 @@ function AdminShell() {
     { to: '/admin/drivers', icon: <FaMotorcycle />, label: 'Livreurs' },
     { to: '/admin/map', icon: <FaMapMarkedAlt />, label: 'Carte' },
   ]
-  return <AppShell nav={nav} badge={t('admin.badge')} />
+  return (
+    <AdminScopeProvider>
+      <AppShell nav={nav} badge={t('admin.badge')} headerExtra={<CityScopeBar />} />
+    </AdminScopeProvider>
+  )
 }
 
 function AdminDenied() {

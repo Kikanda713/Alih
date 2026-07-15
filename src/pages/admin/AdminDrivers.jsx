@@ -5,6 +5,7 @@ import { useToast } from '../../components/Toast.jsx'
 import { Card, Button, Badge, Spinner, EmptyState, Field, Input, Select, Textarea, Modal, ConfirmModal, ActionMenu } from '../../components/ui.jsx'
 import { usePaged, Pagination } from '../../components/Pagination.jsx'
 import { uploadImage, isCloudinaryConfigured } from '../../api/cloudinary'
+import { useAdminView } from './AdminScopeContext.jsx'
 
 const VEHICLES = [
   { id: 'velo', label: 'Vélo' },
@@ -161,6 +162,7 @@ function DriverForm({ open, driver, onClose, onSave }) {
 export default function AdminDrivers() {
   const api = useTindisaApi()
   const { notify } = useToast()
+  const { city, withCity } = useAdminView()
   const [loading, setLoading] = useState(true)
   const [drivers, setDrivers] = useState([])
   const [modal, setModal] = useState({ open: false, driver: null })
@@ -170,11 +172,11 @@ export default function AdminDrivers() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    try { const r = await api.get('/v1/admin/drivers'); setDrivers(r?.drivers || []) }
+    try { const r = await api.get(withCity('/v1/admin/drivers')); setDrivers(r?.drivers || []) }
     catch { setDrivers([]) } finally { setLoading(false) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  useEffect(() => { load() }, [load])
+  }, [withCity])
+  useEffect(() => { load() }, [load, city])
 
   const save = async (form) => {
     try {

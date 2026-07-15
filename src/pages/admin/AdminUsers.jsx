@@ -6,6 +6,7 @@ import { useToast } from '../../components/Toast.jsx'
 import { Card, Badge, Spinner, EmptyState, Input, ConfirmModal } from '../../components/ui.jsx'
 import { usePaged, Pagination } from '../../components/Pagination.jsx'
 import ExportButtons from '../../components/ExportButtons.jsx'
+import { useAdminView } from './AdminScopeContext.jsx'
 
 function name(u) {
   const n = [u.firstname, u.lastname].filter(Boolean).join(' ').trim()
@@ -34,6 +35,7 @@ export default function AdminUsers() {
   const api = useTindisaApi()
   const { t } = useT()
   const { notify } = useToast()
+  const { city, withCity } = useAdminView()
   const [loading, setLoading] = useState(true)
   const [users, setUsers] = useState([])
   const [type, setType] = useState('all')
@@ -43,7 +45,7 @@ export default function AdminUsers() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const r = await api.get('/v1/admin/users')
+      const r = await api.get(withCity('/v1/admin/users'))
       setUsers(r?.users || [])
     } catch {
       setUsers([])
@@ -51,9 +53,9 @@ export default function AdminUsers() {
       setLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [withCity])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => { load() }, [load, city])
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase()

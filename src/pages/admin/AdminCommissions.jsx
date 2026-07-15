@@ -3,6 +3,7 @@ import { FaPercent } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { Badge, Spinner, EmptyState } from '../../components/ui.jsx'
 import { usePaged, Pagination } from '../../components/Pagination.jsx'
+import { useAdminView } from './AdminScopeContext.jsx'
 
 const TONE = { ok: 'neutral', due: 'warn', reminder: 'warn', blocked: 'danger' }
 const LABEL = { ok: 'OK', due: 'À verser', reminder: 'Rappel', blocked: 'Bloqué' }
@@ -11,6 +12,7 @@ const mask = (id) => (id && id.length > 12 ? `…${id.slice(-8)}` : id || '—')
 
 export default function AdminCommissions() {
   const api = useTindisaApi()
+  const { city, withCity } = useAdminView()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState(null)
   const { pageItems, page, setPage, totalPages, count } = usePaged(data?.sellers || [], 12)
@@ -18,15 +20,15 @@ export default function AdminCommissions() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      setData(await api.get('/v1/admin/commissions'))
+      setData(await api.get(withCity('/v1/admin/commissions')))
     } catch {
       setData(null)
     } finally {
       setLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  useEffect(() => { load() }, [load])
+  }, [withCity])
+  useEffect(() => { load() }, [load, city])
 
   if (loading) {
     return (

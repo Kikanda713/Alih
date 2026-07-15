@@ -5,6 +5,7 @@ import { useT } from '../../i18n/index.jsx'
 import { Badge, Spinner, EmptyState, Select } from '../../components/ui.jsx'
 import { usePaged, Pagination } from '../../components/Pagination.jsx'
 import ExportButtons from '../../components/ExportButtons.jsx'
+import { useAdminView } from './AdminScopeContext.jsx'
 import { planById } from '../../data/plans'
 
 const STATUS_TONE = { trialing: 'warn', active: 'success', cancelled: 'danger', expired: 'neutral' }
@@ -35,6 +36,7 @@ const EXPORT_COLS = [
 export default function AdminSubscriptions() {
   const api = useTindisaApi()
   const { t } = useT()
+  const { city, withCity } = useAdminView()
   const [loading, setLoading] = useState(true)
   const [subs, setSubs] = useState([])
   const [summary, setSummary] = useState(null)
@@ -49,7 +51,7 @@ export default function AdminSubscriptions() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const r = await api.get('/v1/admin/subscriptions')
+      const r = await api.get(withCity('/v1/admin/subscriptions'))
       setSubs(r?.subscriptions || [])
       setSummary(r?.summary || null)
     } catch {
@@ -58,9 +60,9 @@ export default function AdminSubscriptions() {
       setLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [withCity])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => { load() }, [load, city])
 
   return (
     <div className="dash-page">

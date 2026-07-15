@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FaUsers, FaStore, FaShoppingBag, FaUserClock, FaCreditCard, FaHistory } from 'react-icons/fa'
+import { FaUsers, FaStore, FaShoppingBag, FaMotorcycle, FaCoins, FaCreditCard, FaHistory } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
 import { Card, Button, Badge, Spinner, EmptyState } from '../../components/ui.jsx'
 import { usePaged, Pagination } from '../../components/Pagination.jsx'
+import { useAdminView } from './AdminScopeContext.jsx'
 import { planById } from '../../data/plans'
+
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s }
+function money(n) { return `${Number(n || 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 })} $` }
 
 const ACCT_TONE = { active: 'success', suspended: 'danger', pending: 'warn' }
 const SUB_TONE = { trialing: 'warn', active: 'success', cancelled: 'danger', expired: 'neutral' }
@@ -27,6 +31,7 @@ function isMerchant(u) {
 export default function AdminHome() {
   const api = useTindisaApi()
   const { t } = useT()
+  const { city, global, withCity } = useAdminView()
   const [stats, setStats] = useState(null)
   const [activities, setActivities] = useState([])
   const [loadingAct, setLoadingAct] = useState(true)
@@ -34,16 +39,18 @@ export default function AdminHome() {
 
   useEffect(() => {
     let alive = true
-    api.get('/v1/admin/stats')
+    setStats(null)
+    setLoadingAct(true)
+    api.get(withCity('/v1/admin/stats'))
       .then((r) => alive && setStats(r || {}))
-      .catch(() => alive && setStats({ users: 0, merchants: 0, buyers: 0, pending: 0 }))
+      .catch(() => alive && setStats({ boutiques: 0, acheteurs: 0, livreurs: 0, gmvUsd: 0 }))
 
     // Activités récentes — montées sur les données DÉJÀ disponibles (mêmes
     // endpoints que les pages Utilisateurs et Abonnements), agrégées + triées
     // côté client. Pas de nouvel appel backend dédié.
     Promise.all([
-      api.get('/v1/admin/users').catch(() => []),
-      api.get('/v1/admin/subscriptions').catch(() => null),
+      api.get(withCity('/v1/admin/users')).catch(() => []),
+      api.get(withCity('/v1/admin/subscriptions')).catch(() => null),
     ]).then(([users, subsRes]) => {
       if (!alive) return
       const list = Array.isArray(users) ? users : users?.users || []
@@ -76,22 +83,24 @@ export default function AdminHome() {
 
     return () => { alive = false }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [city])
 
   if (!stats) return <div className="dash-page"><Spinner label={t('merchant.loading')} /></div>
 
   const cards = [
-    { icon: <FaUsers />, value: stats.users ?? 0, label: t('admin.stats.users') },
-    { icon: <FaStore />, value: stats.merchants ?? 0, label: t('admin.stats.merchants') },
-    { icon: <FaShoppingBag />, value: stats.buyers ?? 0, label: t('admin.stats.buyers') },
-    { icon: <FaUserClock />, value: stats.pending ?? 0, label: t('admin.stats.pending') },
+    { icon: <FaStore />, value: stats.boutiques ?? stats.merchants ?? 0, label: 'Boutiques' },
+    { icon: <FaShoppingBag />, value: stats.acheteurs ?? stats.buyers ?? 0, label: 'Acheteurs' },
+    { icon: <FaMotorcycle />, value: stats.livreurs ?? 0, label: 'Livreurs' },
+    { icon: <FaCoins />, value: money(stats.gmvUsd), label: 'Recettes (GMV)' },
   ]
+
+  const scopeLabel = city ? cap(city) : (global ? 'Tout le pays' : '')
 
   return (
     <div className="dash-page">
       <header className="dash-page-head">
         <h1 className="dash-h1">{t('admin.home.title')}</h1>
-        <p className="dash-sub">{t('admin.home.subtitle')}</p>
+        <p className="dash-sub">{t('admin.home.subtitle')}{scopeLabel ? ` · ${scopeLabel}` : ''}</p>
       </header>
 
       <div className="dash-stats admin-stats">
