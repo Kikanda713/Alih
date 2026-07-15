@@ -1,6 +1,6 @@
 import { useAuth0 } from '@auth0/auth0-react'
 import { Link, Navigate } from 'react-router-dom'
-import { FaChartPie, FaUsers, FaMotorcycle, FaMapMarkedAlt, FaPercent } from 'react-icons/fa'
+import { FaChartPie, FaUsers, FaMotorcycle, FaMapMarkedAlt, FaPercent, FaCertificate } from 'react-icons/fa'
 import { isAuth0Configured } from '../../auth/config'
 import { useT } from '../../i18n/index.jsx'
 import { Spinner } from '../../components/ui.jsx'
@@ -17,6 +17,7 @@ function AdminShell() {
     { to: '/admin', end: true, icon: <FaChartPie />, label: t('admin.nav.overview') },
     { to: '/admin/users', icon: <FaUsers />, label: t('admin.nav.users') },
     { to: '/admin/commissions', icon: <FaPercent />, label: 'Commissions' },
+    { to: '/admin/certification', icon: <FaCertificate />, label: 'Certification' },
     { to: '/admin/drivers', icon: <FaMotorcycle />, label: 'Livreurs' },
     { to: '/admin/map', icon: <FaMapMarkedAlt />, label: 'Carte' },
   ]

@@ -16,6 +16,7 @@ import AdminHome from './pages/admin/AdminHome.jsx'
 import AdminUsers from './pages/admin/AdminUsers.jsx'
 import AdminSubscriptions from './pages/admin/AdminSubscriptions.jsx'
 import AdminCommissions from './pages/admin/AdminCommissions.jsx'
+import AdminCertification from './pages/admin/AdminCertification.jsx'
 import AdminDrivers from './pages/admin/AdminDrivers.jsx'
 import AdminMap from './pages/admin/AdminMap.jsx'
 
@@ -40,6 +41,7 @@ export default function Root() {
         <Route path="users" element={<AdminUsers />} />
         <Route path="subscriptions" element={<AdminSubscriptions />} />
         <Route path="commissions" element={<AdminCommissions />} />
+        <Route path="certification" element={<AdminCertification />} />
         <Route path="drivers" element={<AdminDrivers />} />
         <Route path="map" element={<AdminMap />} />
       </Route>

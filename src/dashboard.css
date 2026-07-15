@@ -407,6 +407,21 @@
 .metric-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
 .metric-bar { width: 100%; max-width: 26px; background: var(--terracotta); border-radius: var(--radius-btn) var(--radius-btn) 0 0; min-height: 4px; }
 .metric-bar-x { font-size: 0.62rem; color: var(--gray-light); }
+/* Certification — tokens uniquement */
+.cert-check { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 0.9rem; color: var(--ebony); }
+.cert-check input { width: 16px; height: 16px; accent-color: var(--terracotta); }
+.dash-h3 { font-size: 0.95rem; font-weight: 700; color: var(--ebony); margin: 14px 0 6px; }
+.cert-doc { display: flex; flex-direction: column; gap: 12px; }
+.cert-doc-head { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.cert-doc-logo { font-size: 2rem; color: var(--terracotta); }
+.cert-doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.cert-doc-grid > div { display: flex; flex-direction: column; gap: 2px; }
+.cert-doc-grid span:last-child { font-weight: 600; color: var(--ebony); }
+.cert-doc-checks { display: flex; flex-wrap: wrap; gap: 6px; }
+.cert-check-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; padding: 4px 9px; border-radius: var(--radius-pill); border: 1px solid var(--border); color: var(--gray); }
+.cert-check-badge.ok { color: var(--terracotta); border-color: var(--terracotta); }
+.cert-doc-bc { padding: 10px 12px; border: 1px dashed var(--border); border-radius: var(--radius-card); font-size: 0.85rem; color: var(--ebony); }
+.cert-doc-bc svg { color: var(--terracotta); margin-right: 6px; }
 @media (max-width: 640px) {
   .admin-toolbar { flex-direction: column; align-items: stretch; }
   .admin-search { max-width: none; }
