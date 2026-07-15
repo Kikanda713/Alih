@@ -422,6 +422,16 @@
 .cert-check-badge.ok { color: var(--terracotta); border-color: var(--terracotta); }
 .cert-doc-bc { padding: 10px 12px; border: 1px dashed var(--border); border-radius: var(--radius-card); font-size: 0.85rem; color: var(--ebony); }
 .cert-doc-bc svg { color: var(--terracotta); margin-right: 6px; }
+/* Catalogue : certification (discret, sans surcharge) */
+.cat-cert-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 10px 14px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--white); font-size: 0.85rem; color: var(--gray); }
+.cat-cert-summary-ic { color: var(--terracotta); }
+.cat-cert-summary strong { color: var(--ebony); }
+.cat-cert-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; padding: 4px 9px; border-radius: var(--radius-pill); border: 1px solid var(--border); background: transparent; cursor: default; color: var(--gray); }
+.cat-cert-badge.ok { color: var(--terracotta); border-color: var(--terracotta); cursor: pointer; }
+.cat-cert-badge.pending { color: var(--gray); }
+.cat-cert-req { display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; padding: 4px 9px; border-radius: var(--radius-pill); border: 1px dashed var(--terracotta); background: transparent; color: var(--terracotta); cursor: pointer; }
+.cat-cert-req:disabled { opacity: 0.5; cursor: default; }
+.cat-cert-dash { color: var(--gray-light); }
 @media (max-width: 640px) {
   .admin-toolbar { flex-direction: column; align-items: stretch; }
   .admin-search { max-width: none; }

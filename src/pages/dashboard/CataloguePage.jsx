@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { FaPlus, FaEdit, FaTrash, FaBoxOpen, FaSyncAlt, FaLink, FaStore, FaImage, FaEye } from 'react-icons/fa'
+import { FaPlus, FaEdit, FaTrash, FaBoxOpen, FaSyncAlt, FaLink, FaStore, FaImage, FaEye, FaCertificate, FaCheckCircle, FaPrint } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
 import { useToast } from '../../components/Toast.jsx'
@@ -23,11 +23,13 @@ function CatalogueFilters({ value, onChange, taxonomy }) {
       <Select value={value.condition} onChange={set('condition')} options={taxonomy?.conditions || []} placeholder="État" />
       <Select value={value.stock} onChange={set('stock')}
         options={[{ id: 'in', label: 'En stock' }, { id: 'out', label: 'Rupture' }]} placeholder="Stock" />
+      <Select value={value.cert} onChange={set('cert')}
+        options={[{ id: 'certified', label: 'Certifiés' }, { id: 'requested', label: 'En demande' }, { id: 'uncertified', label: 'Non certifiés' }]} placeholder="Certification" />
     </div>
   )
 }
 
-function applyFilters(products, f) {
+function applyFilters(products, f, certByProduct = {}) {
   const q = (f.q || '').trim().toLowerCase()
   return products.filter((p) => {
     if (q && !`${p.name || ''} ${p.sku || ''} ${p.category || ''}`.toLowerCase().includes(q)) return false
@@ -36,6 +38,12 @@ function applyFilters(products, f) {
     if (f.condition && p.condition !== f.condition) return false
     if (f.stock === 'in' && !((p.quantity || 0) > 0)) return false
     if (f.stock === 'out' && (p.quantity || 0) > 0) return false
+    if (f.cert) {
+      const st = certByProduct[p.id]?.status || 'none'
+      if (f.cert === 'certified' && st !== 'issued') return false
+      if (f.cert === 'requested' && st !== 'requested') return false
+      if (f.cert === 'uncertified' && st === 'issued') return false
+    }
     return true
   })
 }
@@ -60,7 +68,34 @@ function Thumb({ url }) {
   )
 }
 
-function ProductTable({ products, readOnly, onEdit, onDelete, onViews, t }) {
+// Valeur en USD (au taux BCC) pour juger l'éligibilité à la certification.
+function priceUsd(pricing, rate) {
+  const v = Number(pricing?.displayPrice)
+  if (!Number.isFinite(v)) return null
+  return String(pricing?.currency || 'CDF').toUpperCase() === 'USD' ? v : v / (rate || 2400)
+}
+
+// Cellule certification : discrète, n'apparaît que pour les actifs éligibles.
+function CertCell({ p, cert, eligible, onView, onRequest, busy }) {
+  if (cert?.status === 'issued') {
+    return (
+      <button className="cat-cert-badge ok" title="Voir le certificat" onClick={() => onView(cert)}>
+        <FaCheckCircle /> Certifié
+      </button>
+    )
+  }
+  if (cert?.status === 'requested') return <span className="cat-cert-badge pending"><FaCertificate /> Demandée</span>
+  if (!eligible) return <span className="cat-cert-dash">—</span>
+  return (
+    <button className="cat-cert-req" disabled={busy === p.id} onClick={() => onRequest(p)}>
+      <FaCertificate /> Certifier
+    </button>
+  )
+}
+
+function ProductTable({ products, readOnly, onEdit, onDelete, onViews, t, certByProduct, threshold, onViewCert, onRequestCert, certBusy }) {
+  const showCert = !!threshold
+  const rate = threshold?.exchangeRate
   return (
     <div className="cat-table-wrap">
       <table className="cat-table">
@@ -74,6 +109,7 @@ function ProductTable({ products, readOnly, onEdit, onDelete, onViews, t }) {
             <th>{t('cat.col.stock')}</th>
             {/* Vues = analytique, affichée pour TOUS les articles (local ET Wanzo). */}
             <th className="cat-col-views" title="Recommandations / vues">Vues</th>
+            {showCert && <th title="Certification des actifs de valeur">Certif.</th>}
             {!readOnly && <th className="cat-col-actions">{t('cat.col.actions')}</th>}
           </tr>
         </thead>
@@ -98,6 +134,18 @@ function ProductTable({ products, readOnly, onEdit, onDelete, onViews, t }) {
                   <><FaEye className="cat-views-ic" /> {p.views ?? 0}</>
                 )}
               </td>
+              {showCert && (
+                <td>
+                  <CertCell
+                    p={p}
+                    cert={certByProduct?.[p.id]}
+                    eligible={(() => { const u = priceUsd(p.pricing, rate); return u != null && u >= (threshold?.usd || Infinity) })()}
+                    onView={onViewCert}
+                    onRequest={onRequestCert}
+                    busy={certBusy}
+                  />
+                </td>
+              )}
               {!readOnly && (
                 <td className="cat-col-actions">
                   <button className="cat-icon-btn" onClick={() => onEdit(p)} aria-label={t('cat.edit')}><FaEdit /></button>
@@ -248,9 +296,13 @@ export default function CataloguePage() {
   const [analytics, setAnalytics] = useState({ open: false, product: null })
   const [renaming, setRenaming] = useState(false)
   const [error, setError] = useState('')
-  const [filters, setFilters] = useState({ q: '', type: '', category: '', condition: '', stock: '' })
+  const [filters, setFilters] = useState({ q: '', type: '', category: '', condition: '', stock: '', cert: '' })
+  const [certByProduct, setCertByProduct] = useState({})
+  const [certSummary, setCertSummary] = useState(null)
+  const [viewCert, setViewCert] = useState(null)
+  const [certBusy, setCertBusy] = useState('')
   const taxonomy = useTaxonomy()
-  const filtered = applyFilters(products, filters)
+  const filtered = applyFilters(products, filters, certByProduct)
   const lp = usePaged(filtered, 10)
 
   const load = useCallback(async () => {
@@ -260,6 +312,16 @@ export default function CataloguePage() {
       const r = await api.get('/v1/merchant/products')
       setShop(r?.shop || null)
       setProducts(r?.products || [])
+      // Certificats du commerçant (best-effort, ne bloque pas le catalogue).
+      Promise.all([
+        api.get('/v1/merchant/certificates').catch(() => []),
+        api.get('/v1/merchant/certificates/summary').catch(() => null),
+      ]).then(([list, sum]) => {
+        const map = {}
+        for (const c of Array.isArray(list) ? list : []) map[c.productId] = c
+        setCertByProduct(map)
+        setCertSummary(sum || null)
+      })
     } catch (e) {
       setError(e?.message || t('merchant.error'))
     } finally {
@@ -267,6 +329,19 @@ export default function CataloguePage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const requestCert = async (p) => {
+    setCertBusy(p.id)
+    try {
+      await api.post('/v1/merchant/certificates/request', { productId: p.id })
+      notify('Demande de certification envoyée', 'success')
+      await load()
+    } catch (e) { notify(e?.message || t('merchant.error'), 'error') } finally { setCertBusy('') }
+  }
+  const openCert = async (cert) => {
+    try { const d = await api.get(`/v1/merchant/certificates/${encodeURIComponent(cert.certId || cert.productId)}/doc`); setViewCert(d) }
+    catch (e) { notify(e?.message || t('merchant.error'), 'error') }
+  }
 
   useEffect(() => { load() }, [load])
 
@@ -355,12 +430,31 @@ export default function CataloguePage() {
           />
         ) : (
           <>
+            {certSummary && (certSummary.certified > 0 || certSummary.requested > 0 || Number(certSummary.totalCostUsd) > 0) && (
+              <div className="cat-cert-summary">
+                <FaCertificate className="cat-cert-summary-ic" />
+                <span><strong>{certSummary.certified}</strong> certifiés</span>
+                <span><strong>{certSummary.requested}</strong> en demande</span>
+                <span>Coût total <strong>{Number(certSummary.totalCostUsd || 0).toLocaleString('fr-FR')} $</strong>{Number(certSummary.owedUsd) > 0 ? ` (dont ${Number(certSummary.owedUsd).toLocaleString('fr-FR')} $ dus)` : ''}</span>
+              </div>
+            )}
             <CatalogueFilters value={filters} onChange={setFilters} taxonomy={taxonomy} />
             {filtered.length === 0 ? (
               <Card><p className="cat-empty-filter">Aucun article ne correspond à ces filtres.</p></Card>
             ) : (
               <>
-                <ProductTable products={lp.pageItems} onEdit={(p) => setModal({ open: true, product: p })} onDelete={(p) => setConfirm({ open: true, product: p, busy: false })} onViews={(p) => setAnalytics({ open: true, product: p })} t={t} />
+                <ProductTable
+                  products={lp.pageItems}
+                  onEdit={(p) => setModal({ open: true, product: p })}
+                  onDelete={(p) => setConfirm({ open: true, product: p, busy: false })}
+                  onViews={(p) => setAnalytics({ open: true, product: p })}
+                  t={t}
+                  certByProduct={certByProduct}
+                  threshold={certSummary?.threshold}
+                  onViewCert={openCert}
+                  onRequestCert={requestCert}
+                  certBusy={certBusy}
+                />
                 <Pagination page={lp.page} totalPages={lp.totalPages} count={lp.count} onChange={lp.setPage} />
               </>
             )}
@@ -396,6 +490,36 @@ export default function CataloguePage() {
         product={analytics.product}
         onClose={() => setAnalytics({ open: false, product: null })}
       />
+
+      <Modal open={!!viewCert} title={viewCert ? `Certificat ${viewCert.serial}` : ''} onClose={() => setViewCert(null)}>
+        {viewCert && (
+          <div className="cert-doc">
+            <div className="cert-doc-head">
+              <FaCertificate className="cert-doc-logo" />
+              <div><strong>Certificat d'authentification Tindisa</strong><div className="cat-sku">{viewCert.serial} · v{viewCert.version} · {viewCert.status === 'issued' ? 'Valide' : viewCert.status}</div></div>
+            </div>
+            <div className="cert-doc-grid">
+              <div><span className="metric-item-label">Actif</span><span>{viewCert.productName}</span></div>
+              <div><span className="metric-item-label">Valeur</span><span>{viewCert.value?.amount != null ? `${Number(viewCert.value.amount).toLocaleString('fr-FR')} ${viewCert.value.currency || ''}` : '—'}</span></div>
+              <div><span className="metric-item-label">Émis le</span><span>{viewCert.issuedAt ? new Date(viewCert.issuedAt).toLocaleDateString('fr-FR') : '—'}</span></div>
+              <div><span className="metric-item-label">Émetteur</span><span>{viewCert.issuer}</span></div>
+            </div>
+            <div className="cert-doc-checks">
+              {[...(viewCert.checklist?.legal || []), ...(viewCert.checklist?.technical || [])].map((i, idx) => (
+                <span key={idx} className={`cert-check-badge${i.checked ? ' ok' : ''}`}>{i.checked ? <FaCheckCircle /> : null} {i.label}</span>
+              ))}
+            </div>
+            <div className="cert-doc-bc">
+              <FaLink /> <strong>Ancrage blockchain :</strong> {viewCert.blockchain?.status === 'anchored' ? 'On-chain' : viewCert.blockchain?.status === 'pending' ? 'À ancrer (à venir)' : '—'}
+              {viewCert.blockchain?.anchorHash && <div className="cat-sku">hash {viewCert.blockchain.anchorHash}</div>}
+            </div>
+            <div className="ui-modal-foot">
+              <Button variant="ghost" onClick={() => setViewCert(null)}>Fermer</Button>
+              {viewCert.status === 'issued' && <Button variant="primary" onClick={() => window.print()}><FaPrint /> Imprimer</Button>}
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }
