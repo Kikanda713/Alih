@@ -117,7 +117,7 @@ export default function AdminHome() {
 
       <div className="dash-quick">
         <Button as={Link} to="/admin/users" variant="primary"><FaUsers /> {t('admin.home.manageUsers')}</Button>
-        <Button as={Link} to="/admin/subscriptions" variant="secondary"><FaCreditCard /> {t('admin.subs.title')}</Button>
+        <Button as={Link} to="/admin/commissions" variant="secondary"><FaCreditCard /> Commissions</Button>
       </div>
 
       {/* Activités récentes : créations de comptes (boutiques/acheteurs) + abonnements */}

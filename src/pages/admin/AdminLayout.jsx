@@ -1,6 +1,6 @@
 import { useAuth0 } from '@auth0/auth0-react'
 import { Link, Navigate } from 'react-router-dom'
-import { FaChartPie, FaUsers, FaCreditCard, FaMotorcycle, FaMapMarkedAlt, FaPercent } from 'react-icons/fa'
+import { FaChartPie, FaUsers, FaMotorcycle, FaMapMarkedAlt, FaPercent } from 'react-icons/fa'
 import { isAuth0Configured } from '../../auth/config'
 import { useT } from '../../i18n/index.jsx'
 import { Spinner } from '../../components/ui.jsx'
@@ -11,10 +11,11 @@ import { DEMO_MODE, isDemoSession, demoUser } from '../../demo/demo' // DEMO: re
 
 function AdminShell() {
   const { t } = useT()
+  // Modèle commission (abonnement EN VEILLE) → plus d'onglet « Abonnements » ;
+  // la facturation admin passe par « Commissions ».
   const nav = [
     { to: '/admin', end: true, icon: <FaChartPie />, label: t('admin.nav.overview') },
     { to: '/admin/users', icon: <FaUsers />, label: t('admin.nav.users') },
-    { to: '/admin/subscriptions', icon: <FaCreditCard />, label: t('admin.nav.subs') },
     { to: '/admin/commissions', icon: <FaPercent />, label: 'Commissions' },
     { to: '/admin/drivers', icon: <FaMotorcycle />, label: 'Livreurs' },
     { to: '/admin/map', icon: <FaMapMarkedAlt />, label: 'Carte' },
