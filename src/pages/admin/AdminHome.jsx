@@ -4,6 +4,7 @@ import { FaUsers, FaStore, FaShoppingBag, FaMotorcycle, FaCoins, FaCreditCard, F
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n/index.jsx'
 import { Card, Button, Badge, Spinner, EmptyState } from '../../components/ui.jsx'
+import { StatGrid, StatCard } from '../../components/StatCard.jsx'
 import { usePaged, Pagination } from '../../components/Pagination.jsx'
 import { useAdminView } from './AdminScopeContext.jsx'
 import { planById } from '../../data/plans'
@@ -139,17 +140,11 @@ export default function AdminHome() {
         <p className="dash-sub">{t('admin.home.subtitle')}{scopeLabel ? ` · ${scopeLabel}` : ''}</p>
       </header>
 
-      <div className="dash-stats admin-stats">
+      <StatGrid>
         {cards.map((c, i) => (
-          <Card key={i} className="dash-stat">
-            <div className="dash-stat-icon">{c.icon}</div>
-            <div>
-              <span className="dash-stat-value">{c.value}</span>
-              <span className="dash-stat-label">{c.label}</span>
-            </div>
-          </Card>
+          <StatCard key={i} icon={c.icon} value={c.value} label={c.label} />
         ))}
-      </div>
+      </StatGrid>
 
       <div className="dash-quick">
         <Button as={Link} to="/admin/users" variant="primary"><FaUsers /> {t('admin.home.manageUsers')}</Button>

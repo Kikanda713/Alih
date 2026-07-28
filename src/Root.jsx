@@ -17,6 +17,7 @@ import AdminUsers from './pages/admin/AdminUsers.jsx'
 import AdminSubscriptions from './pages/admin/AdminSubscriptions.jsx'
 import AdminCommissions from './pages/admin/AdminCommissions.jsx'
 import AdminCertification from './pages/admin/AdminCertification.jsx'
+import AdminP2P from './pages/admin/AdminP2P.jsx'
 import AdminDrivers from './pages/admin/AdminDrivers.jsx'
 import AdminMap from './pages/admin/AdminMap.jsx'
 
@@ -42,6 +43,7 @@ export default function Root() {
         <Route path="subscriptions" element={<AdminSubscriptions />} />
         <Route path="commissions" element={<AdminCommissions />} />
         <Route path="certification" element={<AdminCertification />} />
+        <Route path="p2p" element={<AdminP2P />} />
         <Route path="drivers" element={<AdminDrivers />} />
         <Route path="map" element={<AdminMap />} />
       </Route>

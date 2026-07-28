@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { FaCertificate, FaCheckCircle, FaTimesCircle, FaClock, FaEye, FaEdit, FaBan, FaCog, FaLink, FaPrint } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useToast } from '../../components/Toast.jsx'
-import { Card, Button, Badge, Spinner, EmptyState, Field, Input, Select, Textarea, Modal, ConfirmModal } from '../../components/ui.jsx'
+import { Button, Badge, Spinner, EmptyState, Field, Input, Select, Textarea, Modal, ConfirmModal } from '../../components/ui.jsx'
+import { StatGrid, StatCard } from '../../components/StatCard.jsx'
 import { usePaged, Pagination } from '../../components/Pagination.jsx'
 import { useAdminView } from './AdminScopeContext.jsx'
 
@@ -125,12 +126,12 @@ export default function AdminCertification() {
         <Button variant="ghost" onClick={() => setCfgOpen(true)}><FaCog /> Paramètres</Button>
       </header>
 
-      <div className="dash-stats admin-stats">
-        <Card className="dash-stat"><div className="dash-stat-icon"><FaCertificate /></div><div><span className="dash-stat-value">{c.total ?? 0}</span><span className="dash-stat-label">Actifs éligibles</span></div></Card>
-        <Card className="dash-stat"><div className="dash-stat-icon"><FaCheckCircle /></div><div><span className="dash-stat-value">{c.certified ?? 0}</span><span className="dash-stat-label">Certifiés</span></div></Card>
-        <Card className="dash-stat"><div className="dash-stat-icon"><FaClock /></div><div><span className="dash-stat-value">{c.requested ?? 0}</span><span className="dash-stat-label">Demandes</span></div></Card>
-        <Card className="dash-stat"><div className="dash-stat-icon"><FaTimesCircle /></div><div><span className="dash-stat-value">{c.uncertified ?? 0}</span><span className="dash-stat-label">Non certifiés</span></div></Card>
-      </div>
+      <StatGrid>
+        <StatCard icon={<FaCertificate />} value={c.total ?? 0} label="Actifs éligibles" />
+        <StatCard icon={<FaCheckCircle />} value={c.certified ?? 0} label="Certifiés" />
+        <StatCard icon={<FaClock />} value={c.requested ?? 0} label="Demandes" />
+        <StatCard icon={<FaTimesCircle />} value={c.uncertified ?? 0} label="Non certifiés" />
+      </StatGrid>
 
       <div className="admin-toolbar">
         <div className="cat-tabs admin-tabs">
