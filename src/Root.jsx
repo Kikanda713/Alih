@@ -1,25 +1,26 @@
-import { Routes, Route } from 'react-router-dom'
-import App from './App.jsx'
-import Callback from './auth/Callback.jsx'
-import LinkPage from './pages/LinkPage.jsx'
-import VerifyPage from './pages/VerifyPage.jsx'
-import StepUpPage from './pages/StepUpPage.jsx'
-import DashboardLayout from './pages/dashboard/DashboardLayout.jsx'
-import ChatHome from './pages/dashboard/ChatHome.jsx'
-import CataloguePage from './pages/dashboard/CataloguePage.jsx'
-import BoutiquePage from './pages/dashboard/BoutiquePage.jsx'
-import VentesPage from './pages/dashboard/VentesPage.jsx'
-import WalletPage from './pages/dashboard/WalletPage.jsx'
-import SubscriptionPage from './pages/dashboard/SubscriptionPage.jsx'
-import AdminLayout from './pages/admin/AdminLayout.jsx'
-import AdminHome from './pages/admin/AdminHome.jsx'
-import AdminUsers from './pages/admin/AdminUsers.jsx'
-import AdminSubscriptions from './pages/admin/AdminSubscriptions.jsx'
-import AdminCommissions from './pages/admin/AdminCommissions.jsx'
-import AdminCertification from './pages/admin/AdminCertification.jsx'
-import AdminP2P from './pages/admin/AdminP2P.jsx'
-import AdminDrivers from './pages/admin/AdminDrivers.jsx'
-import AdminMap from './pages/admin/AdminMap.jsx'
+import { Routes, Route } from "react-router-dom";
+import App from "./App.jsx";
+import Callback from "./auth/Callback.jsx";
+import LinkPage from "./pages/LinkPage.jsx";
+import VerifyPage from "./pages/VerifyPage.jsx";
+import PayPage from "./pages/PayPage.jsx";
+import StepUpPage from "./pages/StepUpPage.jsx";
+import DashboardLayout from "./pages/dashboard/DashboardLayout.jsx";
+import ChatHome from "./pages/dashboard/ChatHome.jsx";
+import CataloguePage from "./pages/dashboard/CataloguePage.jsx";
+import BoutiquePage from "./pages/dashboard/BoutiquePage.jsx";
+import VentesPage from "./pages/dashboard/VentesPage.jsx";
+import WalletPage from "./pages/dashboard/WalletPage.jsx";
+import SubscriptionPage from "./pages/dashboard/SubscriptionPage.jsx";
+import AdminLayout from "./pages/admin/AdminLayout.jsx";
+import AdminHome from "./pages/admin/AdminHome.jsx";
+import AdminUsers from "./pages/admin/AdminUsers.jsx";
+import AdminSubscriptions from "./pages/admin/AdminSubscriptions.jsx";
+import AdminCommissions from "./pages/admin/AdminCommissions.jsx";
+import AdminCertification from "./pages/admin/AdminCertification.jsx";
+import AdminP2P from "./pages/admin/AdminP2P.jsx";
+import AdminDrivers from "./pages/admin/AdminDrivers.jsx";
+import AdminMap from "./pages/admin/AdminMap.jsx";
 
 export default function Root() {
   return (
@@ -28,6 +29,7 @@ export default function Root() {
       <Route path="/auth/callback" element={<Callback />} />
       <Route path="/link" element={<LinkPage />} />
       <Route path="/verify" element={<VerifyPage />} />
+      <Route path="/pay" element={<PayPage />} />
       <Route path="/step-up" element={<StepUpPage />} />
       <Route path="/dashboard" element={<DashboardLayout />}>
         <Route index element={<ChatHome />} />
@@ -48,5 +50,5 @@ export default function Root() {
         <Route path="map" element={<AdminMap />} />
       </Route>
     </Routes>
-  )
+  );
 }

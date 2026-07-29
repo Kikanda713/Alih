@@ -1,94 +1,183 @@
-import { useState, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import {
-  FaShieldAlt, FaQrcode, FaFilePdf, FaHashtag, FaCheckCircle,
-  FaTimesCircle, FaExclamationTriangle, FaExternalLinkAlt, FaArrowLeft, FaSpinner,
-} from 'react-icons/fa'
-import tindisaLogo from '../assets/tindisa-logo.png'
-import { verifyCertificate, sha256File, decodeQrImage } from '../api/certificates'
+  FaShieldAlt,
+  FaQrcode,
+  FaFilePdf,
+  FaHashtag,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaExclamationTriangle,
+  FaExternalLinkAlt,
+  FaArrowLeft,
+  FaSpinner,
+  FaDownload,
+  FaCube,
+} from "react-icons/fa";
+import tindisaLogo from "../assets/tindisa-logo.png";
+import {
+  verifyCertificate,
+  sha256File,
+  decodeQrImage,
+  certAssetUrl,
+} from "../api/certificates";
+import "../App.css";
 
 const METHODS = [
-  { id: 'hash', label: 'Code / Hash', icon: <FaHashtag /> },
-  { id: 'pdf', label: 'Certificat PDF', icon: <FaFilePdf /> },
-  { id: 'qr', label: 'QR code', icon: <FaQrcode /> },
-]
+  { id: "hash", label: "Code / série", icon: <FaHashtag /> },
+  { id: "pdf", label: "Certificat PDF", icon: <FaFilePdf /> },
+  { id: "qr", label: "QR code", icon: <FaQrcode /> },
+];
 
 function fmtDate(d) {
-  if (!d) return '—'
-  try { return new Date(d).toLocaleDateString('fr-FR', { dateStyle: 'long' }) } catch { return '—' }
+  if (!d) return "—";
+  try {
+    return new Date(d).toLocaleDateString("fr-FR", { dateStyle: "long" });
+  } catch {
+    return "—";
+  }
 }
 
+function fmtValue(v) {
+  if (!v || v.amount == null) return null;
+  const n = new Intl.NumberFormat("fr-FR").format(Number(v.amount));
+  const cur = (v.currency || "CDF").toUpperCase();
+  return cur === "USD" ? `${n} $` : `${n} ${cur}`;
+}
+
+const STATUS_LABEL = {
+  authentic: "Certificat authentique",
+  revoked: "Certificat révoqué",
+  expired: "Certificat expiré",
+  unknown: "Authenticité non confirmée",
+};
+
 export default function VerifyPage() {
-  const [method, setMethod] = useState('hash')
-  const [hash, setHash] = useState('')
-  const [file, setFile] = useState(null)       // { name, fileHash } pour PDF
-  const [qr, setQr] = useState('')             // contenu QR décodé (ou collé)
-  const [busy, setBusy] = useState(false)
-  const [result, setResult] = useState(null)   // { found, certificate } | { error }
-  const pdfRef = useRef(null)
-  const qrRef = useRef(null)
+  const [params, setParams] = useSearchParams();
+  const [method, setMethod] = useState("hash");
+  const [hash, setHash] = useState("");
+  const [file, setFile] = useState(null); // { name, fileHash } pour PDF
+  const [qr, setQr] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState(null);
+  const pdfRef = useRef(null);
+  const qrRef = useRef(null);
+
+  // Vérifie un payload donné (hash / serial / qr / fileHash).
+  const runVerify = useCallback(async (payload) => {
+    setBusy(true);
+    setResult(null);
+    try {
+      const data = await verifyCertificate(payload);
+      setResult(data);
+    } catch (e) {
+      setResult({
+        error:
+          e?.message ||
+          "Service de vérification indisponible. Réessayez plus tard.",
+      });
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  // Scan d'un QR → ouvre /verify?c=SERIAL : auto-vérification à l'arrivée.
+  useEffect(() => {
+    const c = params.get("c");
+    if (c) {
+      setMethod("hash");
+      setHash(c);
+      runVerify({ serial: c });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onPdf = async (e) => {
-    const f = e.target.files?.[0]
-    if (!f) return
-    setBusy(true)
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setBusy(true);
     try {
-      const fileHash = await sha256File(f)
-      setFile({ name: f.name, fileHash })
-    } finally { setBusy(false) }
-  }
+      const fileHash = await sha256File(f);
+      setFile({ name: f.name, fileHash });
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const onQr = async (e) => {
-    const f = e.target.files?.[0]
-    if (!f) return
-    setBusy(true)
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setBusy(true);
     try {
-      const decoded = await decodeQrImage(f)
-      if (decoded) setQr(decoded)
-      else setResult({ error: 'QR non lisible sur cet appareil — collez le code du certificat ci-dessous.' })
-    } finally { setBusy(false) }
-  }
+      const decoded = await decodeQrImage(f);
+      if (decoded) setQr(decoded);
+      else
+        setResult({
+          error:
+            "QR non lisible sur cet appareil — collez le code du certificat ci-dessous.",
+        });
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const canVerify =
-    (method === 'hash' && hash.trim()) ||
-    (method === 'pdf' && file?.fileHash) ||
-    (method === 'qr' && qr.trim())
+    (method === "hash" && hash.trim()) ||
+    (method === "pdf" && file?.fileHash) ||
+    (method === "qr" && qr.trim());
 
-  const verify = async () => {
-    setBusy(true)
-    setResult(null)
-    try {
-      const payload =
-        method === 'hash' ? { hash: hash.trim() }
-          : method === 'pdf' ? { fileHash: file.fileHash, fileName: file.name }
-            : { qr: qr.trim() }
-      const data = await verifyCertificate(payload)
-      setResult(data)
-    } catch (e) {
-      setResult({ error: e?.message || 'Service de vérification indisponible. Réessayez plus tard.' })
-    } finally { setBusy(false) }
-  }
+  const verify = () => {
+    if (method === "hash") {
+      const v = hash.trim();
+      runVerify(/tindisa-cert/i.test(v) ? { serial: v } : { hash: v });
+    } else if (method === "pdf") {
+      runVerify({ fileHash: file.fileHash, fileName: file.name });
+    } else {
+      runVerify({ qr: qr.trim() });
+    }
+  };
 
-  const reset = () => { setResult(null); setHash(''); setFile(null); setQr('') }
+  const reset = () => {
+    setResult(null);
+    setHash("");
+    setFile(null);
+    setQr("");
+    if (params.get("c")) setParams({}, { replace: true });
+  };
 
-  const cert = result?.found ? result.certificate : null
-  const statusTone = { authentic: 'ok', revoked: 'bad', expired: 'warn' }[cert?.status] || 'ok'
+  const cert = result?.found ? result.certificate : null;
+  const statusTone =
+    { authentic: "ok", revoked: "bad", expired: "warn", unknown: "warn" }[
+      cert?.status
+    ] || "warn";
+  const value = fmtValue(cert?.value);
+  const pdfSrc = cert?.pdfUrl ? certAssetUrl(cert.pdfUrl) : null;
+  // Alerte si un PDF importé ne correspond PAS à l'empreinte ancrée (document altéré).
+  const tampered = cert && cert.hashMatch === false;
 
   return (
     <div className="verify-page">
       <header className="verify-top">
-        <Link to="/" className="verify-logo"><img src={tindisaLogo} alt="Tindisa" /></Link>
-        <Link to="/" className="verify-back"><FaArrowLeft /> Accueil</Link>
+        <Link to="/" className="verify-logo">
+          <img src={tindisaLogo} alt="Tindisa" />
+        </Link>
+        <Link to="/" className="verify-back">
+          <FaArrowLeft /> Accueil
+        </Link>
       </header>
 
       <main className="verify-main">
         <div className="verify-hero">
-          <div className="verify-badge"><FaShieldAlt /></div>
+          <div className="verify-badge">
+            <FaShieldAlt />
+          </div>
           <h1>Vérifier un certificat</h1>
           <p>
-            Confirmez l'authenticité d'un produit certifié Tindisa. La vérification s'appuie sur un
-            <strong> registre infalsifiable (blockchain)</strong> : importez le certificat PDF, scannez le
-            QR code, ou saisissez le code.
+            Confirmez l'authenticité d'un actif certifié Tindisa. La
+            vérification s'appuie sur un
+            <strong> registre infalsifiable (blockchain)</strong> : importez le
+            certificat PDF, scannez le QR code, ou saisissez son numéro de
+            série.
           </p>
         </div>
 
@@ -97,39 +186,64 @@ export default function VerifyPage() {
             {METHODS.map((m) => (
               <button
                 key={m.id}
-                className={`verify-method${method === m.id ? ' active' : ''}`}
-                onClick={() => { setMethod(m.id); setResult(null) }}
+                className={`verify-method${method === m.id ? " active" : ""}`}
+                onClick={() => {
+                  setMethod(m.id);
+                  setResult(null);
+                }}
               >
-                {m.icon}<span>{m.label}</span>
+                {m.icon}
+                <span>{m.label}</span>
               </button>
             ))}
           </div>
 
           <div className="verify-input">
-            {method === 'hash' && (
+            {method === "hash" && (
               <input
                 className="verify-field"
-                placeholder="Collez le code / hash du certificat (ex. 0x…)"
+                placeholder="Numéro de série (TINDISA-CERT-…) ou empreinte (0x…)"
                 value={hash}
                 onChange={(e) => setHash(e.target.value)}
               />
             )}
 
-            {method === 'pdf' && (
-              <button className="verify-drop" onClick={() => pdfRef.current?.click()}>
+            {method === "pdf" && (
+              <button
+                className="verify-drop"
+                onClick={() => pdfRef.current?.click()}
+              >
                 <FaFilePdf />
-                <span>{file ? file.name : 'Importer le certificat PDF'}</span>
+                <span>{file ? file.name : "Importer le certificat PDF"}</span>
                 {file && <small>empreinte calculée ✓</small>}
-                <input ref={pdfRef} type="file" accept="application/pdf" hidden onChange={onPdf} />
+                <input
+                  ref={pdfRef}
+                  type="file"
+                  accept="application/pdf"
+                  hidden
+                  onChange={onPdf}
+                />
               </button>
             )}
 
-            {method === 'qr' && (
+            {method === "qr" && (
               <>
-                <button className="verify-drop" onClick={() => qrRef.current?.click()}>
+                <button
+                  className="verify-drop"
+                  onClick={() => qrRef.current?.click()}
+                >
                   <FaQrcode />
-                  <span>{qr ? 'QR détecté ✓' : 'Importer une image du QR code'}</span>
-                  <input ref={qrRef} type="file" accept="image/*" capture="environment" hidden onChange={onQr} />
+                  <span>
+                    {qr ? "QR détecté ✓" : "Importer une image du QR code"}
+                  </span>
+                  <input
+                    ref={qrRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    hidden
+                    onChange={onQr}
+                  />
                 </button>
                 <input
                   className="verify-field"
@@ -141,61 +255,205 @@ export default function VerifyPage() {
             )}
           </div>
 
-          <button className="verify-submit" disabled={!canVerify || busy} onClick={verify}>
-            {busy ? <><FaSpinner className="spin" /> Vérification…</> : <><FaShieldAlt /> Vérifier l'authenticité</>}
+          <button
+            className="verify-submit"
+            disabled={!canVerify || busy}
+            onClick={verify}
+          >
+            {busy ? (
+              <>
+                <FaSpinner className="spin" /> Vérification…
+              </>
+            ) : (
+              <>
+                <FaShieldAlt /> Vérifier l'authenticité
+              </>
+            )}
           </button>
         </div>
 
-        {/* Résultat */}
+        {/* Résultat introuvable / erreur */}
         {result && !cert && (
-          <div className={`verify-result ${result.error ? 'warn' : 'bad'}`}>
-            {result.error
-              ? <><FaExclamationTriangle /> <span>{result.error}</span></>
-              : <><FaTimesCircle /> <span>Aucun certificat trouvé pour cet élément. Le produit n'est peut-être pas (encore) certifié.</span></>}
+          <div className={`verify-result ${result.error ? "warn" : "bad"}`}>
+            {result.error ? (
+              <>
+                <FaExclamationTriangle /> <span>{result.error}</span>
+              </>
+            ) : (
+              <>
+                <FaTimesCircle />{" "}
+                <span>
+                  Aucun certificat trouvé. L'actif n'est peut-être pas (encore)
+                  certifié par Tindisa.
+                </span>
+              </>
+            )}
           </div>
         )}
 
         {cert && (
           <div className={`verify-cert tone-${statusTone}`}>
             <div className="verify-cert-head">
-              {statusTone === 'ok' ? <FaCheckCircle /> : statusTone === 'bad' ? <FaTimesCircle /> : <FaExclamationTriangle />}
+              {statusTone === "ok" ? (
+                <FaCheckCircle />
+              ) : statusTone === "bad" ? (
+                <FaTimesCircle />
+              ) : (
+                <FaExclamationTriangle />
+              )}
               <div>
                 <strong>
-                  {cert.status === 'authentic' ? 'Certificat authentique' : cert.status === 'revoked' ? 'Certificat révoqué' : 'Certificat expiré'}
+                  {STATUS_LABEL[cert.status] || STATUS_LABEL.unknown}
                 </strong>
-                <span>Vérifié sur la blockchain {cert.chain ? `· ${cert.chain}` : ''}</span>
+                <span>
+                  {cert.serial ? `${cert.serial} · ` : ""}Vérifié sur la
+                  blockchain{cert.chain ? ` · ${cert.chain}` : ""}
+                </span>
               </div>
             </div>
+
+            {tampered && (
+              <div className="verify-tamper">
+                <FaExclamationTriangle /> Le document importé ne correspond pas
+                à l'empreinte enregistrée : il a pu être modifié. Comparez avec
+                le PDF officiel ci-dessous.
+              </div>
+            )}
+
             <dl className="verify-cert-grid">
-              <div><dt>Produit</dt><dd>{cert.productName || '—'}</dd></div>
-              <div><dt>Vendeur</dt><dd>{cert.sellerName || '—'}</dd></div>
-              {cert.category && <div><dt>Catégorie</dt><dd>{cert.category}</dd></div>}
-              {cert.condition && <div><dt>État</dt><dd>{cert.condition}</dd></div>}
-              <div><dt>Émis le</dt><dd>{fmtDate(cert.issuedAt)}</dd></div>
-              {cert.issuer && <div><dt>Émetteur</dt><dd>{cert.issuer}</dd></div>}
-              {cert.hash && <div className="wide"><dt>Empreinte</dt><dd className="mono">{cert.hash}</dd></div>}
+              <div>
+                <dt>Actif</dt>
+                <dd>{cert.productName || "—"}</dd>
+              </div>
+              <div>
+                <dt>Propriétaire</dt>
+                <dd>{cert.ownerName || "—"}</dd>
+              </div>
+              {cert.sellerName && (
+                <div>
+                  <dt>Vendeur</dt>
+                  <dd>{cert.sellerName}</dd>
+                </div>
+              )}
+              {cert.category && (
+                <div>
+                  <dt>Catégorie</dt>
+                  <dd>{cert.category}</dd>
+                </div>
+              )}
+              {value && (
+                <div>
+                  <dt>Valeur estimée</dt>
+                  <dd>{value}</dd>
+                </div>
+              )}
+              <div>
+                <dt>Émis le</dt>
+                <dd>{fmtDate(cert.issuedAt)}</dd>
+              </div>
+              {cert.version && (
+                <div>
+                  <dt>Version</dt>
+                  <dd>v{cert.version}</dd>
+                </div>
+              )}
+              <div>
+                <dt>Émetteur</dt>
+                <dd>{cert.issuer || "Tindisa"}</dd>
+              </div>
+              {cert.hash && (
+                <div className="wide">
+                  <dt>Empreinte (SHA-256)</dt>
+                  <dd className="mono">{cert.hash}</dd>
+                </div>
+              )}
             </dl>
+
+            {/* Historique du cycle de vie de l'actif (métadonnées publiques) */}
+            {cert.history?.length > 0 && (
+              <div className="verify-history">
+                <h3>Historique de l'actif</h3>
+                <div className="verify-history-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Élément</th>
+                        <th>Valeur</th>
+                        <th>Catégorie</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cert.history.map((h, i) => (
+                        <tr key={i}>
+                          <td className="mono">{h.date || "—"}</td>
+                          <td>{h.label}</td>
+                          <td>{h.value}</td>
+                          <td>{h.category || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Aperçu du certificat PDF directement dans l'app */}
+            {pdfSrc && (
+              <div className="verify-pdf-wrap">
+                <div className="verify-pdf-bar">
+                  <span>
+                    <FaFilePdf /> Certificat officiel
+                  </span>
+                  <a
+                    href={pdfSrc}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                  >
+                    <FaDownload /> Télécharger
+                  </a>
+                </div>
+                <iframe
+                  className="verify-pdf"
+                  src={pdfSrc}
+                  title="Certificat de valeur Tindisa"
+                />
+              </div>
+            )}
+
             <div className="verify-cert-links">
               {cert.explorerUrl && (
-                <a href={cert.explorerUrl} target="_blank" rel="noopener noreferrer">
-                  <FaExternalLinkAlt /> Voir sur la blockchain
+                <a
+                  href={cert.explorerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaExternalLinkAlt /> Voir la transaction blockchain
                 </a>
               )}
-              {cert.controlSheetUrl && (
-                <a href={cert.controlSheetUrl} target="_blank" rel="noopener noreferrer">
-                  <FaFilePdf /> Fiche de contrôle technique
+              {cert.ipfsUrl && (
+                <a
+                  href={cert.ipfsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaCube /> Document sur IPFS
                 </a>
               )}
             </div>
-            <button className="verify-again" onClick={reset}>Vérifier un autre certificat</button>
+            <button className="verify-again" onClick={reset}>
+              Vérifier un autre certificat
+            </button>
           </div>
         )}
 
         <p className="verify-foot">
-          <FaShieldAlt /> Les certificats Tindisa sont ancrés dans un registre blockchain : leur authenticité
-          est vérifiable publiquement et ne peut être falsifiée.
+          <FaShieldAlt /> Les certificats Tindisa sont ancrés dans un registre
+          blockchain : leur authenticité est vérifiable publiquement et ne peut
+          être falsifiée.
         </p>
       </main>
     </div>
-  )
+  );
 }

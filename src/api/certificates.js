@@ -1,4 +1,4 @@
-import { apiBaseUrl } from '../auth/config'
+import { apiBaseUrl } from "../auth/config";
 
 /**
  * Vérification PUBLIQUE de l'authenticité d'un certificat produit Tindisa.
@@ -38,31 +38,71 @@ import { apiBaseUrl } from '../auth/config'
  *   réponse 200 si introuvable : { "found": false }
  * ──────────────────────────────────────────────────────────────────────────
  */
-const ENDPOINT = '/v1/certificates/verify'
+const ENDPOINT = "/v1/certificates/verify";
+
+/** URL absolue d'une ressource certificat renvoyée relative par l'API (ex. pdfUrl). */
+export function certAssetUrl(relativePath) {
+  if (!relativePath) return null;
+  if (/^https?:\/\//i.test(relativePath)) return relativePath;
+  return `${apiBaseUrl}${relativePath}`;
+}
 
 export async function verifyCertificate(payload) {
   const res = await fetch(`${apiBaseUrl}${ENDPOINT}`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    method: "POST",
+    headers: { "content-type": "application/json" },
     body: JSON.stringify(payload),
-  })
-  const text = await res.text()
-  const data = text ? JSON.parse(text) : null
+  });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
   if (!res.ok) {
-    const err = new Error(data?.message || `Vérification indisponible (${res.status})`)
-    err.status = res.status
-    throw err
+    const err = new Error(
+      data?.message || `Vérification indisponible (${res.status})`,
+    );
+    err.status = res.status;
+    throw err;
   }
-  return data
+  return data;
+}
+
+/** Résout un lien de paiement de certificat (public, sans token d'auth). */
+export async function resolvePayLink(token) {
+  const res = await fetch(
+    `${apiBaseUrl}/v1/certificates/pay-link/${encodeURIComponent(token)}`,
+  );
+  const text = await res.text();
+  return text ? JSON.parse(text) : { valid: false };
+}
+
+/** Exécute un paiement de certificat depuis un lien (public). */
+export async function executePayLink(token, { phone, telecom }) {
+  const res = await fetch(
+    `${apiBaseUrl}/v1/certificates/pay-link/${encodeURIComponent(token)}`,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ phone, telecom }),
+    },
+  );
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) {
+    const err = new Error(
+      data?.message || `Paiement indisponible (${res.status})`,
+    );
+    err.status = res.status;
+    throw err;
+  }
+  return data;
 }
 
 /** SHA-256 d'un fichier (le hash du document = clé d'ancrage on-chain). */
 export async function sha256File(file) {
-  const buf = await file.arrayBuffer()
-  const digest = await crypto.subtle.digest('SHA-256', buf)
+  const buf = await file.arrayBuffer();
+  const digest = await crypto.subtle.digest("SHA-256", buf);
   return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 /**
@@ -71,13 +111,14 @@ export async function sha256File(file) {
  * non supporté (l'utilisateur peut alors coller le code à la main).
  */
 export async function decodeQrImage(file) {
-  if (typeof window === 'undefined' || !('BarcodeDetector' in window)) return null
+  if (typeof window === "undefined" || !("BarcodeDetector" in window))
+    return null;
   try {
-    const bitmap = await createImageBitmap(file)
-    const detector = new window.BarcodeDetector({ formats: ['qr_code'] })
-    const codes = await detector.detect(bitmap)
-    return codes && codes.length ? codes[0].rawValue : null
+    const bitmap = await createImageBitmap(file);
+    const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
+    const codes = await detector.detect(bitmap);
+    return codes && codes.length ? codes[0].rawValue : null;
   } catch {
-    return null
+    return null;
   }
 }

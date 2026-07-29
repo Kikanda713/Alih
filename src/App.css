@@ -1639,6 +1639,38 @@ section[id] {
 .verify-again { margin: 0 22px 20px; background: none; border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 16px; cursor: pointer; color: var(--gray); font-weight: 600; }
 .verify-again:hover { border-color: var(--terracotta); color: var(--terracotta); }
 
+/* Alerte document altéré (hash importé ≠ empreinte ancrée) */
+.verify-tamper { display: flex; align-items: flex-start; gap: 10px; margin: 0 22px 14px; padding: 12px 14px; border-radius: 10px; background: #fdf0e6; border: 1px solid var(--terracotta); color: #8a3d16; font-size: 0.88rem; line-height: 1.5; }
+.verify-tamper svg { flex-shrink: 0; margin-top: 2px; }
+
+/* Historique du cycle de vie (métadonnées publiques) */
+.verify-history { padding: 4px 22px 8px; }
+.verify-history h3 { font-family: var(--font-heading); font-size: 0.95rem; margin: 0 0 10px; color: var(--ebony); }
+.verify-history-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+.verify-history table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 460px; }
+.verify-history th { text-align: left; background: var(--ivory); color: var(--gray); font-weight: 600; padding: 9px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.verify-history td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--ebony); vertical-align: top; }
+.verify-history tr:last-child td { border-bottom: none; }
+
+/* Page de paiement (servie par lien) */
+.pay-summary { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; margin-bottom: 18px; background: var(--ivory); border: 1px solid var(--border); border-radius: 12px; }
+.pay-summary-label { display: block; font-size: 0.78rem; color: var(--gray); margin-bottom: 3px; }
+.pay-summary strong { font-family: var(--font-heading); color: var(--ebony); font-size: 1.02rem; }
+.pay-summary-amount { font-family: var(--font-heading); font-weight: 700; font-size: 1.35rem; color: var(--terracotta); white-space: nowrap; }
+.pay-done { text-align: center; padding: 12px 6px; }
+.pay-done-ic { font-size: 2.6rem; color: #1a7f4b; margin-bottom: 10px; }
+.pay-done strong { display: block; font-family: var(--font-heading); font-size: 1.1rem; color: var(--ebony); margin-bottom: 8px; }
+.pay-done p { color: var(--gray); font-size: 0.9rem; line-height: 1.6; margin: 0 auto 16px; max-width: 380px; }
+
+/* Aperçu du PDF directement dans l'app */
+.verify-pdf-wrap { margin: 8px 22px 4px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.verify-pdf-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--ivory); border-bottom: 1px solid var(--border); font-size: 0.9rem; font-weight: 600; color: var(--ebony); }
+.verify-pdf-bar span { display: inline-flex; align-items: center; gap: 8px; }
+.verify-pdf-bar a { display: inline-flex; align-items: center; gap: 6px; color: var(--terracotta); text-decoration: none; }
+.verify-pdf-bar a:hover { text-decoration: underline; }
+.verify-pdf { width: 100%; height: 560px; border: none; display: block; background: #525659; }
+@media (max-width: 520px) { .verify-pdf { height: 380px; } }
+
 .verify-foot { display: flex; align-items: flex-start; gap: 10px; margin-top: 24px; color: var(--gray); font-size: 0.85rem; line-height: 1.6; }
 .verify-foot svg { color: var(--terracotta); flex-shrink: 0; margin-top: 2px; }
 
