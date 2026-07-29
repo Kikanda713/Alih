@@ -67,7 +67,7 @@ function ProductCarousel({ items }) {
           <div className="chat-product-body">
             <div className="chat-product-name" title={p.name}>{p.name}</div>
             {(p.certified || p.certificate) && (
-              <div className="chat-product-cert" title="Authentifié par Wanzo"><FaCheckCircle /> Certifié</div>
+              <div className="chat-product-cert" title="Certifié par Tindisa (vérifiable sur la blockchain)"><FaCheckCircle /> Certifié</div>
             )}
             {p.price != null && p.price !== '' && (
               <div className="chat-product-price">{p.price} {p.currency || '$'}</div>
