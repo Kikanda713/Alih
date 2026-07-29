@@ -96,6 +96,21 @@ export async function executePayLink(token, { phone, telecom }) {
   return data;
 }
 
+/** Génère/obtient le certificat SPÉCIMEN de démonstration (gratuit). Renvoie { serial }. */
+export async function getDemoCertificate() {
+  const res = await fetch(`${apiBaseUrl}/v1/certificates/demo`, {
+    method: "POST",
+  });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) {
+    const err = new Error(data?.message || `Démo indisponible (${res.status})`);
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+
 /** SHA-256 d'un fichier (le hash du document = clé d'ancrage on-chain). */
 export async function sha256File(file) {
   const buf = await file.arrayBuffer();

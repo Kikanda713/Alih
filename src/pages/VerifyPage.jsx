@@ -13,6 +13,7 @@ import {
   FaSpinner,
   FaDownload,
   FaCube,
+  FaCertificate,
 } from "react-icons/fa";
 import tindisaLogo from "../assets/tindisa-logo.png";
 import {
@@ -20,6 +21,7 @@ import {
   sha256File,
   decodeQrImage,
   certAssetUrl,
+  getDemoCertificate,
 } from "../api/certificates";
 import "../App.css";
 
@@ -91,6 +93,28 @@ export default function VerifyPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Démo gratuite : génère/obtient un certificat SPÉCIMEN et le vérifie (test complet).
+  const viewExample = async () => {
+    setBusy(true);
+    setResult(null);
+    try {
+      const d = await getDemoCertificate();
+      if (d?.serial) {
+        setMethod("hash");
+        setHash(d.serial);
+        await runVerify({ serial: d.serial });
+      } else {
+        setResult({ error: "Exemple indisponible pour le moment." });
+        setBusy(false);
+      }
+    } catch (e) {
+      setResult({
+        error: e?.message || "Exemple indisponible pour le moment.",
+      });
+      setBusy(false);
+    }
+  };
 
   const onPdf = async (e) => {
     const f = e.target.files?.[0];
@@ -179,6 +203,14 @@ export default function VerifyPage() {
             certificat PDF, scannez le QR code, ou saisissez son numéro de
             série.
           </p>
+          <button
+            className="verify-example"
+            onClick={viewExample}
+            disabled={busy}
+          >
+            {busy ? <FaSpinner className="spin" /> : <FaCertificate />} Voir un
+            exemple de certificat
+          </button>
         </div>
 
         <div className="verify-card">
