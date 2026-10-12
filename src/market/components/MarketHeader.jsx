@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, NavLink, useLocation, useSearchParams } from 'react-router-dom'
 import { FaShoppingCart, FaBars, FaTimes, FaShieldAlt, FaStore, FaWhatsapp, FaTelegramPlane, FaWifi, FaSearch } from 'react-icons/fa'
 import tindisaLogo from '../../assets/tindisa-logo.png'
@@ -101,7 +102,9 @@ export default function MarketHeader() {
         </div>
       </nav>
 
-      {menu && (
+      {/* Portail vers <body> : le flou (backdrop-filter) de l'en-tête enfermerait
+          le menu « fixed » dans sa hauteur, derrière la zone de recherche. */}
+      {menu && createPortal(
         <div className="mk-drawer-overlay" onMouseDown={() => setMenu(false)}>
           <aside className="mk-drawer mk-drawer-left" onMouseDown={(e) => e.stopPropagation()} aria-label="Menu">
             <div className="mk-drawer-head">
@@ -127,7 +130,8 @@ export default function MarketHeader() {
               </a>
             </div>
           </aside>
-        </div>
+        </div>,
+        document.body,
       )}
     </header>
   )

@@ -24,10 +24,6 @@ export default function HomeHero() {
         <h1 className="mk-hero-title">
           Trouvez tout. <span>Concluez par message.</span>
         </h1>
-        <p className="mk-hero-sub">
-          Produits, hôtels et salles, main d’œuvre, livraison, récoltes : comparez ici, puis l’assistant Tindisa
-          négocie, sécurise le paiement et organise la livraison sur WhatsApp ou Telegram.
-        </p>
         <div className="mk-hero-search" data-body-search>
           <SearchBar size="lg" />
         </div>
