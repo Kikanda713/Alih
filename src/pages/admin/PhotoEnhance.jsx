@@ -12,6 +12,14 @@ import { Button, Modal } from '../../components/ui.jsx'
  */
 
 const PROVIDER_LABEL = { openrouter: 'OpenRouter', azure: 'Azure OpenAI', gemini: 'Gemini', openai: 'OpenAI' }
+// Moteur : ancien format (« openrouter ») ou format des réglages IA ({ provider, model }).
+const providerName = (p) => {
+  if (p && typeof p === 'object') {
+    const name = PROVIDER_LABEL[p.provider] || String(p.provider || 'IA')
+    return p.model ? `${name} (${p.model})` : name
+  }
+  return PROVIDER_LABEL[p] || String(p ?? '')
+}
 
 /** Panneau global : état + lancement d'un lot sur les couvertures non traitées. */
 export function EnhancePanel({ withParams, onProgress }) {
@@ -75,7 +83,7 @@ export function EnhancePanel({ withParams, onProgress }) {
       )}
       <p className="admin-enhance-prov">
         {configured
-          ? <>Moteurs : {(st.providers || []).map((p, i) => <span key={p}>{i ? ' → ' : ''}{PROVIDER_LABEL[p] || p}{i ? ' (secours)' : ''}</span>)}</>
+          ? <>Moteurs : {(st.providers || []).map((p, i) => <span key={i}>{i ? ' → ' : ''}{providerName(p)}{i ? ' (secours)' : ''}</span>)}</>
           : <><FaExclamationTriangle /> Aucun moteur configuré : renseignez OPENROUTER_API_KEY (et AZURE_OPENAI_* en secours) sur le serveur.</>}
       </p>
     </section>

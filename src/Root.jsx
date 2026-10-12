@@ -1,4 +1,5 @@
 import { Suspense, lazy } from "react";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Spinner } from "./components/ui.jsx";
 import App from "./App.jsx";
@@ -42,6 +43,7 @@ export default function Root() {
   return (
     // Espace commerçant, back-office et pages annexes chargés à la demande :
     // le site public reste léger (connexions 3G).
+    <ErrorBoundary>
     <Suspense fallback={<div className="mk-page-pad" style={{ display: "grid", placeItems: "center" }}><Spinner label="Chargement…" /></div>}>
     <Routes>
       {/* Site public multi-pages : marché, centres, connectivité, vente */}
@@ -88,5 +90,6 @@ export default function Root() {
       </Route>
     </Routes>
     </Suspense>
+    </ErrorBoundary>
   );
 }
