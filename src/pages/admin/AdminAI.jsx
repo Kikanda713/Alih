@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useLoad } from '../../api/useLoad'
-import { FaRobot, FaKey, FaCheckCircle, FaExclamationTriangle, FaSave, FaPlug, FaSearch, FaMagic, FaComments } from 'react-icons/fa'
+import { FaRobot, FaKey, FaCheckCircle, FaExclamationTriangle, FaSave, FaPlug, FaMagic, FaComments } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useToast } from '../../components/useToast'
-import { Badge, Button, Card, EmptyState, Field, Input, Modal, Select, Spinner } from '../../components/ui.jsx'
+import { Badge, Button, Card, EmptyState, Field, Input, Select, Spinner } from '../../components/ui.jsx'
 
 /*
  * Réglages IA (admins globaux) :
@@ -20,59 +20,72 @@ const PROVIDERS = [
 const TASK_ICONS = { agent_chat: <FaComments />, image_enhance: <FaMagic /> }
 const usd = (v) => (v == null ? '·' : `${Number(v).toLocaleString('fr-FR', { maximumFractionDigits: 4 })} $`)
 
-/** Sélecteur de modèle OpenRouter (catalogue filtré par type de sortie, recherche). */
-function ModelPicker({ output, value, onPick, onClose }) {
+const price = (m, output) => {
+  if (m.kind) return m.kind === 'deployment' ? '' : 'nom du déploiement = nom du modèle'
+  if (output === 'image') return m.imagePrice != null ? `${usd(m.imagePrice)} / image` : ''
+  return m.promptPrice != null ? `${usd(m.promptPrice)} / ${usd(m.completionPrice)} par M jetons` : ''
+}
+const vendorOf = (m) => (m.kind
+  ? (m.kind === 'deployment' ? 'Déploiements de la ressource' : 'Modèles de la ressource')
+  : (m.id.split('/')[0] || 'autres'))
+
+/**
+ * Liste déroulante des modèles À JOUR d'un fournisseur : catalogue OpenRouter
+ * (filtré par type de sortie) ou déploiements de la ressource Azure. Regroupés
+ * par éditeur, avec un champ de filtre pour les longues listes.
+ */
+function ModelSelect({ provider, output, value, onChange }) {
   const api = useTindisaApi()
   const [q, setQ] = useState('')
-  const [models, setModels] = useState(null)
-  const [error, setError] = useState('')
+  const { data: models, error, loading } = useLoad(
+    () => api.get(`/v1/admin/ai/models?provider=${provider}&output=${output}`).then((m) => (Array.isArray(m) ? m : [])),
+    [provider, output],
+  )
 
-  useEffect(() => {
-    let alive = true
-    api.get(`/v1/admin/ai/openrouter/models?output=${output}`)
-      .then((m) => alive && setModels(Array.isArray(m) ? m : []))
-      .catch((e) => alive && setError(e?.message || 'Catalogue indisponible'))
-    return () => { alive = false }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [output])
-
-  const list = useMemo(() => {
+  const groups = useMemo(() => {
     const n = q.trim().toLowerCase()
-    return (models || []).filter((m) => !n || `${m.id} ${m.name}`.toLowerCase().includes(n)).slice(0, 120)
-  }, [models, q])
+    const map = new Map()
+    for (const m of models || []) {
+      if (n && !`${m.id} ${m.name} ${m.model || ''}`.toLowerCase().includes(n) && m.id !== value) continue
+      const g = vendorOf(m)
+      if (!map.has(g)) map.set(g, [])
+      map.get(g).push(m)
+    }
+    return [...map.entries()].sort(([a], [b]) => a.localeCompare(b))
+  }, [models, q, value])
+
+  if (loading) return <Spinner label="Modèles…" />
+  if (error) return <p className="mk-form-error">{error.message || 'Liste des modèles indisponible'}</p>
+  const current = (models || []).find((m) => m.id === value)
+  const count = groups.reduce((n, [, l]) => n + l.length, 0)
 
   return (
-    <Modal open title={output === 'image' ? 'Modèles OpenRouter (image)' : 'Modèles OpenRouter (texte)'} onClose={onClose}>
-      <div className="admin-ai-picker">
-        <div className="admin-mk-search">
-          <Input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher : claude, gpt, gemini, llama…" />
-          <FaSearch />
-        </div>
-        {error ? <p className="mk-form-error">{error}</p> : !models ? <Spinner label="Catalogue…" /> : (
-          <ul className="admin-ai-models">
+    <div className="admin-ai-model">
+      {(models?.length || 0) > 12 && (
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filtrer : claude, gpt, gemini…" aria-label="Filtrer les modèles" />
+      )}
+      <select className="ui-input ui-select" value={value || ''} onChange={(e) => onChange(e.target.value)}>
+        <option value="">{count ? `Choisir parmi ${count} modèle${count > 1 ? 's' : ''}…` : 'Aucun modèle disponible'}</option>
+        {value && !current && <option value={value}>{value} (actuel, absent du catalogue)</option>}
+        {groups.map(([g, list]) => (
+          <optgroup key={g} label={g}>
             {list.map((m) => (
-              <li key={m.id}>
-                <button type="button" className={m.id === value ? 'active' : ''} onClick={() => onPick(m.id)}>
-                  <span><b>{m.name}</b><small>{m.id}</small></span>
-                  <span className="admin-ai-price">
-                    {output === 'image' && m.imagePrice != null
-                      ? <>{usd(m.imagePrice)} / image</>
-                      : <>{usd(m.promptPrice)} / {usd(m.completionPrice)} <small>par M jetons</small></>}
-                    {output === 'text' && m.tools && <Badge tone="success">outils</Badge>}
-                  </span>
-                </button>
-              </li>
+              <option key={m.id} value={m.id}>
+                {[m.name, price(m, output), output === 'text' && m.tools ? 'outils' : ''].filter(Boolean).join(' · ')}
+              </option>
             ))}
-            {!list.length && <li className="dash-sub">Aucun modèle ne correspond.</li>}
-          </ul>
-        )}
-      </div>
-    </Modal>
+          </optgroup>
+        ))}
+      </select>
+      {provider === 'azure' && !models?.length && <small className="dash-sub">Aucun déploiement trouvé : vérifiez l’endpoint et la clé Azure.</small>}
+      {output === 'text' && current && current.tools === false && (
+        <small className="mk-form-error">Ce modèle ne gère pas les outils : l’assistant ne pourra ni chercher ni commander.</small>
+      )}
+    </div>
   )
 }
 
 function ChoiceRow({ label, output, choice, onChange, allowEmpty, providers }) {
-  const [picker, setPicker] = useState(false)
   const provider = choice?.provider || ''
   return (
     <div className="admin-ai-choice">
@@ -80,17 +93,9 @@ function ChoiceRow({ label, output, choice, onChange, allowEmpty, providers }) {
       <Select value={provider} onChange={(e) => onChange(e.target.value ? { provider: e.target.value, model: '' } : null)}
         options={PROVIDERS.map((p) => ({ ...p, label: `${p.label}${providers[p.id]?.configured ? '' : ' (non configuré)'}` }))}
         placeholder={allowEmpty ? 'Aucun' : 'Choisir…'} />
-      {provider === 'openrouter' && (
-        <button type="button" className="admin-ai-model-btn" onClick={() => setPicker(true)}>
-          {choice?.model || 'Choisir un modèle…'}
-        </button>
-      )}
-      {provider === 'azure' && (
-        <Input value={choice?.model || ''} onChange={(e) => onChange({ provider, model: e.target.value })}
-          placeholder={output === 'image' ? 'Déploiement (ex. gpt-image-1)' : 'Déploiement (ex. gpt-4.1)'} />
-      )}
-      {picker && <ModelPicker output={output} value={choice?.model} onClose={() => setPicker(false)}
-        onPick={(id) => { onChange({ provider, model: id }); setPicker(false) }} />}
+      {provider && (providers[provider]?.configured
+        ? <ModelSelect provider={provider} output={output} value={choice?.model} onChange={(model) => onChange({ provider, model })} />
+        : <small className="dash-sub">Enregistrez d’abord la clé de ce fournisseur.</small>)}
     </div>
   )
 }
