@@ -1,16 +1,17 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaAward, FaMapMarkerAlt, FaTools, FaUserCircle } from 'react-icons/fa'
-import { useTaxonomy } from '../../api/taxonomy'
+import { useTaxonomy, tradeFamilies, tradesByFamily } from '../../api/taxonomy'
 import { useLoad } from '../../api/useLoad'
 import { marketApi } from '../lib/api'
+import { displayTrades } from '../lib/pro'
 import { imageUrl, cityLabel } from '../lib/format'
 
 /** Carte d'un technicien / artisan (profil pro) : renvoie vers sa page publique. */
 export function ProCard({ pro }) {
   const taxonomy = useTaxonomy()
   const img = imageUrl(pro.photo || pro.logoUrl, 420)
-  const trades = (pro.trades || []).map((t) => (typeof t === 'string' ? t : t.label)).filter(Boolean)
+  const trades = displayTrades(pro).map((t) => t.label).filter(Boolean)
   const place = [pro.commune, cityLabel(taxonomy, pro.city)].filter(Boolean).join(', ')
   return (
     <Link to={`/boutique/${pro.shopId}`} className="mk-pro-card">
@@ -35,31 +36,43 @@ const PAGE = 12
 
 /**
  * Techniciens et artisans (univers « Main d'œuvre ») : GET /v1/market/pros,
- * filtre par métier ; la ville suit le filtre courant du marché.
+ * filtre par famille puis métier ; la ville suit le filtre courant du marché.
  * Masqué si la route ne répond pas ou s'il n'y a encore personne (sans filtre).
  */
 export default function ProsRail({ city }) {
   const taxonomy = useTaxonomy()
+  const [family, setFamily] = useState('')
   const [trade, setTrade] = useState('')
   const [limit, setLimit] = useState(PAGE)
   const { data, loading, error } = useLoad(
-    () => marketApi.pros({ trade: trade || undefined, city: city || undefined, limit }),
-    [trade, city || '', limit],
+    () => marketApi.pros({ family: family || undefined, trade: trade || undefined, city: city || undefined, limit }),
+    [family, trade, city || '', limit],
   )
   const items = data?.items || []
-  if (error || (!loading && !items.length && !trade)) return null
-  const trades = taxonomy?.trades || []
+  if (error || (!loading && !items.length && !trade && !family)) return null
+  const families = tradeFamilies(taxonomy).filter((f) => f.id)
+  // Sans familles (ancienne API) : liste plate des métiers.
+  const trades = family ? tradesByFamily(taxonomy, family) : families.length ? [] : taxonomy?.trades || []
 
   return (
     <section className="mk-rail-section mk-pros">
       <div className="mk-rail-head">
         <h2><span className="mk-rail-ic"><FaTools /></span> Techniciens et artisans{city ? ` à ${cityLabel(taxonomy, city)}` : ''}</h2>
-        {trades.length > 0 && (
-          <select className="ui-input ui-select mk-pros-filter" value={trade} aria-label="Métier"
-            onChange={(e) => { setTrade(e.target.value); setLimit(PAGE) }}>
-            <option value="">Tous les métiers</option>
-            {trades.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
-          </select>
+        {(families.length > 0 || trades.length > 0) && (
+          <div className="mk-pros-filters">
+            {families.length > 0 && <select className="ui-input ui-select mk-pros-filter" value={family} aria-label="Famille de métiers"
+              onChange={(e) => { setFamily(e.target.value); setTrade(''); setLimit(PAGE) }}>
+              <option value="">Toutes les familles</option>
+              {families.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}
+            </select>}
+            {trades.length > 0 && (
+              <select className="ui-input ui-select mk-pros-filter" value={trade} aria-label="Métier"
+                onChange={(e) => { setTrade(e.target.value); setLimit(PAGE) }}>
+                <option value="">Tous les métiers</option>
+                {trades.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+              </select>
+            )}
+          </div>
         )}
       </div>
       {loading && !items.length ? (

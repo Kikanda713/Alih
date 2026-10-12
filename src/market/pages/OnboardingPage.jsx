@@ -12,7 +12,7 @@ import { useTaxonomy, businessNoun, isIndividualType, isPlaceholderShopName, pro
 import { uploadImage, isCloudinaryConfigured } from '../../api/cloudinary'
 import { isAuth0Configured } from '../../auth/config'
 import ChannelLinks from '../components/ChannelLinks'
-import { EMPTY_PRO, normalizePro, validatePro } from '../lib/pro'
+import { EMPTY_PRO, normalizePro, validatePro, otherTradeFor } from '../lib/pro'
 import SocialLinksForm from '../components/SocialLinksForm'
 import { ShopTypeSelect, TradesPicker, ZonesInput, PhotosEditor, VideosEditor } from '../components/ProFields'
 
@@ -66,7 +66,7 @@ const SHOP_FIELDS = {
   zone: ['city', 'address'],
 }
 const PRO_PARTS = { profile: ['trades', 'experience'], zone: ['zones'], works: ['photos', 'videos'] }
-const PRO_FIELDS = { profile: ['trades', 'experienceYears'], zone: ['zones'], works: ['photos', 'videos'] }
+const PRO_FIELDS = { profile: ['trades', 'otherTrade', 'experienceYears'], zone: ['zones'], works: ['photos', 'videos'] }
 
 function Wizard({ proRoute }) {
   const api = useTindisaApi()
@@ -135,7 +135,7 @@ function Wizard({ proRoute }) {
         shopQ.setData(saved?.id ? saved : shop)
       }
       if (proMode && PRO_FIELDS[current]) {
-        await api.put('/v1/merchant/shop/pro', Object.fromEntries(PRO_FIELDS[current].map((k) => [k, proNow[k]])))
+        await api.put('/v1/merchant/shop/pro', Object.fromEntries(PRO_FIELDS[current].map((k) => [k, k === 'otherTrade' ? otherTradeFor(proNow) : proNow[k]])))
         setPro(proNow)
       }
       setStep((s) => s + 1)
@@ -221,7 +221,8 @@ function Wizard({ proRoute }) {
               <Input value={form.name} onChange={set('name')} maxLength={80} placeholder="Ex. Jean Plomberie" />
             </Field>
             <Field label={`Vos métiers * (${limits.maxTrades} maximum)`}>
-              <TradesPicker taxonomy={taxonomy} value={pro.trades} onChange={setP('trades')} max={limits.maxTrades} />
+              <TradesPicker taxonomy={taxonomy} value={pro.trades} onChange={setP('trades')} max={limits.maxTrades}
+                otherTrade={pro.otherTrade} onOtherTradeChange={setP('otherTrade')} />
             </Field>
             <Field label="Années d’expérience (facultatif)">
               <Input type="number" inputMode="numeric" min={0} max={70} value={form.experienceYears} onChange={set('experienceYears')} style={{ maxWidth: 140 }} />

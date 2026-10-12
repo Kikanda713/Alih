@@ -120,6 +120,27 @@ export function tradeLabel(taxonomy, id) {
   return (taxonomy?.trades || []).find((t) => t.id === id)?.label || id
 }
 
+// ---------- Métiers (profil pro) : ~160 métiers en familles ----------
+export function findTrade(taxonomy, id) {
+  if (!id) return null
+  return (taxonomy?.trades || []).find((t) => t.id === id) || null
+}
+/** Familles ayant au moins un métier (ordre de l'API) ; repli « Métiers » si l'API n'en fournit pas. */
+export function tradeFamilies(taxonomy) {
+  const trades = taxonomy?.trades || []
+  const families = (taxonomy?.tradeFamilies || []).filter((f) => trades.some((t) => t.family === f.id))
+  if (!families.length && trades.length) return [{ id: '', label: 'Métiers' }]
+  return families
+}
+/** Métiers d'une famille (tous les métiers si `familyId` est vide). */
+export function tradesByFamily(taxonomy, familyId) {
+  const trades = taxonomy?.trades || []
+  return familyId ? trades.filter((t) => t.family === familyId) : trades
+}
+export function isRegulatedTrade(taxonomy, id) {
+  return !!findTrade(taxonomy, id)?.regulated
+}
+
 /** Types d'activité groupés par famille (pour un <select> avec <optgroup>). */
 export function shopTypeGroups(taxonomy, { exclude } = {}) {
   const types = (taxonomy?.shopTypes || []).filter((t) => !exclude || !exclude(t))
@@ -170,6 +191,7 @@ const EMPTY_TAXONOMY = {
   shopTypes: [],
   shopTypeFamilies: [],
   trades: [],
+  tradeFamilies: [],
   proPortfolio: PRO_PORTFOLIO_DEFAULTS,
   cities: [],
   provinces: [],

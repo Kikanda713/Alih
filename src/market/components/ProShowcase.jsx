@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { FaAward, FaMapMarkerAlt, FaBriefcase, FaCircle, FaPlay, FaTiktok, FaYoutube, FaExternalLinkAlt } from 'react-icons/fa'
 import { imageUrl } from '../lib/format'
 import { demoVideoEmbed } from '../lib/socials'
+import { displayTrades } from '../lib/pro'
 
 /*
  * Profil pro (technicien / artisan) sur sa page publique : métiers, zones,
@@ -24,7 +25,7 @@ export function ProCertBadge({ serial, validUntil }) {
 
 /** Métiers, zones, expérience, disponibilité (dans l'en-tête de la page). */
 export function ProFacts({ pro }) {
-  const trades = (pro.trades || []).map((t) => (typeof t === 'string' ? { id: t, label: t } : t))
+  const trades = displayTrades(pro)
   const zones = pro.zones || []
   const years = Number(pro.experienceYears)
   return (

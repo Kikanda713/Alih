@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FaStore, FaBan, FaUndo, FaSearch, FaHistory, FaExternalLinkAlt } from 'react-icons/fa'
+import { FaStore, FaBan, FaUndo, FaSearch, FaHistory, FaExternalLinkAlt, FaTools } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useLoad } from '../../api/useLoad'
 import { useTaxonomy, findShopType, shopTypeGroups } from '../../api/taxonomy'
@@ -82,6 +82,41 @@ function HistoryModal({ seller, onClose }) {
   )
 }
 
+/**
+ * Métiers saisis librement par les techniciens (« Autre métier ») : indique
+ * quels métiers ajouter au catalogue. Masqué s'il n'y a rien (ou route absente).
+ */
+function OtherTradesCard() {
+  const api = useTindisaApi()
+  const { city, withCity } = useAdminView()
+  const q = useLoad(() => api.get(withCity('/v1/admin/pros/other-trades')).then((r) => r || [], () => []), [city])
+  const rows = Array.isArray(q.data) ? q.data : []
+  if (!rows.length) return null
+  return (
+    <details className="admin-other-trades">
+      <summary><FaTools /> Métiers proposés par les techniciens <Badge tone="neutral">{rows.length}</Badge></summary>
+      <p className="dash-sub">Métiers saisis dans « Autre métier » : les plus fréquents sont à ajouter au catalogue.</p>
+      <ul>
+        {rows.map((r) => (
+          <li key={r.label}>
+            <b>{r.label}</b> <span className="cat-sku">{r.count} profil{r.count > 1 ? 's' : ''}</span>
+            {r.examples?.length > 0 && (
+              <span className="admin-other-trades-ex">
+                {r.examples.slice(0, 3).map((e, i) => (
+                  <span key={e.shopId}>
+                    {i > 0 && ', '}
+                    <a href={`/boutique/${e.shopId}`} target="_blank" rel="noopener noreferrer">{e.name}</a>{e.city ? ` (${cap(e.city)})` : ''}
+                  </span>
+                ))}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}
+
 export default function AdminSellers() {
   const api = useTindisaApi()
   const { notify } = useToast()
@@ -128,6 +163,8 @@ export default function AdminSellers() {
         <h1 className="dash-h1"><FaStore style={{ marginRight: 8 }} />Vendeurs</h1>
         <p className="dash-sub">Établissements, ateliers, agences et techniciens. Un vendeur bloqué disparaît du marché et ne peut plus rien publier.</p>
       </header>
+
+      <OtherTradesCard />
 
       <div className="admin-seller-tools">
         <form className="admin-mk-search" onSubmit={(e) => { e.preventDefault(); resetTo(() => setQuery(q.trim())) }}>

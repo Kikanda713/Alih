@@ -91,6 +91,7 @@ const DOC_LABEL = {
   identity: "Pièce d'identité",
   diploma: "Diplôme / formation",
   attestation: "Attestation d'employeur",
+  license: "Agrément, ordre ou permis",
   other: "Autre justificatif",
 };
 const DEFAULT_PRO_CHECKLIST = [
@@ -301,7 +302,9 @@ export default function AdminCertification() {
   };
 
   // ---- Aptitude professionnelle ----
-  const tradeLabel = (t) => {
+  const tradeLabel = (t, other) => {
+    const id = t && typeof t === "object" ? t.id : t;
+    if (id === "autre" && other) return other;
     if (t && typeof t === "object") return t.label || t.id || "";
     return (taxonomy?.trades || []).find((x) => x.id === t)?.label || t;
   };
@@ -519,7 +522,7 @@ export default function AdminCertification() {
                   const st = STATUS[stKey] || STATUS.none;
                   const subj = r.subject || {};
                   const trades = (subj.trades || r.trades || [])
-                    .map(tradeLabel)
+                    .map((t) => tradeLabel(t, subj.otherTrade || r.otherTrade))
                     .filter(Boolean);
                   return (
                     <tr key={proId(r) || r.serial}>
@@ -1021,7 +1024,7 @@ export default function AdminCertification() {
             const revoked = stKey === "revoked";
             const expired = proExpired(r);
             const trades = (subj.trades || r.trades || [])
-              .map(tradeLabel)
+              .map((t) => tradeLabel(t, subj.otherTrade || r.otherTrade))
               .filter(Boolean);
             const zones = (subj.zones || r.zones || [])
               .map((z) => (typeof z === "string" ? z : z?.label || z?.name))

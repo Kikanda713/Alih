@@ -9,7 +9,7 @@ import { Card, Field, Input, Textarea, Select, Button, Spinner } from '../../com
 import { useToast } from '../../components/useToast'
 import SocialLinksForm from '../../market/components/SocialLinksForm'
 import { ShopTypeSelect, TradesPicker, ZonesInput, PhotosEditor, VideosEditor } from '../../market/components/ProFields'
-import { normalizePro, validatePro, missingLabels } from '../../market/lib/pro'
+import { normalizePro, validatePro, missingLabels, otherTradeFor } from '../../market/lib/pro'
 
 const NO_LANDMARKS = []
 const LocationPicker = lazy(() => import('../../components/LocationPicker.jsx'))
@@ -298,7 +298,7 @@ function ProProfileCard() {
     if (err) return setError(err)
     setSaving(true); setError('')
     try {
-      const saved = await api.put('/v1/merchant/shop/pro', next)
+      const saved = await api.put('/v1/merchant/shop/pro', { ...next, otherTrade: otherTradeFor(next) })
       if (saved) q.setData(saved)
       notify('Profil pro enregistré', 'success')
     } catch (e) { setError(e?.message || 'Enregistrement impossible') }
@@ -318,7 +318,8 @@ function ProProfileCard() {
           {pro.available ? 'Disponible pour de nouveaux travaux' : 'Indisponible pour le moment'}
         </label>
         <Field label={`Métiers (${limits.maxTrades} maximum)`}>
-          <TradesPicker taxonomy={taxonomy} value={pro.trades} onChange={setP('trades')} max={limits.maxTrades} />
+          <TradesPicker taxonomy={taxonomy} value={pro.trades} onChange={setP('trades')} max={limits.maxTrades}
+            otherTrade={pro.otherTrade} onOtherTradeChange={setP('otherTrade')} />
         </Field>
         <Field label="Communes et quartiers couverts">
           <ZonesInput value={pro.zones} onChange={setP('zones')} max={limits.maxZones} />

@@ -48,6 +48,7 @@ const DOC_TYPES = [
   { value: "identity", label: "Pièce d'identité" },
   { value: "diploma", label: "Diplôme / certificat de formation" },
   { value: "attestation", label: "Attestation d'employeur" },
+  { value: "license", label: "Agrément, inscription à l'ordre ou permis" },
   { value: "other", label: "Autre justificatif" },
 ];
 const docLabel = (t) =>
@@ -134,7 +135,10 @@ export default function ProCertificatePage() {
   const cert = data.certificate || null;
   const price = cert?.price || data.price || { issue: 25, update: 10, currency: "USD" };
   const tradeLabel = (id) =>
-    (taxonomy?.trades || []).find((t) => t.id === id)?.label || id;
+    id === "autre" && data.profile?.otherTrade
+      ? data.profile.otherTrade
+      : (taxonomy?.trades || []).find((t) => t.id === id)?.label || id;
+  const requiresLicense = !!(data.requiresLicense ?? cert?.requiresLicense);
 
   const payLink = async () => {
     setBusy("pay");
@@ -384,6 +388,7 @@ export default function ProCertificatePage() {
           api={api}
           notify={notify}
           initial={cert}
+          requiresLicense={requiresLicense}
           renewal={renewable}
           onCancel={cert && status !== "revoked" ? () => setEditing(false) : null}
           onSaved={(next) => {
@@ -410,7 +415,7 @@ function Checklist({ items }) {
   );
 }
 
-function DossierForm({ api, notify, initial, renewal, onCancel, onSaved }) {
+function DossierForm({ api, notify, initial, requiresLicense, renewal, onCancel, onSaved }) {
   const [holderName, setHolderName] = useState(initial?.holderName || "");
   const [docs, setDocs] = useState(() =>
     (initial?.documents || []).map((d) => ({ type: d.type || "other", url: d.url, note: d.note || "" })),
@@ -448,6 +453,7 @@ function DossierForm({ api, notify, initial, renewal, onCancel, onSaved }) {
 
   const hasIdentity = docs.some((d) => d.type === "identity");
   const hasProof = docs.some((d) => d.type === "diploma" || d.type === "attestation");
+  const hasLicense = docs.some((d) => d.type === "license");
   const cleanRefs = refs
     .map((r) => ({ name: r.name.trim(), phone: r.phone.trim(), relation: r.relation.trim() }))
     .filter((r) => r.name || r.phone);
@@ -460,6 +466,7 @@ function DossierForm({ api, notify, initial, renewal, onCancel, onSaved }) {
   if (!holderName.trim()) problems.push("le nom du titulaire");
   if (!hasIdentity) problems.push("une pièce d'identité");
   if (!hasProof) problems.push("un diplôme ou une attestation d'employeur");
+  if (requiresLicense && !hasLicense) problems.push("votre agrément, inscription à l'ordre ou permis");
   if (docs.length < 2) problems.push("au moins 2 documents");
   if (!refsOk) problems.push("2 ou 3 références avec nom et téléphone");
 
@@ -517,6 +524,17 @@ function DossierForm({ api, notify, initial, renewal, onCancel, onSaved }) {
           Joignez une pièce d'identité et au moins un diplôme, certificat de
           formation ou attestation d'employeur (photos lisibles).
         </p>
+        {requiresLicense ? (
+          <p className="procert-hint procert-hint-required">
+            Votre métier est réglementé : joignez aussi votre agrément, votre
+            inscription à l'ordre ou votre permis d'exercer (obligatoire).
+          </p>
+        ) : (
+          <p className="procert-hint">
+            Si vous avez un agrément, une inscription à l'ordre ou un permis
+            d'exercer, vous pouvez aussi le joindre (facultatif).
+          </p>
+        )}
         <div className="procert-docs">
           {docs.map((d, i) => (
             <div key={d.url + i} className="procert-doc">

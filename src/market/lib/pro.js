@@ -1,7 +1,7 @@
 // Profil pro (technicien / artisan indépendant) : valeurs vides, contrôles côté
 // client (le serveur revalide) et libellés des éléments manquants.
 
-export const EMPTY_PRO = { trades: [], zones: [], experienceYears: null, photos: [], videos: [], available: true }
+export const EMPTY_PRO = { trades: [], otherTrade: '', zones: [], experienceYears: null, photos: [], videos: [], available: true }
 
 export function normalizePro(p) {
   return {
@@ -11,6 +11,7 @@ export function normalizePro(p) {
     photos: Array.isArray(p?.photos) ? p.photos.filter(Boolean) : [],
     videos: Array.isArray(p?.videos) ? p.videos.filter((v) => v?.url) : [],
     available: p?.available !== false,
+    otherTrade: typeof p?.otherTrade === 'string' ? p.otherTrade : '',
   }
 }
 
@@ -19,6 +20,11 @@ export function validatePro(pro, limits, parts = ['trades', 'zones', 'experience
   if (parts.includes('trades')) {
     if (!pro.trades.length) return 'Choisissez au moins un métier.'
     if (pro.trades.length > limits.maxTrades) return `${limits.maxTrades} métiers au maximum.`
+    if (pro.trades.includes('autre')) {
+      const other = String(pro.otherTrade || '').trim()
+      if (!other) return 'Précisez votre métier (Autre métier).'
+      if (other.length > 80) return 'Votre métier : 80 caractères au maximum.'
+    }
   }
   if (parts.includes('zones')) {
     if (!pro.zones.length) return 'Indiquez au moins une commune ou un quartier où vous intervenez.'
@@ -37,6 +43,7 @@ export function validatePro(pro, limits, parts = ['trades', 'zones', 'experience
 
 const MISSING_LABELS = {
   trades: 'vos métiers',
+  otherTrade: 'la précision de votre métier',
   zones: 'vos zones d’intervention',
   photos: 'les photos de vos réalisations',
   experienceYears: 'vos années d’expérience',
@@ -50,4 +57,17 @@ const MISSING_LABELS = {
 /** Libellés français des éléments manquants renvoyés par l'API (`missing`). */
 export function missingLabels(missing = []) {
   return [...new Set(missing.map((m) => MISSING_LABELS[m]).filter(Boolean))]
+}
+
+/** Valeur `otherTrade` à envoyer : texte nettoyé si « Autre métier » est choisi, sinon null. */
+export function otherTradeFor(pro) {
+  return pro.trades.includes('autre') ? String(pro.otherTrade || '').trim().slice(0, 80) || null : null
+}
+
+/** Métiers affichés d'un profil public : [{ id, label }], « Autre métier » remplacé par sa précision. */
+export function displayTrades(pro) {
+  return (pro?.trades || [])
+    .map((t) => (typeof t === 'string' ? { id: t, label: t } : t))
+    .filter((t) => t?.id)
+    .map((t) => (t.id === 'autre' && pro.otherTrade ? { ...t, label: pro.otherTrade } : t))
 }

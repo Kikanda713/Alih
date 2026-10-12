@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { FaTimes, FaPlus, FaImage, FaSpinner, FaTiktok, FaYoutube, FaTrash } from 'react-icons/fa'
 import { Button, Input } from '../../components/ui'
-import { shopTypeGroups } from '../../api/taxonomy'
+import { shopTypeGroups, tradeFamilies, tradesByFamily, findTrade, isRegulatedTrade, tradeLabel } from '../../api/taxonomy'
 import { uploadImage, isCloudinaryConfigured } from '../../api/cloudinary'
 import { imageUrl } from '../lib/format'
 import { parseDemoVideo } from '../lib/socials'
@@ -26,25 +26,58 @@ export function ShopTypeSelect({ taxonomy, value, onChange, exclude, placeholder
   )
 }
 
-/** Métiers : puces à cocher (maximum `max`). */
-export function TradesPicker({ taxonomy, value = [], onChange, max = 3 }) {
-  const trades = taxonomy?.trades || []
+/**
+ * Métiers en deux temps : famille (select) puis métiers de cette famille (puces).
+ * Les métiers retenus (maximum `max`, toutes familles confondues) s'affichent
+ * au-dessus, retirables. « Autre métier » ouvre une saisie libre (`otherTrade`).
+ */
+export function TradesPicker({ taxonomy, value = [], onChange, max = 3, otherTrade = '', onOtherTradeChange }) {
+  const families = tradeFamilies(taxonomy)
+  const [family, setFamily] = useState(null)
+  const firstFamily = findTrade(taxonomy, value[0])?.family
+  const current = family ?? (families.some((f) => f.id === firstFamily) ? firstFamily : families[0]?.id || '')
+  const trades = tradesByFamily(taxonomy, current)
   const toggle = (id) => {
     if (value.includes(id)) onChange(value.filter((x) => x !== id))
     else if (value.length < max) onChange([...value, id])
   }
-  if (!trades.length) return <p className="mk-hint">Liste des métiers indisponible pour le moment.</p>
+  if (!(taxonomy?.trades || []).length) return <p className="mk-hint">Liste des métiers indisponible pour le moment.</p>
+  const regulated = value.some((id) => isRegulatedTrade(taxonomy, id))
   return (
-    <div className="mk-chips" role="group" aria-label="Métiers">
-      {trades.map((t) => {
-        const on = value.includes(t.id)
-        return (
-          <button key={t.id} type="button" className={`mk-chip${on ? ' active' : ''}`} aria-pressed={on}
-            disabled={!on && value.length >= max} onClick={() => toggle(t.id)}>
-            {t.label}
-          </button>
-        )
-      })}
+    <div className="pro-trades">
+      {value.length > 0 && (
+        <div className="mk-chips mk-chips-tight" aria-label="Métiers choisis">
+          {value.map((id) => (
+            <button key={id} type="button" className="mk-chip active" onClick={() => toggle(id)} aria-label={`Retirer ${tradeLabel(taxonomy, id)}`}>
+              {tradeLabel(taxonomy, id)} <FaTimes />
+            </button>
+          ))}
+        </div>
+      )}
+      {value.includes('autre') && (
+        <Input value={otherTrade} onChange={(e) => onOtherTradeChange?.(e.target.value)} maxLength={80}
+          placeholder="Précisez votre métier *" aria-label="Précisez votre métier" />
+      )}
+      {regulated && (
+        <p className="mk-hint pro-trades-note">Métier réglementé : votre agrément ou inscription à l’ordre sera demandé pour le certificat d’aptitude.</p>
+      )}
+      {families.length > 1 && (
+        <select className="ui-input ui-select" value={current} aria-label="Famille de métiers" onChange={(e) => setFamily(e.target.value)}>
+          {families.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}
+        </select>
+      )}
+      <div className="mk-chips pro-trades-list" role="group" aria-label="Métiers de cette famille">
+        {trades.map((t) => {
+          const on = value.includes(t.id)
+          return (
+            <button key={t.id} type="button" className={`mk-chip${on ? ' active' : ''}`} aria-pressed={on}
+              disabled={!on && value.length >= max} onClick={() => toggle(t.id)}>
+              {t.label}
+            </button>
+          )
+        })}
+      </div>
+      {value.length >= max && <p className="mk-hint">{max} métiers au maximum : retirez-en un pour en choisir un autre.</p>}
     </div>
   )
 }
