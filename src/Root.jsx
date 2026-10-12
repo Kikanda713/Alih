@@ -1,31 +1,59 @@
+import { Suspense, lazy } from "react";
 import { Routes, Route } from "react-router-dom";
+import { Spinner } from "./components/ui.jsx";
 import App from "./App.jsx";
 import Callback from "./auth/Callback.jsx";
-import LinkPage from "./pages/LinkPage.jsx";
-import VerifyPage from "./pages/VerifyPage.jsx";
-import PayPage from "./pages/PayPage.jsx";
-import StepUpPage from "./pages/StepUpPage.jsx";
-import DashboardLayout from "./pages/dashboard/DashboardLayout.jsx";
-import ChatHome from "./pages/dashboard/ChatHome.jsx";
-import CataloguePage from "./pages/dashboard/CataloguePage.jsx";
-import BoutiquePage from "./pages/dashboard/BoutiquePage.jsx";
-import VentesPage from "./pages/dashboard/VentesPage.jsx";
-import WalletPage from "./pages/dashboard/WalletPage.jsx";
-import SubscriptionPage from "./pages/dashboard/SubscriptionPage.jsx";
-import AdminLayout from "./pages/admin/AdminLayout.jsx";
-import AdminHome from "./pages/admin/AdminHome.jsx";
-import AdminUsers from "./pages/admin/AdminUsers.jsx";
-import AdminSubscriptions from "./pages/admin/AdminSubscriptions.jsx";
-import AdminCommissions from "./pages/admin/AdminCommissions.jsx";
-import AdminCertification from "./pages/admin/AdminCertification.jsx";
-import AdminP2P from "./pages/admin/AdminP2P.jsx";
-import AdminDrivers from "./pages/admin/AdminDrivers.jsx";
-import AdminMap from "./pages/admin/AdminMap.jsx";
+const LinkPage = lazy(() => import("./pages/LinkPage.jsx"));
+const VerifyPage = lazy(() => import("./pages/VerifyPage.jsx"));
+const PayPage = lazy(() => import("./pages/PayPage.jsx"));
+const StepUpPage = lazy(() => import("./pages/StepUpPage.jsx"));
+import MarketLayout from "./market/MarketLayout.jsx";
+import ExplorePage from "./market/pages/ExplorePage.jsx";
+import ListingPage from "./market/pages/ListingPage.jsx";
+import ShopPage from "./market/pages/ShopPage.jsx";
+import CartPage from "./market/pages/CartPage.jsx";
+import HubsPage from "./market/pages/HubsPage.jsx";
+import HubPage from "./market/pages/HubPage.jsx";
+import ConnectivityPage from "./market/pages/ConnectivityPage.jsx";
+import SellPage from "./market/pages/SellPage.jsx";
+const DashboardLayout = lazy(() => import("./pages/dashboard/DashboardLayout.jsx"));
+const ChatHome = lazy(() => import("./pages/dashboard/ChatHome.jsx"));
+const CataloguePage = lazy(() => import("./pages/dashboard/CataloguePage.jsx"));
+const BoutiquePage = lazy(() => import("./pages/dashboard/BoutiquePage.jsx"));
+const VentesPage = lazy(() => import("./pages/dashboard/VentesPage.jsx"));
+const WalletPage = lazy(() => import("./pages/dashboard/WalletPage.jsx"));
+const SubscriptionPage = lazy(() => import("./pages/dashboard/SubscriptionPage.jsx"));
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout.jsx"));
+const AdminHome = lazy(() => import("./pages/admin/AdminHome.jsx"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers.jsx"));
+const AdminSubscriptions = lazy(() => import("./pages/admin/AdminSubscriptions.jsx"));
+const AdminCommissions = lazy(() => import("./pages/admin/AdminCommissions.jsx"));
+const AdminCertification = lazy(() => import("./pages/admin/AdminCertification.jsx"));
+const AdminP2P = lazy(() => import("./pages/admin/AdminP2P.jsx"));
+const AdminMarketplace = lazy(() => import("./pages/admin/AdminMarketplace.jsx"));
+const AdminHubs = lazy(() => import("./pages/admin/AdminHubs.jsx"));
+const AdminAI = lazy(() => import("./pages/admin/AdminAI.jsx"));
+const AdminDrivers = lazy(() => import("./pages/admin/AdminDrivers.jsx"));
+const AdminMap = lazy(() => import("./pages/admin/AdminMap.jsx"));
 
 export default function Root() {
   return (
+    // Espace commerçant, back-office et pages annexes chargés à la demande :
+    // le site public reste léger (connexions 3G).
+    <Suspense fallback={<div className="mk-page-pad" style={{ display: "grid", placeItems: "center" }}><Spinner label="Chargement…" /></div>}>
     <Routes>
-      <Route path="/" element={<App />} />
+      {/* Site public multi-pages : marché, centres, connectivité, vente */}
+      <Route element={<MarketLayout />}>
+        <Route path="/" element={<App />} />
+        <Route path="/marche" element={<ExplorePage />} />
+        <Route path="/annonce/:id" element={<ListingPage />} />
+        <Route path="/boutique/:id" element={<ShopPage />} />
+        <Route path="/panier" element={<CartPage />} />
+        <Route path="/centres" element={<HubsPage />} />
+        <Route path="/centres/:id" element={<HubPage />} />
+        <Route path="/connectivite" element={<ConnectivityPage />} />
+        <Route path="/vendre" element={<SellPage />} />
+      </Route>
       <Route path="/auth/callback" element={<Callback />} />
       <Route path="/link" element={<LinkPage />} />
       <Route path="/verify" element={<VerifyPage />} />
@@ -45,10 +73,14 @@ export default function Root() {
         <Route path="subscriptions" element={<AdminSubscriptions />} />
         <Route path="commissions" element={<AdminCommissions />} />
         <Route path="certification" element={<AdminCertification />} />
+        <Route path="marche" element={<AdminMarketplace />} />
+        <Route path="centres" element={<AdminHubs />} />
+        <Route path="ia" element={<AdminAI />} />
         <Route path="p2p" element={<AdminP2P />} />
         <Route path="drivers" element={<AdminDrivers />} />
         <Route path="map" element={<AdminMap />} />
       </Route>
     </Routes>
+    </Suspense>
   );
 }

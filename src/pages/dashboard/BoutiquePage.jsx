@@ -13,6 +13,7 @@ export default function BoutiquePage() {
   const api = useTindisaApi()
   const taxonomy = useTaxonomy()
   const [form, setForm] = useState(null)
+  const [shopId, setShopId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -29,6 +30,7 @@ export default function BoutiquePage() {
     api.get('/v1/merchant/shop')
       .then((r) => {
         const s = r?.shop || {}
+        if (alive) setShopId(s.id || null)
         if (alive) setForm({
           name: s.name || '', shopType: s.shopType || '', logoUrl: s.logoUrl || '',
           ownerName: s.ownerName || '', phone: s.phone || '', email: s.email || '', description: s.description || '',
@@ -132,6 +134,13 @@ export default function BoutiquePage() {
     <div className="dash-page">
       <h1 className="dash-title">Ma boutique</h1>
       <p className="dash-subtitle">Ces informations rassurent les acheteurs et aident à vous trouver près de chez eux.</p>
+      {shopId && (
+        <p className="dash-subtitle">
+          Votre vitrine publique sur le marché Tindisa :{' '}
+          <a href={`/boutique/${shopId}`} target="_blank" rel="noopener noreferrer">voir ma vitrine</a>
+          {' '}(votre téléphone et vos pièces légales n’y sont jamais affichés).
+        </p>
+      )}
 
       <Card>
         <form className="product-form" onSubmit={save}>

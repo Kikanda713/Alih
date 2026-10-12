@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import {
+  FaExternalLinkAlt,
   FaPlus,
   FaEdit,
   FaTrash,
@@ -262,6 +263,18 @@ function ProductTable({
               )}
               {!readOnly && (
                 <td className="cat-col-actions">
+                  {p.id && (
+                    <a
+                      className="cat-icon-btn"
+                      href={`/annonce/${p.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Voir sur le marché public"
+                      aria-label="Voir sur le marché public"
+                    >
+                      <FaExternalLinkAlt />
+                    </a>
+                  )}
                   <button
                     className="cat-icon-btn"
                     onClick={() => onEdit(p)}
