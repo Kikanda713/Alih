@@ -28,7 +28,7 @@ export default function HomeHero() {
           Produits, hôtels et salles, main d’œuvre, livraison, récoltes : comparez ici, puis l’assistant Tindisa
           négocie, sécurise le paiement et organise la livraison sur WhatsApp ou Telegram.
         </p>
-        <div className="mk-hero-search">
+        <div className="mk-hero-search" data-body-search>
           <SearchBar size="lg" />
         </div>
         <div className="mk-suggest">

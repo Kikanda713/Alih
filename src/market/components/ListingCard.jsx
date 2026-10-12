@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
-import { FaMapMarkerAlt, FaCertificate, FaCartPlus, FaCalendarAlt, FaComments, FaStore, FaUserFriends, FaWifi } from 'react-icons/fa'
+import { Link, useNavigate } from 'react-router-dom'
+import { FaMapMarkerAlt, FaCertificate, FaCartPlus, FaCalendarAlt, FaComments, FaStore, FaUserFriends, FaWifi, FaExclamationTriangle } from 'react-icons/fa'
 import { formatPrice, unitSuffix, imageUrl, cityLabel } from '../lib/format'
 import { bookingMode } from '../lib/universes'
 import { useTaxonomy } from '../../api/taxonomy'
@@ -13,6 +13,32 @@ import { useToast } from '../../components/useToast'
  */
 // Étiquette du mode de service (le marché est multiservice, pas qu'un catalogue).
 const MODE_TAG = { stay: 'Sur réservation', slot: 'À l’heure', job: 'Prestation' }
+
+/**
+ * Actifs de valeur : accès direct au certificat d'authentification s'il existe,
+ * sinon mention explicite de son absence. Rien pour les articles courants.
+ * (La carte est un lien : le bouton navigue sans déclencher l'ouverture de l'annonce.)
+ */
+export function CertificateLine({ item, large = false }) {
+  const navigate = useNavigate()
+  if (item.certificateSerial) {
+    return (
+      <button
+        type="button"
+        className={`mk-cert-btn${large ? ' mk-cert-btn-lg' : ''}`}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/verify?c=${encodeURIComponent(item.certificateSerial)}`) }}
+      >
+        <FaCertificate /> Voir le certificat
+      </button>
+    )
+  }
+  if (!item.certificateRequired) return null
+  return (
+    <span className="mk-cert-missing" title="Article de valeur sans certificat d’authentification Tindisa">
+      <FaExclamationTriangle /> Sans certificat
+    </span>
+  )
+}
 
 export function ListingCard({ item, onBook }) {
   const taxonomy = useTaxonomy()
@@ -58,6 +84,7 @@ export function ListingCard({ item, onBook }) {
             <FaWifi /> {item.hub.name}
           </div>
         )}
+        <CertificateLine item={item} />
       </div>
       <button type="button" className="mk-card-quick" onClick={quick} aria-label={`${quickLabel} : ${item.name}`}>
         <QuickIcon /> <span>{quickLabel}</span>

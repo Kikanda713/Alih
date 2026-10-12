@@ -4,40 +4,37 @@ import tindisaFooterLogo from '../../assets/tindisa.png'
 import { channels } from '../../auth/config'
 import { UNIVERSES, universeHref } from '../lib/universes'
 
+/** Pied de page compact : liens en lignes (pas de hautes colonnes), messagerie une seule fois. */
 export default function MarketFooter() {
   return (
     <footer className="mk-footer">
-      <div className="mk-container mk-footer-grid">
+      <div className="mk-container mk-footer-main">
         <div className="mk-footer-brand">
           <img src={tindisaFooterLogo} alt="Tindisa" />
-          <p>Le marché du Congo, en ligne et dans votre messagerie. Produits, services, hébergement, main d'œuvre et livraison.</p>
           <a href="tel:+243991880037" className="mk-footer-phone">0991880037</a>
           <div className="mk-footer-social">
             <a href={channels.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><FaWhatsapp /></a>
             <a href={channels.telegram} target="_blank" rel="noopener noreferrer" aria-label="Telegram"><FaTelegramPlane /></a>
           </div>
         </div>
-        <div>
-          <h4>Le marché</h4>
-          {UNIVERSES.map((u) => <Link key={u.id} to={universeHref(u)}>{u.title}</Link>)}
-        </div>
-        <div>
-          <h4>Tindisa</h4>
-          <Link to="/centres">Centres & Wi-Fi</Link>
-          <Link to="/connectivite">Connectivité Starlink</Link>
-          <Link to="/vendre">Vendre sur Tindisa</Link>
-          <Link to="/verify">Vérifier un certificat</Link>
-        </div>
-        <div>
-          <h4>Aide</h4>
-          <Link to="/panier">Mon panier</Link>
-          <a href={channels.whatsapp} target="_blank" rel="noopener noreferrer">Assistance WhatsApp</a>
-          <a href={channels.telegram} target="_blank" rel="noopener noreferrer">Assistance Telegram</a>
-        </div>
+        <nav className="mk-footer-links" aria-label="Pied de page">
+          <p>
+            <b>Le marché</b>
+            {UNIVERSES.map((u) => <Link key={u.id} to={universeHref(u)}>{u.label}</Link>)}
+          </p>
+          <p>
+            <b>Tindisa</b>
+            <Link to="/centres">Centres & Wi-Fi</Link>
+            <Link to="/connectivite">Connectivité</Link>
+            <Link to="/vendre">Vendre</Link>
+            <Link to="/verify">Vérifier un certificat</Link>
+            <Link to="/panier">Mon panier</Link>
+          </p>
+        </nav>
       </div>
       <div className="mk-container mk-footer-bottom">
-        <span>© {new Date().getFullYear()} Tindisa. Acheter et vendre par message.</span>
-        <span>Paiement cash ou Mobile Money · Séquestre · Livraison ou retrait</span>
+        <span>© {new Date().getFullYear()} Tindisa · Le marché du Congo, en ligne et dans votre messagerie</span>
+        <span>Cash ou Mobile Money · Séquestre · Livraison ou retrait</span>
       </div>
     </footer>
   )

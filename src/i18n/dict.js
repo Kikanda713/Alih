@@ -25,9 +25,6 @@ export const dict = {
     // Trust
 
     // Final CTA
-    'finalcta.title': 'Commencer une conversation',
-    'finalcta.subtitle':
-      'Rejoignez les milliers de personnes qui achètent et vendent simplement depuis leur messagerie.',
 
     // Footer
 
@@ -303,8 +300,6 @@ export const dict = {
 
 
 
-    'finalcta.title': 'Banda lisolo',
-    'finalcta.subtitle': 'Sangana na bato ebele oyo basombaka mpe batekaka pɛtɛɛ na messages na bango.',
 
 
     'merchant.title': 'Esika na ngai ya mombongo',
@@ -336,8 +331,6 @@ export const dict = {
 
 
 
-    'finalcta.title': 'Anza mazungumzo',
-    'finalcta.subtitle': 'Jiunge na maelfu ya watu wanaonunua na kuuza kwa urahisi kupitia ujumbe wao.',
 
 
     'merchant.title': 'Sehemu yangu ya mfanyabiashara',

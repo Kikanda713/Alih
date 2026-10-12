@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useSearchParams } from 'react-router-dom'
-import { FaShoppingCart, FaBars, FaTimes, FaShieldAlt, FaSatelliteDish, FaStore, FaWhatsapp, FaWifi } from 'react-icons/fa'
+import { FaShoppingCart, FaBars, FaTimes, FaShieldAlt, FaSatelliteDish, FaStore, FaWhatsapp, FaWifi, FaSearch } from 'react-icons/fa'
 import tindisaLogo from '../../assets/tindisa-logo.png'
 import { LanguageSwitcher } from '../../i18n'
 import ProfileMenu from '../../components/ProfileMenu'
@@ -33,13 +33,37 @@ export default function MarketHeader() {
     return () => { document.body.style.overflow = '' }
   }, [menu])
 
+  // Une page qui affiche sa propre grande recherche ([data-body-search], ex. l'accueil)
+  // masque celle de l'en-tête tant qu'elle est visible : jamais deux recherches à l'écran,
+  // et la recherche revient dans l'en-tête dès qu'on a défilé au-delà.
+  const [bodySearch, setBodySearch] = useState({ path: null, visible: false })
+  useEffect(() => {
+    const el = document.querySelector('[data-body-search]')
+    if (!el) return
+    const header = document.querySelector('.mk-header')
+    const io = new IntersectionObserver(
+      ([entry]) => setBodySearch({ path: location.pathname, visible: entry.isIntersecting }),
+      { rootMargin: `-${header?.offsetHeight || 0}px 0px 0px 0px` },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [location.pathname])
+  const hasBodySearch = bodySearch.path === location.pathname
+  const hideSearch = hasBodySearch && bodySearch.visible
+  // Mobile : ramène à la grande recherche de la page (pas de ligne qui apparaît / disparaît).
+  const goToBodySearch = () => {
+    const el = document.querySelector('[data-body-search]')
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    el?.querySelector('input')?.focus({ preventScroll: true })
+  }
+
   return (
     <header className="mk-header">
       <div className="mk-header-top mk-container">
         <Link to="/" className="mk-logo" aria-label="Tindisa, accueil">
           <img src={tindisaLogo} alt="Tindisa" />
         </Link>
-        <div className="mk-header-search">
+        <div className={`mk-header-search${hideSearch ? " is-hidden" : ""}`} aria-hidden={hideSearch || undefined}>
           <SearchBar key={searchKey} />
         </div>
         <div className="mk-header-actions">
@@ -53,12 +77,17 @@ export default function MarketHeader() {
             <span className="mk-hide-sm">Panier</span>
             {count > 0 && <span className="mk-cart-count">{count}</span>}
           </button>
+          {hasBodySearch && !hideSearch && (
+            <button type="button" className="mk-icon-btn mk-show-md" onClick={goToBodySearch} aria-label="Rechercher">
+              <FaSearch />
+            </button>
+          )}
           <button type="button" className="mk-icon-btn mk-show-md" onClick={() => setMenu(true)} aria-label="Menu">
             <FaBars />
           </button>
         </div>
       </div>
-      <div className="mk-header-search-mobile mk-container">
+      <div className={`mk-header-search-mobile mk-container${hasBodySearch ? " is-hidden" : ""}`} aria-hidden={hasBodySearch || undefined}>
         <SearchBar key={`m-${searchKey}`} size="sm" placeholder="Rechercher produits, services…" />
       </div>
       <nav className="mk-unav" aria-label="Univers du marché">

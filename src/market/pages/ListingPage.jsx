@@ -17,7 +17,7 @@ import { bookingMode } from '../lib/universes'
 import { buildItemMessage, whatsappLink, openTelegram } from '../lib/chat'
 import { useCart } from '../useCart'
 import BookingModal from '../components/BookingModal'
-import { ListingGrid } from '../components/ListingCard'
+import { ListingGrid, CertificateLine } from '../components/ListingCard'
 
 // La 1re photo peut être la version AMÉLIORÉE (netteté) ; les originales suivent.
 function Gallery({ images, videos, name, enhancedFirst }) {
@@ -173,8 +173,11 @@ function ListingPage({ id }) {
             {item.type !== 'service'
               ? <li><FaTruck /> <span>Livraison par nos livreurs ou retrait en boutique, au choix.</span></li>
               : <li><FaCheckCircle /> <span>Disponibilité confirmée par l’assistant avant tout paiement.</span></li>}
-            {item.certificateRequired && !item.certified && (
-              <li className="mk-warn"><FaCertificate /> <span>Article de valeur sans certificat : demandez la fiche de contrôle à l’assistant.</span></li>
+            {item.certificateSerial && (
+              <li><FaCertificate /> <span><b>Certificat d’authentification</b> vérifiable (ancré sur la blockchain). <CertificateLine item={item} large /></span></li>
+            )}
+            {item.certificateRequired && !item.certificateSerial && (
+              <li className="mk-warn"><FaCertificate /> <span><b>Sans certificat d’authentification.</b> Article de valeur : demandez la fiche de contrôle à l’assistant avant d’acheter.</span></li>
             )}
           </ul>
         </div>
