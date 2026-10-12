@@ -130,19 +130,21 @@ function HubShops({ hubId, onClose, onChanged }) {
   )
   const hub = hubQ.data
   const [q, setQ] = useState('')
-  const [candidates, setCandidates] = useState([])
+  const [query, setQuery] = useState('')
   const [busy, setBusy] = useState(false)
+  // Candidats proposés d'emblée : les établissements de la ville de la zone (filtrables par nom).
+  const hubCity = hub?.city || ''
+  const candQ = useLoad(
+    () => (hub
+      ? api.get(`/v1/admin/hubs/shops?q=${encodeURIComponent(query)}${hubCity ? `&city=${encodeURIComponent(hubCity)}` : ''}`).then((r) => r || [], () => [])
+      : Promise.resolve([])),
+    [hubId, query, hubCity, !!hub],
+  )
+  const candidates = (candQ.data || []).filter((c) => c.hubId !== hubId)
 
-  const search = async (e) => {
-    e?.preventDefault()
-    try {
-      const city = hub?.city ? `&city=${encodeURIComponent(hub.city)}` : ''
-      setCandidates(await api.get(`/v1/admin/hubs/shops?q=${encodeURIComponent(q)}${city}`) || [])
-    } catch { setCandidates([]) }
-  }
   const act = async (fn, msg) => {
     setBusy(true)
-    try { hubQ.setData(await fn()); notify(msg, 'success'); onChanged() } catch (e) { notify(e?.message || 'Erreur', 'error') } finally { setBusy(false) }
+    try { hubQ.setData(await fn()); notify(msg, 'success'); onChanged(); candQ.reload() } catch (e) { notify(e?.message || 'Erreur', 'error') } finally { setBusy(false) }
   }
 
   return (
@@ -161,21 +163,20 @@ function HubShops({ hubId, onClose, onChanged }) {
             </ul>
           ) : <p className="dash-sub">Aucune boutique rattachée pour l’instant.</p>}
 
-          <h4 className="admin-hub-h">Rattacher une boutique</h4>
-          <form className="admin-mk-search" onSubmit={search}>
+          <h4 className="admin-hub-h">Rattacher une boutique{hubCity ? ` (${cap(hubCity)})` : ''}</h4>
+          <form className="admin-mk-search" onSubmit={(e) => { e.preventDefault(); setQuery(q.trim()) }}>
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Nom de la boutique${hub.city ? ` (${cap(hub.city)})` : ''}`} />
             <button type="submit" className="cat-icon-btn" aria-label="Rechercher"><FaSearch /></button>
           </form>
+          {candQ.loading ? <Spinner /> : !candidates.length && <p className="dash-sub">{query ? 'Aucune boutique ne correspond.' : 'Toutes les boutiques de la ville sont déjà rattachées.'}</p>}
           <ul className="admin-hub-shoplist">
             {candidates.map((s) => (
               <li key={s.id}>
                 <span><b>{s.name}</b><small>{[s.commune, cap(s.city)].filter(Boolean).join(', ')}{s.hubName ? ` · actuellement : ${s.hubName}` : ''}</small></span>
-                {s.hubId === hubId ? <Badge tone="success">Rattachée</Badge> : (
-                  <Button size="sm" variant="secondary" disabled={busy}
-                    onClick={() => act(() => api.post(`/v1/admin/hubs/${hubId}/shops`, { shopId: s.id }), 'Boutique rattachée')}>
-                    <FaPlus /> Rattacher
-                  </Button>
-                )}
+                <Button size="sm" variant="secondary" disabled={busy}
+                  onClick={() => act(() => api.post(`/v1/admin/hubs/${hubId}/shops`, { shopId: s.id }), s.hubName ? `Boutique déplacée depuis ${s.hubName}` : 'Boutique rattachée')}>
+                  <FaPlus /> {s.hubName ? 'Déplacer ici' : 'Rattacher'}
+                </Button>
               </li>
             ))}
           </ul>
@@ -220,7 +221,7 @@ export default function AdminHubs() {
     <div className="dash-page">
       <header className="dash-page-head admin-head-row">
         <div>
-          <h1 className="dash-h1"><FaWifi style={{ marginRight: 8 }} />Centres & Wi-Fi</h1>
+          <h1 className="dash-h1"><FaWifi style={{ marginRight: 8 }} />Wifi Zone</h1>
           <p className="dash-sub">Centres commerciaux et zones agricoles (urbains / ruraux) qui regroupent les boutiques, et suivi du déploiement du Wi-Fi maillé Starlink. Visible sur <Link to="/centres" target="_blank">tindisa.com/centres</Link>.</p>
         </div>
         <Button onClick={() => setEditing({})}><FaPlus /> Nouveau centre</Button>
@@ -257,7 +258,7 @@ export default function AdminHubs() {
                     </select>
                   </td>
                   <td>{h.meshNodes}</td>
-                  <td><button className="admin-link-btn" onClick={() => setShopsOf(h.id)}>{h.shopCount ?? 0} <FaStore /></button></td>
+                  <td><Button size="sm" variant="secondary" onClick={() => setShopsOf(h.id)}><FaStore /> {h.shopCount ?? 0} · Gérer</Button></td>
                   <td className="cat-col-actions">
                     <Link className="cat-icon-btn" title="Voir la page publique" to={`/centres/${h.id}`} target="_blank"><FaExternalLinkAlt /></Link>
                     <button className="cat-icon-btn" title="Boutiques" onClick={() => setShopsOf(h.id)}><FaStore /></button>

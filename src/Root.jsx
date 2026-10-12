@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Spinner } from "./components/ui.jsx";
 import App from "./App.jsx";
 import Callback from "./auth/Callback.jsx";
@@ -14,7 +14,6 @@ import ShopPage from "./market/pages/ShopPage.jsx";
 import CartPage from "./market/pages/CartPage.jsx";
 import HubsPage from "./market/pages/HubsPage.jsx";
 import HubPage from "./market/pages/HubPage.jsx";
-import ConnectivityPage from "./market/pages/ConnectivityPage.jsx";
 import SellPage from "./market/pages/SellPage.jsx";
 import OnboardingPage from "./market/pages/OnboardingPage.jsx";
 const DashboardLayout = lazy(() => import("./pages/dashboard/DashboardLayout.jsx"));
@@ -52,7 +51,7 @@ export default function Root() {
         <Route path="/panier" element={<CartPage />} />
         <Route path="/centres" element={<HubsPage />} />
         <Route path="/centres/:id" element={<HubPage />} />
-        <Route path="/connectivite" element={<ConnectivityPage />} />
+        <Route path="/connectivite" element={<Navigate to="/centres" replace />} />
         <Route path="/vendre" element={<SellPage />} />
         <Route path="/vendre/boutique" element={<OnboardingPage />} />
       </Route>

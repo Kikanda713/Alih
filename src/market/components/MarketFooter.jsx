@@ -24,8 +24,7 @@ export default function MarketFooter() {
           </p>
           <p>
             <b>Tindisa</b>
-            <Link to="/centres">Centres & Wi-Fi</Link>
-            <Link to="/connectivite">Connectivité</Link>
+            <Link to="/centres">Wifi Zone</Link>
             <Link to="/vendre">Vendre</Link>
             <Link to="/verify">Vérifier un certificat</Link>
             <Link to="/panier">Mon panier</Link>

@@ -161,7 +161,6 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 @keyframes mk-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
 /* ---------- Parcours site → messagerie ---------- */
-.mk-flow-num { width: 26px; height: 26px; border-radius: 50%; background: var(--ebony); color: #fff; display: grid; place-items: center; font-size: 0.8rem; font-weight: 700; }
 
 /* ---------- Pages à bandeau ---------- */
 .mk-page-hero { padding: 56px 0 44px; background: #F3EADC; position: relative; overflow: hidden; }
@@ -172,35 +171,10 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 .mk-page-hero-dark { background: var(--ebony); color: #F3EADC; }
 .mk-page-hero-dark::before { opacity: 0.12; }
 .mk-page-hero-dark p { color: rgba(243, 234, 220, 0.82); }
-.mk-btn-light { background: #F3EADC; color: var(--ebony); }
 .mk-kpis { display: flex; flex-wrap: wrap; gap: 12px; margin: 26px 0 18px; }
 .mk-kpis > div { display: grid; gap: 2px; padding: 14px 18px; border-radius: 14px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); min-width: 140px; }
 .mk-kpis strong { font-family: var(--font-heading); font-size: 1.6rem; color: #fff; }
 .mk-kpis span { font-size: 0.82rem; color: rgba(243, 234, 220, 0.75); display: inline-flex; align-items: center; gap: 6px; }
-.mk-kpis-col { flex-direction: column; margin: 0; }
-
-/* ---------- Connectivité (accueil + page) ---------- */
-.mk-connect-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 22px; }
-.mk-connect-link { color: var(--copper-gold); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
-.mk-cx-hero { display: grid; grid-template-columns: 1.5fr 1fr; gap: 32px; align-items: center; }
-.mk-cx-section { padding-top: 56px; padding-bottom: 56px; }
-.mk-cx-section > .mesh-figure { margin-top: 28px; background: var(--ebony); border-radius: 20px; padding: 16px; color: #F3EADC; }
-.mk-cx-band { background: var(--white); padding: 56px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-.mk-layers { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 28px; }
-.mk-layer, .mk-benefit { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 22px; }
-.mk-cx-band .mk-benefit { background: var(--ivory); }
-.mk-layer h3, .mk-benefit h3 { font-family: var(--font-heading); font-size: 1.05rem; margin: 12px 0 8px; }
-.mk-layer p { color: var(--gray); line-height: 1.55; font-size: 0.92rem; }
-.mk-layer-ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: rgba(198, 93, 46, 0.12); color: var(--terracotta); font-size: 1.2rem; }
-.mk-benefits { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 28px; }
-.mk-benefit ul { list-style: none; display: grid; gap: 8px; }
-.mk-benefit li { display: flex; gap: 8px; color: var(--gray); font-size: 0.92rem; }
-.mk-benefit li svg { color: var(--mk-green); margin-top: 3px; flex-shrink: 0; }
-.mk-deploy-steps { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 28px 0 40px; }
-.mk-deploy-steps li { display: grid; gap: 8px; padding: 20px; border-radius: var(--radius-card); background: var(--white); border: 1px solid var(--border); border-top: 4px solid var(--copper-gold); }
-.mk-deploy-steps li:last-child { border-top-color: var(--mk-green); }
-.mk-deploy-steps b { font-family: var(--font-heading); }
-.mk-deploy-steps small { color: var(--gray); line-height: 1.5; }
 
 /* ---------- Schéma du réseau maillé ---------- */
 .mesh-figure { margin: 0; }
@@ -497,10 +471,8 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
   .mk-header-top { height: 64px; }
   .mk-logo img { height: 44px; }
   .mk-explore-body { grid-template-columns: 1fr; }
-  .mk-listing-grid, .mk-listing-lower, .mk-cart-grid, .mk-cx-hero, .mk-hub-hero-grid { grid-template-columns: 1fr; }
+  .mk-listing-grid, .mk-listing-lower, .mk-cart-grid, .mk-hub-hero-grid { grid-template-columns: 1fr; }
   .mk-gallery, .mk-checkout { position: static; }
-  .mk-benefits, .mk-deploy-steps { grid-template-columns: 1fr 1fr; }
-  .mk-kpis-col { flex-direction: row; }
 }
 
 @media (max-width: 640px) {
@@ -519,7 +491,6 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
   .mk-card-body { padding: 10px 10px 50px; }
   .mk-card-quick { left: 10px; right: 10px; height: 34px; }
   .mk-card-quick span { font-size: 0.8rem; }
-  .mk-benefits, .mk-deploy-steps { grid-template-columns: 1fr; }
   .mk-form-row, .mk-form-row-3 { grid-template-columns: 1fr; }
   .mk-price { grid-template-columns: 1fr 1fr; }
   .mk-pay { grid-template-columns: 1fr; }

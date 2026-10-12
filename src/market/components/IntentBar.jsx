@@ -17,7 +17,7 @@ export default function IntentBar({ active }) {
       ))}
       <Link to="/centres" className="mk-intent mk-intent-hubs">
         <span className="mk-intent-ic"><FaWifi /></span>
-        <span className="mk-intent-tx"><b>Explorer</b><small>Centres connectés</small></span>
+        <span className="mk-intent-tx"><b>Explorer</b><small>Wifi Zone</small></span>
       </Link>
     </nav>
   )

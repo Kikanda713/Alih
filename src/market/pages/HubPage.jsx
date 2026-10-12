@@ -49,7 +49,7 @@ function HubPage({ id }) {
         style={hub.photoUrl ? { '--hub-photo': `url(${imageUrl(hub.photoUrl, 1400)})` } : undefined}>
         <div className="mk-container mk-hub-hero-grid">
           <div>
-            <nav className="mk-crumbs mk-crumbs-light"><Link to="/centres">Centres</Link><FaChevronRight /><span>{hub.name}</span></nav>
+            <nav className="mk-crumbs mk-crumbs-light"><Link to="/centres">Wifi Zone</Link><FaChevronRight /><span>{hub.name}</span></nav>
             <p className="mk-eyebrow mk-eyebrow-light">
               {hub.kind === 'rural' ? <><FaSeedling /> Zone rurale</> : <><FaCity /> Zone urbaine</>} · {hubTypeLabel(hub.hubType)}
             </p>

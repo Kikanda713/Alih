@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
-import { FaWifi, FaCity, FaSeedling, FaStore, FaBroadcastTower, FaWhatsapp, FaArrowRight } from 'react-icons/fa'
+import { useSearchParams } from 'react-router-dom'
+import { FaWifi, FaCity, FaSeedling, FaStore, FaBroadcastTower, FaWhatsapp } from 'react-icons/fa'
 import { Button, EmptyState, Spinner } from '../../components/ui'
 import { useTaxonomy } from '../../api/taxonomy'
 import { marketApi } from '../lib/api'
@@ -17,7 +17,7 @@ export default function HubsPage() {
   const [data, setData] = useState({ loading: true, items: [], summary: {}, error: null })
   const key = params.toString()
 
-  useEffect(() => { document.title = 'Centres & Wi-Fi Tindisa' }, [])
+  useEffect(() => { document.title = 'Wifi Zone · Tindisa' }, [])
   useEffect(() => {
     let alive = true
     const p = Object.fromEntries(new URLSearchParams(key))
@@ -39,7 +39,7 @@ export default function HubsPage() {
     <div className="mk-hubs">
       <section className="mk-page-hero mk-page-hero-dark">
         <div className="mk-container">
-          <p className="mk-eyebrow mk-eyebrow-light">Tindisa Connect</p>
+          <p className="mk-eyebrow mk-eyebrow-light">Wifi Zone</p>
           <h1>Centres commerciaux et zones agricoles connectés</h1>
           <p>
             Chaque centre regroupe des boutiques, des producteurs et des prestataires autour d’un Wi-Fi maillé Tindisa
@@ -52,7 +52,6 @@ export default function HubsPage() {
             <div><strong>{s.urban ?? 0} / {s.rural ?? 0}</strong><span><FaCity /> urbains / <FaSeedling /> ruraux</span></div>
             <div><strong>{s.connected_shops ?? 0}</strong><span><FaStore /> boutiques connectées</span></div>
           </div>
-          <Link to="/connectivite" className="mk-connect-link">Comment fonctionne le réseau maillé <FaArrowRight /></Link>
         </div>
       </section>
 

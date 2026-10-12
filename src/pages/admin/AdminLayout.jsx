@@ -19,7 +19,7 @@ function AdminShell() {
     { to: '/admin/commissions', icon: <FaPercent />, label: 'Commissions' },
     { to: '/admin/certification', icon: <FaCertificate />, label: 'Certification' },
     { to: '/admin/marche', icon: <FaGlobeAfrica />, label: 'Marché web' },
-    { to: '/admin/centres', icon: <FaWifi />, label: 'Centres & Wi-Fi' },
+    { to: '/admin/centres', icon: <FaWifi />, label: 'Wifi Zone' },
     { to: '/admin/ia', icon: <FaRobot />, label: 'Réglages IA' },
     { to: '/admin/p2p', icon: <FaHandshake />, label: 'Marché P2P' },
     { to: '/admin/drivers', icon: <FaMotorcycle />, label: 'Livreurs' },

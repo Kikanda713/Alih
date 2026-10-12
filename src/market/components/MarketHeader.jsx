@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useSearchParams } from 'react-router-dom'
-import { FaShoppingCart, FaBars, FaTimes, FaShieldAlt, FaSatelliteDish, FaStore, FaWhatsapp, FaWifi, FaSearch } from 'react-icons/fa'
+import { FaShoppingCart, FaBars, FaTimes, FaShieldAlt, FaStore, FaWhatsapp, FaWifi, FaSearch } from 'react-icons/fa'
 import tindisaLogo from '../../assets/tindisa-logo.png'
 import { LanguageSwitcher } from '../../i18n'
 import ProfileMenu from '../../components/ProfileMenu'
@@ -96,8 +96,7 @@ export default function MarketHeader() {
             Tout le marché
           </NavLink>
           {UNIVERSES.map((u) => <UniverseNavLink key={u.id} universe={u} active={current?.id === u.id} />)}
-          <Link to="/centres" className={`mk-unav-link mk-unav-accent${location.pathname.startsWith("/centres") ? " active" : ""}`}><FaWifi /> Centres & Wi-Fi</Link>
-          <Link to="/connectivite" className={`mk-unav-link${location.pathname === "/connectivite" ? " active" : ""}`}><FaSatelliteDish /> Connectivité</Link>
+          <Link to="/centres" className={`mk-unav-link mk-unav-accent${location.pathname.startsWith("/centres") ? " active" : ""}`}><FaWifi /> Wifi Zone</Link>
           <Link to="/vendre" className={`mk-unav-link${location.pathname === "/vendre" ? " active" : ""}`}><FaStore /> Vendre</Link>
         </div>
       </nav>
@@ -117,8 +116,7 @@ export default function MarketHeader() {
                 <Link key={u.id} to={universeHref(u)} className="mk-menu-link"><u.icon /> {u.title}</Link>
               ))}
               <p className="mk-menu-label">Tindisa</p>
-              <Link to="/centres" className="mk-menu-link"><FaWifi /> Centres & Wi-Fi</Link>
-              <Link to="/connectivite" className="mk-menu-link"><FaSatelliteDish /> Connectivité Starlink</Link>
+              <Link to="/centres" className="mk-menu-link"><FaWifi /> Wifi Zone</Link>
               <Link to="/vendre" className="mk-menu-link"><FaStore /> Vendre sur Tindisa</Link>
               <Link to="/verify" className="mk-menu-link"><FaShieldAlt /> Vérifier un certificat</Link>
               <a href={channels.whatsapp} target="_blank" rel="noopener noreferrer" className="mk-menu-link mk-menu-wa">
