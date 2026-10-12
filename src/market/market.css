@@ -138,11 +138,12 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 
 /* ---------- Rayons ---------- */
 .mk-rails { padding: 12px 24px 24px; }
-.mk-rail-section { margin: 36px 0; }
-.mk-rail-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.mk-rail-head h2 { font-family: var(--font-heading); font-size: 1.35rem; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.mk-rail-head a { color: var(--terracotta); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; }
-.mk-rail-verb { display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #fff; background: var(--terracotta); padding: 4px 10px; border-radius: var(--radius-pill); font-family: var(--font-body); }
+.mk-rail-section { margin: 24px 0; }
+.mk-rail-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.mk-rail-head h2 { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.mk-rail-head a { color: var(--gray); text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; font-size: 0.82rem; white-space: nowrap; }
+.mk-rail-head a:hover { color: var(--terracotta); }
+.mk-rail-ic { display: inline-flex; color: var(--terracotta); font-size: 0.9rem; }
 
 /* ---------- Cartes d'annonce ---------- */
 .mk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }

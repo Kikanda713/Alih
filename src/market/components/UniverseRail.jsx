@@ -16,7 +16,7 @@ export default function UniverseRail({ universe, title, params, href, onBook, li
     <section className="mk-rail-section">
       <div className="mk-rail-head">
         <h2>
-          {universe?.verb && <span className="mk-rail-verb"><universe.icon /> {universe.verb}</span>}
+          {universe && <span className="mk-rail-ic" aria-hidden="true"><universe.icon /></span>}
           {title || universe?.title}
         </h2>
         <Link to={href || universeHref(universe)}>Tout voir <FaArrowRight /></Link>
