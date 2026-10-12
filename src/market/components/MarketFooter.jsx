@@ -11,6 +11,7 @@ export default function MarketFooter() {
         <div className="mk-footer-brand">
           <img src={tindisaFooterLogo} alt="Tindisa" />
           <p>Le marché du Congo, en ligne et dans votre messagerie. Produits, services, hébergement, main d'œuvre et livraison.</p>
+          <a href="tel:+243991880037" className="mk-footer-phone">0991880037</a>
           <div className="mk-footer-social">
             <a href={channels.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><FaWhatsapp /></a>
             <a href={channels.telegram} target="_blank" rel="noopener noreferrer" aria-label="Telegram"><FaTelegramPlane /></a>
