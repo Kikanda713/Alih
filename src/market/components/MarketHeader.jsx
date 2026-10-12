@@ -91,7 +91,6 @@ export default function MarketHeader() {
                 <Link key={u.id} to={universeHref(u)} className="mk-menu-link"><u.icon /> {u.title}</Link>
               ))}
               <p className="mk-menu-label">Tindisa</p>
-              <Link to="/#parcours" className="mk-menu-link">Comment ça marche</Link>
               <Link to="/centres" className="mk-menu-link"><FaWifi /> Centres & Wi-Fi</Link>
               <Link to="/connectivite" className="mk-menu-link"><FaSatelliteDish /> Connectivité Starlink</Link>
               <Link to="/vendre" className="mk-menu-link"><FaStore /> Vendre sur Tindisa</Link>

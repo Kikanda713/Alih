@@ -214,16 +214,6 @@ section[id] {
 /* Decorative gold accent ring behind phone */
 
 /* ===================== HOW IT WORKS ===================== */
-.how-it-works {
-  padding: 100px 24px;
-  background: var(--white);
-  position: relative;
-}
-
-.how-it-works .container {
-  max-width: var(--container);
-  margin: 0 auto;
-}
 
 .section-title {
   font-family: var(--font-heading);
@@ -243,125 +233,10 @@ section[id] {
   font-weight: 400;
 }
 
-.how-it-works .section-subtitle {
-  margin-bottom: 28px;
-  max-width: 620px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
 /* Sélecteur de profil Acheteur / Commerçant */
-.how-toggle {
-  display: flex;
-  width: fit-content;
-  gap: 4px;
-  margin: 0 auto 8px;
-  background: rgba(18, 18, 18, 0.05);
-  position: relative;
-  z-index: 5;
-  border-radius: var(--radius-pill);
-  padding: 4px;
-}
-.how-toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--gray);
-  padding: 9px 18px;
-  border-radius: var(--radius-pill);
-  transition: color var(--duration) var(--ease), background var(--duration) var(--ease);
-}
-.how-toggle-btn:hover { color: var(--ebony); }
-.how-toggle-btn.active {
-  background: var(--white);
-  color: var(--terracotta);
-  box-shadow: var(--shadow-sm);
-}
-.how-toggle-btn svg { font-size: 1rem; }
 
 /* How It Works — la personne (cutout transparent) entourée de bulles soignées */
-.how-stage {
-  position: relative;
-  max-width: 900px;
-  margin: 8px auto 0;
-  min-height: 480px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
 /* Halo clair derrière la personne (jamais de fond noir) */
-.how-stage::before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(420px, 80%);
-  height: 420px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(198, 93, 46, 0.14), rgba(231, 215, 193, 0.18) 45%, rgba(248, 245, 239, 0) 72%);
-  z-index: 0;
-}
-.how-person {
-  position: relative;
-  z-index: 1;
-  height: 460px;
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
-  filter: drop-shadow(0 22px 40px rgba(18, 18, 18, 0.16));
-  animation: how-fade-in 0.45s ease both;
-}
-.how-bubble {
-  position: absolute;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 248px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 13px 16px;
-  box-shadow: var(--shadow-md);
-  animation: how-bubble-in 0.5s ease both, how-float 5s ease-in-out infinite 0.5s;
-}
-.how-bubble-ic {
-  flex-shrink: 0;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(198, 93, 46, 0.1);
-  color: var(--terracotta);
-  font-size: 1.25rem;
-}
-.how-bubble-tx {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.25;
-  font-size: 0.82rem;
-  color: var(--gray);
-}
-.how-bubble-tx b {
-  font-size: 0.94rem;
-  font-weight: 700;
-  color: var(--ebony);
-}
-.how-bubble-logos { display: flex; align-items: center; gap: 7px; margin-top: 7px; }
-.how-bubble-logos img { height: 20px; width: auto; border-radius: 4px; }
-.how-b1 { top: 6%; left: 0; }
-.how-b2 { bottom: 16%; left: 2%; animation-delay: 0.8s; }
-.how-b3 { top: 14%; right: 0; animation-delay: 1.6s; }
-.how-b4 { bottom: 8%; right: 2%; animation-delay: 2.4s; }
 @keyframes how-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
@@ -376,29 +251,8 @@ section[id] {
 }
 
 /* Tablette : on resserre les bulles */
-@media (max-width: 980px) {
-  .how-bubble { width: 210px; }
-  .how-b1, .how-b2 { left: 0; }
-  .how-b3, .how-b4 { right: 0; }
-}
 
 /* Mobile : photo au-dessus, bulles empilées proprement en dessous */
-@media (max-width: 760px) {
-  .how-stage {
-    flex-direction: column;
-    align-items: center;
-    gap: 14px;
-    min-height: 0;
-  }
-  .how-stage::before { width: 280px; height: 280px; }
-  .how-person { height: 300px; }
-  .how-bubble {
-    position: static;
-    width: 100%;
-    max-width: 360px;
-    animation: none;
-  }
-}
 
 /* Agent Card Styles */
 
@@ -409,82 +263,8 @@ section[id] {
 /* Connector line between steps (desktop only) */
 
 /* ===================== TRUST SECTION ===================== */
-.trust {
-  padding: 100px 24px;
-  background: var(--ivory);
-  position: relative;
-}
-
-.trust .container {
-  max-width: var(--container);
-  margin: 0 auto;
-}
-
-.trust-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 24px;
-}
 
 /* Parcours de certification (illustration simple) */
-.trust-flow {
-  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
-  gap: 10px; margin: 8px auto 32px; max-width: 760px;
-}
-.trust-flow-step {
-  display: flex; align-items: center; gap: 8px; position: relative;
-  background: #fff; border: 1px solid #f0e3da; border-radius: 999px;
-  padding: 8px 16px 8px 12px; font-weight: 600; color: #3a3a4a;
-  white-space: nowrap;
-}
-.trust-flow-num {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 22px; height: 22px; border-radius: 50%; background: #C65D2E; color: #fff;
-  font-size: .8rem; font-weight: 700;
-}
-.trust-flow-ic { color: #C65D2E; }
-.trust-flow-arrow { color: #C65D2E; font-weight: 700; font-size: 1.2rem; }
-@media (max-width: 640px) { .trust-flow-arrow { transform: rotate(90deg); } }
-
-.trust-card {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: 36px 28px;
-  text-align: center;
-  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
-}
-
-.trust-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-sm);
-}
-
-.trust-icon {
-  width: 52px;
-  height: 52px;
-  margin: 0 auto 18px;
-  background: rgba(198, 93, 46, 0.08);
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-}
-
-.trust-card h3 {
-  font-family: var(--font-heading);
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: var(--ebony);
-}
-
-.trust-card p {
-  font-size: 14px;
-  color: var(--gray);
-  line-height: 1.6;
-}
 
 /* ===================== PRICING SECTION ===================== */
 .pricing {
@@ -623,12 +403,6 @@ section[id] {
   .platforms {
     justify-content: center;
   }
-
-  .trust-grid {
-    grid-template-columns: 1fr;
-    max-width: 420px;
-    margin: 0 auto;
-  }
 }
 
 @media (max-width: 768px) {
@@ -654,14 +428,6 @@ section[id] {
 /* Icône d'authentification dans le header (sans texte) */
 
 /* Accès subtil depuis la section confiance */
-.trust-verify-cta { display: flex; justify-content: center; margin-top: 28px; }
-.trust-verify-btn {
-  display: inline-flex; align-items: center; gap: 10px;
-  padding: 11px 20px; border-radius: 999px; text-decoration: none; font-weight: 600;
-  color: var(--terracotta); background: var(--white); border: 1.5px solid rgba(198, 93, 46, 0.35);
-  transition: all var(--duration) var(--ease);
-}
-.trust-verify-btn:hover { background: var(--terracotta); color: #fff; box-shadow: 0 6px 20px rgba(198, 93, 46, 0.25); }
 
 /* ---- Page /verify ---- */
 .verify-page { min-height: 100vh; min-height: 100dvh; background: var(--ivory); color: var(--ebony); }

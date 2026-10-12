@@ -174,14 +174,7 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 @keyframes mk-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
 /* ---------- Parcours site → messagerie ---------- */
-.mk-flow { padding: 64px 0; background: var(--white); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-.mk-flow-steps { list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 36px; counter-reset: step; }
-.mk-flow-steps li { position: relative; display: grid; gap: 8px; justify-items: center; text-align: center; padding: 20px 14px; border-radius: var(--radius-card); background: var(--ivory); }
-.mk-flow-steps li:not(:last-child)::after { content: ''; position: absolute; top: 44px; right: -14px; width: 12px; height: 2px; background: var(--copper-gold); }
 .mk-flow-num { width: 26px; height: 26px; border-radius: 50%; background: var(--ebony); color: #fff; display: grid; place-items: center; font-size: 0.8rem; font-weight: 700; }
-.mk-flow-ic { font-size: 1.5rem; color: var(--terracotta); }
-.mk-flow-steps b { font-family: var(--font-heading); }
-.mk-flow-steps small { color: var(--gray); line-height: 1.45; font-size: 0.85rem; }
 
 /* ---------- Pages à bandeau ---------- */
 .mk-page-hero { padding: 56px 0 44px; background: #F3EADC; position: relative; overflow: hidden; }
@@ -198,20 +191,10 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 .mk-kpis strong { font-family: var(--font-heading); font-size: 1.6rem; color: #fff; }
 .mk-kpis span { font-size: 0.82rem; color: rgba(243, 234, 220, 0.75); display: inline-flex; align-items: center; gap: 6px; }
 .mk-kpis-col { flex-direction: column; margin: 0; }
-.mk-kpis-inline > div { min-width: 120px; }
 
 /* ---------- Connectivité (accueil + page) ---------- */
-.mk-connect { background: var(--ebony); color: #F3EADC; padding: 72px 0; position: relative; overflow: hidden; }
-.mk-connect::before { content: ''; position: absolute; inset: 0; background-image: var(--mk-bogolan); opacity: 0.07; pointer-events: none; }
-.mk-connect-inner { position: relative; display: grid; grid-template-columns: 1fr 1.15fr; gap: 40px; align-items: center; }
-.mk-connect-intro h2 { font-family: var(--font-heading); font-size: clamp(1.7rem, 3.2vw, 2.5rem); line-height: 1.12; letter-spacing: -1px; margin-bottom: 16px; color: #fff; }
-.mk-connect-intro p { color: rgba(243, 234, 220, 0.82); line-height: 1.65; }
-.mk-connect-impact { list-style: none; display: grid; gap: 10px; margin: 20px 0; }
-.mk-connect-impact li { display: flex; gap: 10px; align-items: flex-start; color: #F3EADC; }
-.mk-connect-impact svg { color: var(--copper-gold); margin-top: 4px; flex-shrink: 0; }
 .mk-connect-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 22px; }
 .mk-connect-link { color: var(--copper-gold); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
-.mk-connect-visual { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 12px; }
 .mk-cx-hero { display: grid; grid-template-columns: 1.5fr 1fr; gap: 32px; align-items: center; }
 .mk-cx-section { padding-top: 56px; padding-bottom: 56px; }
 .mk-cx-section > .mesh-figure { margin-top: 28px; background: var(--ebony); border-radius: 20px; padding: 16px; color: #F3EADC; }
@@ -287,7 +270,6 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 .mk-hubs-filters .ui-select { width: auto; min-width: 170px; }
 .mk-hubs-map { height: 340px; border-radius: var(--radius-card); margin-bottom: 20px; border: 1px solid var(--border); z-index: 0; }
 .mk-hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; }
-.mk-hub-grid-dark { position: relative; margin-top: 32px; }
 .mk-hub-card { display: flex; flex-direction: column; border-radius: var(--radius-card); overflow: hidden; background: var(--white); border: 1px solid var(--border); text-decoration: none; color: var(--ebony); transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease); }
 .mk-hub-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
 .mk-hub-media { position: relative; aspect-ratio: 16 / 9; background: #2a2a2a; }
@@ -315,7 +297,6 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 .mk-join { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin: 40px 0 56px; padding: 26px 28px; border-radius: 20px; background: #F3EADC; border: 1px solid rgba(198, 93, 46, 0.25); }
 .mk-join h2 { font-family: var(--font-heading); font-size: 1.3rem; margin-bottom: 6px; }
 .mk-join p { color: var(--gray); max-width: 640px; line-height: 1.55; display: flex; gap: 8px; align-items: flex-start; }
-.mk-sell-teaser { padding: 8px 0; }
 
 /* ---------- Exploration ---------- */
 .mk-explore { padding-top: 24px; padding-bottom: 56px; }
@@ -518,8 +499,6 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
-  .mk-flow-steps { grid-template-columns: repeat(3, 1fr); }
-  .mk-flow-steps li::after { display: none; }
   .mk-footer-grid { grid-template-columns: 1fr 1fr; }
   .admin-mk-insights { grid-template-columns: 1fr; }
 }
@@ -533,7 +512,7 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
   .mk-header-top { height: 64px; }
   .mk-logo img { height: 44px; }
   .mk-explore-body { grid-template-columns: 1fr; }
-  .mk-listing-grid, .mk-listing-lower, .mk-cart-grid, .mk-connect-inner, .mk-cx-hero, .mk-hub-hero-grid { grid-template-columns: 1fr; }
+  .mk-listing-grid, .mk-listing-lower, .mk-cart-grid, .mk-cx-hero, .mk-hub-hero-grid { grid-template-columns: 1fr; }
   .mk-gallery, .mk-checkout { position: static; }
   .mk-benefits, .mk-deploy-steps { grid-template-columns: 1fr 1fr; }
   .mk-kpis-col { flex-direction: row; }
@@ -559,7 +538,7 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
   .mk-card-body { padding: 10px 10px 50px; }
   .mk-card-quick { left: 10px; right: 10px; height: 34px; }
   .mk-card-quick span { font-size: 0.8rem; }
-  .mk-flow-steps, .mk-benefits, .mk-deploy-steps { grid-template-columns: 1fr; }
+  .mk-benefits, .mk-deploy-steps { grid-template-columns: 1fr; }
   .mk-chat-actions { grid-template-columns: 1fr; }
   .mk-form-row, .mk-form-row-3 { grid-template-columns: 1fr; }
   .mk-price { grid-template-columns: 1fr 1fr; }

@@ -23,10 +23,8 @@ export default function MarketFooter() {
         </div>
         <div>
           <h4>Tindisa</h4>
-          <Link to="/#parcours">Comment ça marche</Link>
           <Link to="/centres">Centres & Wi-Fi</Link>
           <Link to="/connectivite">Connectivité Starlink</Link>
-          <Link to="/#trust">Confiance et séquestre</Link>
           <Link to="/vendre">Vendre sur Tindisa</Link>
           <Link to="/verify">Vérifier un certificat</Link>
         </div>
