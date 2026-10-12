@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FaTimes, FaTrashAlt, FaMinus, FaPlus, FaShoppingCart, FaStore } from 'react-icons/fa'
 import { Button, EmptyState } from '../../components/ui'
-import { useCart } from '../CartContext'
+import { useCart } from '../useCart'
 import { formatPrice, unitSuffix, imageUrl } from '../lib/format'
 import { bookingSummary, lineTotal, totalsByCurrency } from '../lib/chat'
 

@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { CartContext } from './useCart'
 
 /*
  * Panier du visiteur, local au navigateur (aucune connexion requise). Il est
@@ -7,7 +8,6 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
  */
 
 const STORAGE_KEY = 'tindisa_cart_v1'
-const CartContext = createContext(null)
 
 function load() {
   try {
@@ -82,11 +82,4 @@ export function CartProvider({ children }) {
   }), [items, add, setQty, remove, clear, open])
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
-}
-
-// eslint-disable-next-line react-refresh/only-export-components
-export function useCart() {
-  const ctx = useContext(CartContext)
-  if (!ctx) throw new Error('useCart doit être utilisé dans <CartProvider>')
-  return ctx
 }

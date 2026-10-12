@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
+import { useLoad } from '../../api/useLoad'
 import { Link } from 'react-router-dom'
 import { FaGlobeAfrica, FaCheckCircle, FaBan, FaUndo, FaSearch, FaConciergeBell, FaExclamationTriangle, FaExternalLinkAlt, FaEye } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
-import { useToast } from '../../components/Toast.jsx'
+import { useToast } from '../../components/useToast'
 import { Badge, Spinner, EmptyState, ConfirmModal, Input, Select } from '../../components/ui.jsx'
 import { StatGrid, StatCard } from '../../components/StatCard.jsx'
 import { Pagination } from '../../components/Pagination.jsx'
-import { useAdminView } from './AdminScopeContext.jsx'
+import { useAdminView } from './adminView'
 import { useTaxonomy } from '../../api/taxonomy'
 import { categoryLabel } from '../../market/lib/format'
 import { EnhancePanel, EnhanceThumb } from './PhotoEnhance.jsx'
@@ -36,9 +37,6 @@ export default function AdminMarketplace() {
   const { notify } = useToast()
   const taxonomy = useTaxonomy()
   const { city, withCity } = useAdminView()
-  const [insights, setInsights] = useState(null)
-  const [list, setList] = useState({ items: [], total: 0 })
-  const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('')
   const [type, setType] = useState('')
   const [photo, setPhoto] = useState('')
@@ -55,24 +53,21 @@ export default function AdminMarketplace() {
     return s ? `${base}${base.includes('?') ? '&' : '?'}${s}` : base
   }, [withCity])
 
-  const loadInsights = useCallback(async () => {
-    try { setInsights(await api.get(withParams('/v1/admin/marketplace/insights', { days: 30 }))) } catch { setInsights(null) }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [withParams])
-
-  const loadList = useCallback(async () => {
-    setLoading(true)
-    try {
-      const r = await api.get(withParams('/v1/admin/marketplace/listings', {
-        q: query, status, type, photo, offset: (page - 1) * PAGE, limit: PAGE,
-      }))
-      setList({ items: r?.items || [], total: r?.total || 0 })
-    } catch { setList({ items: [], total: 0 }) } finally { setLoading(false) }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [withParams, query, status, type, photo, page])
-
-  useEffect(() => { loadInsights() }, [loadInsights, city])
-  useEffect(() => { loadList() }, [loadList, city])
+  const insightsQ = useLoad(
+    () => api.get(withParams('/v1/admin/marketplace/insights', { days: 30 })).catch(() => null),
+    [city],
+  )
+  const listQ = useLoad(
+    () => api.get(withParams('/v1/admin/marketplace/listings', {
+      q: query, status, type, photo, offset: (page - 1) * PAGE, limit: PAGE,
+    })).then((r) => ({ items: r?.items || [], total: r?.total || 0 }), () => ({ items: [], total: 0 })),
+    [city, query, status, type, photo, page],
+  )
+  const insights = insightsQ.data
+  const list = listQ.data || { items: [], total: 0 }
+  const loading = listQ.loading
+  const loadList = listQ.reload
+  const loadInsights = insightsQ.reload
 
   const doModerate = async () => {
     setConfirm((s) => ({ ...s, busy: true }))
@@ -80,7 +75,8 @@ export default function AdminMarketplace() {
       await api.post(`/v1/admin/marketplace/listings/${confirm.item.id}/moderate`, { action: confirm.action })
       notify(confirm.action === 'remove' ? 'Annonce retirée du marché' : 'Annonce remise en ligne', 'success')
       setConfirm({ open: false, item: null, action: null, busy: false })
-      await Promise.all([loadList(), loadInsights()])
+      loadList()
+      loadInsights()
     } catch (e) {
       notify(e?.message || 'Erreur', 'error')
       setConfirm((s) => ({ ...s, busy: false }))

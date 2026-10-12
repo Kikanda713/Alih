@@ -1,7 +1,7 @@
 import { FaWhatsapp, FaTelegramPlane, FaFacebookF, FaExternalLinkAlt } from 'react-icons/fa'
 import { channels } from '../auth/config'
 import { Card } from './ui.jsx'
-import { useT } from '../i18n/index.jsx'
+import { useT } from '../i18n'
 
 /**
  * Accès direct du marchand à ses canaux : ouvrir sa session WhatsApp / Telegram,

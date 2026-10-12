@@ -25,9 +25,18 @@ export default function LinkPage() {
     state ? `state=${encodeURIComponent(state)}` : '',
   ].filter(Boolean).join('&')
   const { isAuthenticated, isLoading, loginWithRedirect, getAccessTokenSilently, user } = useAuth0()
-  const [status, setStatus] = useState('init') // init | confirm | linking | done | error
-  const [msg, setMsg] = useState('')
+  const [step, setStatus] = useState('init') // init | linking | done | error (actions)
+  const [linkMsg, setMsg] = useState('')
   const redirecting = useRef(false)
+
+  // Statut AFFICHÉ, dérivé au rendu : lien incomplet → erreur ; connecté (et
+  // aucune action lancée) → on NE lie pas tout de suite, on demande
+  // confirmation du compte.
+  const invalid = !isLoading && !code && !state
+  const status = invalid
+    ? 'error'
+    : step === 'init' && !isLoading && isAuthenticated ? 'confirm' : step // init | confirm | linking | done | error
+  const msg = invalid ? 'Lien invalide ou incomplet.' : linkMsg
 
   const login = (extra) =>
     loginWithRedirect({
@@ -37,11 +46,7 @@ export default function LinkPage() {
 
   useEffect(() => {
     if (isLoading) return
-    if (!code && !state) {
-      setStatus('error')
-      setMsg('Lien invalide ou incomplet.')
-      return
-    }
+    if (!code && !state) return // lien invalide : erreur affichée (statut dérivé)
     if (!isAuthenticated) {
       // Connexion en CHOISISSANT le compte (évite de réutiliser une session SSO
       // d'un tiers déjà connecté sur l'appareil).
@@ -49,10 +54,8 @@ export default function LinkPage() {
         redirecting.current = true
         login()
       }
-      return
     }
-    // Connecté : on NE lie pas tout de suite → on demande confirmation du compte.
-    setStatus((s) => (s === 'init' ? 'confirm' : s))
+    // Connecté : statut « confirm » dérivé au rendu (cf. plus haut).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isLoading, code, state])
 
@@ -76,7 +79,7 @@ export default function LinkPage() {
   }
 
   const wrap = {
-    minHeight: '100vh', minHeight: '100dvh', display: 'flex', alignItems: 'center',
+    minHeight: '100dvh', display: 'flex', alignItems: 'center',
     justifyContent: 'center', padding: 24, fontFamily: 'system-ui, Segoe UI, Roboto, sans-serif',
     color: '#1a1a2e', textAlign: 'center', background: '#F8F5EF',
   }

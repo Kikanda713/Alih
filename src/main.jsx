@@ -5,7 +5,7 @@ import './index.css'
 import './dashboard.css'
 import Root from './Root.jsx'
 import Auth0ProviderWithConfig from './auth/Auth0ProviderWithConfig.jsx'
-import { LanguageProvider } from './i18n/index.jsx'
+import { LanguageProvider } from './i18n'
 import { ToastProvider } from './components/Toast.jsx'
 import { CartProvider } from './market/CartContext.jsx'
 

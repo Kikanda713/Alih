@@ -1,7 +1,6 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { FaCheckCircle, FaExclamationCircle, FaInfoCircle, FaTimes } from 'react-icons/fa'
-
-const ToastContext = createContext({ notify: () => {} })
+import { ToastContext } from './useToast'
 
 let seq = 0
 
@@ -40,8 +39,4 @@ export function ToastProvider({ children }) {
       </div>
     </ToastContext.Provider>
   )
-}
-
-export function useToast() {
-  return useContext(ToastContext)
 }

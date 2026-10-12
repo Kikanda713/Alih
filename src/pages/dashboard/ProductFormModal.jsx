@@ -28,7 +28,7 @@ import {
   attributesFor,
   unitsFor,
 } from "../../api/taxonomy";
-import { useT } from "../../i18n/index.jsx";
+import { useT } from "../../i18n";
 
 const empty = {
   type: "product",

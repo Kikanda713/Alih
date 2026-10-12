@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { FaChevronDown, FaThLarge, FaSignOutAlt, FaUserShield, FaStore } from 'react-icons/fa'
 import { auth0Config, isAuth0Configured } from '../auth/config'
 import AuthButtons from '../auth/AuthButtons.jsx'
-import { useT } from '../i18n/index.jsx'
+import { useT } from '../i18n'
 import { useIsAdmin } from '../auth/roles'
 import { DEMO_MODE } from '../demo/demo' // DEMO: retirer en production
 import DemoProfileMenu from '../demo/DemoProfileMenu.jsx' // DEMO: retirer en production

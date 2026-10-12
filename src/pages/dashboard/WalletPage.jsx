@@ -1,9 +1,11 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useRef, useState } from 'react'
 import { FaWallet, FaArrowDown, FaArrowUp, FaMoneyBillWave } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
-import { useT } from '../../i18n/index.jsx'
+import { useLoad } from '../../api/useLoad'
+import { useT } from '../../i18n'
 import { Card, Spinner, EmptyState, Button } from '../../components/ui.jsx'
-import { usePaged, Pagination } from '../../components/Pagination.jsx'
+import { usePaged } from '../../components/usePaged'
+import { Pagination } from '../../components/Pagination.jsx'
 import PaymentModal from '../../components/PaymentModal.jsx'
 
 function fmt(v, currency = 'CDF') {
@@ -18,17 +20,16 @@ function isCredit(type) {
   return String(type || '').toUpperCase().includes('CREDIT')
 }
 
+const EMPTY_WALLET = { balances: [], transactions: [] }
+
 export default function WalletPage() {
   const api = useTindisaApi()
   const { t } = useT()
-  const [loading, setLoading] = useState(true)
-  const [wallet, setWallet] = useState({ balances: [], transactions: [] })
-  const [fees, setFees] = useState(null)
   const [payFees, setPayFees] = useState(false)
-  const { pageItems, page, setPage, totalPages, count } = usePaged(wallet.transactions, 10)
-
-  const load = useCallback(async () => {
-    setLoading(true)
+  // Portefeuille + frais dus. En cas d'erreur : portefeuille vide, mais les
+  // frais précédemment chargés sont conservés.
+  const lastFees = useRef(null)
+  const { data, loading, reload } = useLoad(async () => {
     try {
       const [r, cf] = await Promise.all([
         api.get('/v1/merchant/wallet'),
@@ -37,17 +38,15 @@ export default function WalletPage() {
       const balances = Array.isArray(r?.balances) && r.balances.length
         ? r.balances
         : (r?.balance != null ? [{ currency: r.currency || 'CDF', balance: r.balance }] : [])
-      setWallet({ balances, transactions: r?.transactions || [] })
-      setFees(cf)
+      lastFees.current = cf
+      return { wallet: { balances, transactions: r?.transactions || [] }, fees: cf }
     } catch {
-      setWallet({ balances: [], transactions: [] })
-    } finally {
-      setLoading(false)
+      return { wallet: EMPTY_WALLET, fees: lastFees.current }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  useEffect(() => { load() }, [load])
+  const wallet = data?.wallet || EMPTY_WALLET
+  const fees = data?.fees ?? null
+  const { pageItems, page, setPage, totalPages, count } = usePaged(wallet.transactions, 10)
 
   if (loading) {
     return (
@@ -112,7 +111,7 @@ export default function WalletPage() {
         variant="fees"
         amount={Number(fees?.owedUsd || 0)}
         onClose={() => setPayFees(false)}
-        onDone={load}
+        onDone={reload}
       />
 
       <div>

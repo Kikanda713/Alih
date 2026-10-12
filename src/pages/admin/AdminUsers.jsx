@@ -1,12 +1,16 @@
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useMemo, useState } from 'react'
 import { FaUserSlash, FaUserCheck, FaUsers, FaStore, FaShoppingBag } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
-import { useT } from '../../i18n/index.jsx'
-import { useToast } from '../../components/Toast.jsx'
-import { Card, Badge, Spinner, EmptyState, Input, ConfirmModal } from '../../components/ui.jsx'
-import { usePaged, Pagination } from '../../components/Pagination.jsx'
+import { useLoad } from '../../api/useLoad'
+import { useT } from '../../i18n'
+import { useToast } from '../../components/useToast'
+import { Badge, Spinner, EmptyState, Input, ConfirmModal } from '../../components/ui.jsx'
+import { usePaged } from '../../components/usePaged'
+import { Pagination } from '../../components/Pagination.jsx'
 import ExportButtons from '../../components/ExportButtons.jsx'
-import { useAdminView } from './AdminScopeContext.jsx'
+import { useAdminView } from './adminView'
+
+const NO_USERS = []
 
 function name(u) {
   const n = [u.firstname, u.lastname].filter(Boolean).join(' ').trim()
@@ -36,26 +40,14 @@ export default function AdminUsers() {
   const { t } = useT()
   const { notify } = useToast()
   const { city, withCity } = useAdminView()
-  const [loading, setLoading] = useState(true)
-  const [users, setUsers] = useState([])
+  // Rechargé à chaque changement de ville ; erreur → liste vide.
+  const { data: users = NO_USERS, loading, reload } = useLoad(
+    () => api.get(withCity('/v1/admin/users')).then((r) => r?.users || [], () => []),
+    [city],
+  )
   const [type, setType] = useState('all')
   const [q, setQ] = useState('')
   const [confirm, setConfirm] = useState({ open: false, user: null, busy: false })
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const r = await api.get(withCity('/v1/admin/users'))
-      setUsers(r?.users || [])
-    } catch {
-      setUsers([])
-    } finally {
-      setLoading(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [withCity])
-
-  useEffect(() => { load() }, [load, city])
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase()
@@ -76,7 +68,7 @@ export default function AdminUsers() {
       await api.put(`/v1/admin/users/${u.id}/status`, { status: next })
       notify(next === 'suspended' ? t('admin.users.suspended') : t('admin.users.activated'), 'success')
       setConfirm({ open: false, user: null, busy: false })
-      await load()
+      reload()
     } catch (e) {
       notify(e?.message || t('merchant.error'), 'error')
       setConfirm((c) => ({ ...c, busy: false }))

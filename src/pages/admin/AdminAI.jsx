@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useLoad } from '../../api/useLoad'
 import { FaRobot, FaKey, FaCheckCircle, FaExclamationTriangle, FaSave, FaPlug, FaSearch, FaMagic, FaComments } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
-import { useToast } from '../../components/Toast.jsx'
+import { useToast } from '../../components/useToast'
 import { Badge, Button, Card, EmptyState, Field, Input, Modal, Select, Spinner } from '../../components/ui.jsx'
 
 /*
@@ -193,15 +194,9 @@ function ProviderCard({ id, info, onSaved }) {
 
 export default function AdminAI() {
   const api = useTindisaApi()
-  const [state, setState] = useState({ loading: true, data: null, error: null })
-
-  const load = useCallback(async () => {
-    try { setState({ loading: false, data: await api.get('/v1/admin/ai'), error: null }) }
-    catch (e) { setState({ loading: false, data: null, error: e }) }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  useEffect(() => { load() }, [load])
-  const onSaved = (data) => setState({ loading: false, data, error: null })
+  const q = useLoad(() => api.get('/v1/admin/ai'), [])
+  const state = { loading: q.loading && !q.data, data: q.data, error: q.error }
+  const onSaved = q.setData
 
   if (state.loading) return <div className="dash-page"><Spinner label="Chargement…" /></div>
   if (!state.data) {

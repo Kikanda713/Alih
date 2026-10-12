@@ -1,13 +1,16 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { FaCreditCard } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
-import { useT } from '../../i18n/index.jsx'
+import { useLoad } from '../../api/useLoad'
+import { useT } from '../../i18n'
 import { Badge, Spinner, EmptyState, Select } from '../../components/ui.jsx'
-import { usePaged, Pagination } from '../../components/Pagination.jsx'
+import { usePaged } from '../../components/usePaged'
+import { Pagination } from '../../components/Pagination.jsx'
 import ExportButtons from '../../components/ExportButtons.jsx'
-import { useAdminView } from './AdminScopeContext.jsx'
+import { useAdminView } from './adminView'
 import { planById } from '../../data/plans'
 
+const NO_SUBS = []
 const STATUS_TONE = { trialing: 'warn', active: 'success', cancelled: 'danger', expired: 'neutral' }
 const STATUS_OPTS = [
   { id: 'active', label: 'Actif' }, { id: 'trialing', label: 'Essai' },
@@ -37,9 +40,18 @@ export default function AdminSubscriptions() {
   const api = useTindisaApi()
   const { t } = useT()
   const { city, withCity } = useAdminView()
-  const [loading, setLoading] = useState(true)
-  const [subs, setSubs] = useState([])
-  const [summary, setSummary] = useState(null)
+  // Rechargé à chaque changement de ville. En cas d'erreur : liste vide, mais
+  // le résumé précédent est conservé.
+  const lastSummary = useRef(null)
+  const { data, loading } = useLoad(
+    () => api.get(withCity('/v1/admin/subscriptions')).then(
+      (r) => ({ subs: r?.subscriptions || [], summary: (lastSummary.current = r?.summary || null) }),
+      () => ({ subs: [], summary: lastSummary.current }),
+    ),
+    [city],
+  )
+  const subs = data?.subs || NO_SUBS
+  const summary = data?.summary || null
   const [fStatus, setFStatus] = useState('')
   const [fPlan, setFPlan] = useState('')
   const filtered = useMemo(
@@ -47,22 +59,6 @@ export default function AdminSubscriptions() {
     [subs, fStatus, fPlan],
   )
   const { pageItems, page, setPage, totalPages, count } = usePaged(filtered, 10)
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const r = await api.get(withCity('/v1/admin/subscriptions'))
-      setSubs(r?.subscriptions || [])
-      setSummary(r?.summary || null)
-    } catch {
-      setSubs([])
-    } finally {
-      setLoading(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [withCity])
-
-  useEffect(() => { load() }, [load, city])
 
   return (
     <div className="dash-page">

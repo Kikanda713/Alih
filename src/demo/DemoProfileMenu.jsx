@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { FaChevronDown, FaThLarge, FaSignOutAlt, FaPlayCircle, FaUserShield } from 'react-icons/fa'
 import { demoUser, isDemoSession, startDemoSession, endDemoSession } from './demo'
 import { isAdminRoles } from '../auth/roles'
-import { useT } from '../i18n/index.jsx'
+import { useT } from '../i18n'
 
 export default function DemoProfileMenu() {
   const { t } = useT()

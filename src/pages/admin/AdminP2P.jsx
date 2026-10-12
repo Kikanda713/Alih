@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { FaHandshake, FaCheckCircle, FaBan, FaUndo, FaImage } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
-import { useToast } from '../../components/Toast.jsx'
+import { useLoad } from '../../api/useLoad'
+import { useToast } from '../../components/useToast'
 import { Badge, Spinner, EmptyState, ConfirmModal } from '../../components/ui.jsx'
 import { StatGrid, StatCard } from '../../components/StatCard.jsx'
-import { usePaged, Pagination } from '../../components/Pagination.jsx'
-import { useAdminView } from './AdminScopeContext.jsx'
+import { usePaged } from '../../components/usePaged'
+import { Pagination } from '../../components/Pagination.jsx'
+import { useAdminView } from './adminView'
 
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 const money = (v, c) => (v == null ? '—' : `${Number(v).toLocaleString('fr-FR')} ${c === 'USD' ? '$' : 'FC'}`)
@@ -13,6 +15,7 @@ const STATUS = {
   published: { tone: 'success', label: 'Publiée' },
   removed: { tone: 'danger', label: 'Retirée' },
 }
+const EMPTY = { items: [], counts: {} }
 const FILTERS = [
   { k: '', label: 'Toutes' },
   { k: 'published', label: 'Publiées' },
@@ -23,20 +26,17 @@ export default function AdminP2P() {
   const api = useTindisaApi()
   const { notify } = useToast()
   const { city, withCity } = useAdminView()
-  const [loading, setLoading] = useState(true)
-  const [data, setData] = useState({ items: [], counts: {} })
   const [filter, setFilter] = useState('')
   const [confirm, setConfirm] = useState({ open: false, item: null, action: null, busy: false })
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const r = await api.get(withCity('/v1/admin/p2p'))
-      setData({ items: r?.items || [], counts: r?.counts || {} })
-    } catch { setData({ items: [], counts: {} }) } finally { setLoading(false) }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [withCity])
-  useEffect(() => { load() }, [load, city])
+  // Rechargé à chaque changement de ville ; erreur → liste vide.
+  const { data = EMPTY, loading, reload } = useLoad(
+    () => api.get(withCity('/v1/admin/p2p')).then(
+      (r) => ({ items: r?.items || [], counts: r?.counts || {} }),
+      () => EMPTY,
+    ),
+    [city],
+  )
 
   const items = filter ? data.items.filter((i) => i.status === filter) : data.items
   const { pageItems, page, setPage, totalPages, count } = usePaged(items, 12)
@@ -48,7 +48,7 @@ export default function AdminP2P() {
       await api.post(`/v1/admin/p2p/${confirm.item.productId}/moderate`, { action: confirm.action })
       notify(confirm.action === 'remove' ? 'Annonce retirée' : 'Annonce republiée', 'success')
       setConfirm({ open: false, item: null, action: null, busy: false })
-      await load()
+      reload()
     } catch (e) {
       notify(e?.message || 'Erreur', 'error')
       setConfirm((s) => ({ ...s, busy: false }))

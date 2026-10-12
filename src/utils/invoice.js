@@ -28,13 +28,6 @@ function money(n) {
     maximumFractionDigits: 2,
   })} USD`
 }
-function fmtDate(d) {
-  try {
-    return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-  } catch {
-    return '—'
-  }
-}
 
 /** Réf. facture stable (format INV-AAMM-XXXX) dérivée de l'abonnement. */
 export function invoiceRef(sub) {

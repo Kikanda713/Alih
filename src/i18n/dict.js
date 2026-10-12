@@ -1,5 +1,3 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react'
-
 /*
  * Lightweight i18n for Tindisa — no external dependency.
  * Languages: French (default), Lingala (ln), Swahili (sw).
@@ -10,11 +8,11 @@ import { createContext, useContext, useState, useCallback, useMemo } from 'react
  * intentionally stay in French and are not part of this dictionary.
  */
 
-const STORAGE_KEY = 'tindisa_lang'
-const DEFAULT_LANG = 'fr'
+export const STORAGE_KEY = 'tindisa_lang'
+export const DEFAULT_LANG = 'fr'
 export const LANGS = ['fr', 'ln', 'sw']
 
-const dict = {
+export const dict = {
   fr: {
     // Nav
     'nav.home': 'Accueil',
@@ -429,73 +427,4 @@ const dict = {
     'merchant.sync.unknown': 'Usawazishaji hauwezekani kwa sasa.',
     'merchant.error': 'Hitilafu imetokea. Jaribu tena.',
   },
-}
-
-const LanguageContext = createContext({ lang: DEFAULT_LANG, setLang: () => {}, t: (k) => k })
-
-function readInitialLang() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved && LANGS.includes(saved)) return saved
-  } catch {
-    /* ignore (e.g. SSR / privacy mode) */
-  }
-  return DEFAULT_LANG
-}
-
-export function LanguageProvider({ children }) {
-  const [lang, setLangState] = useState(readInitialLang)
-
-  const setLang = useCallback((next) => {
-    if (!LANGS.includes(next)) return
-    setLangState(next)
-    try {
-      localStorage.setItem(STORAGE_KEY, next)
-    } catch {
-      /* ignore */
-    }
-  }, [])
-
-  const t = useCallback(
-    (key, vars) => {
-      const table = dict[lang] || dict[DEFAULT_LANG]
-      let str = table[key] ?? dict[DEFAULT_LANG][key] ?? key
-      if (vars) {
-        for (const [k, v] of Object.entries(vars)) {
-          str = str.replace(`{${k}}`, v)
-        }
-      }
-      return str
-    },
-    [lang]
-  )
-
-  const value = useMemo(() => ({ lang, setLang, t }), [lang, setLang, t])
-
-  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
-}
-
-export function useT() {
-  return useContext(LanguageContext)
-}
-
-const LANG_LABELS = { fr: 'FR', ln: 'LN', sw: 'SW' }
-
-export function LanguageSwitcher() {
-  const { lang, setLang } = useT()
-  return (
-    <div className="lang-switcher" role="group" aria-label="Langue">
-      {LANGS.map((code) => (
-        <button
-          key={code}
-          type="button"
-          className={`lang-btn${lang === code ? ' active' : ''}`}
-          aria-pressed={lang === code}
-          onClick={() => setLang(code)}
-        >
-          {LANG_LABELS[code]}
-        </button>
-      ))}
-    </div>
-  )
 }

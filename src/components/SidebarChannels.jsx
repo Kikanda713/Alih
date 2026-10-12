@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { FaComments, FaWhatsapp, FaTelegramPlane, FaFacebookF, FaChevronDown, FaExternalLinkAlt } from 'react-icons/fa'
 import { channels } from '../auth/config'
-import { useT } from '../i18n/index.jsx'
+import { useT } from '../i18n'
 
 /**
  * Groupe « Canaux » de la sidebar : clic -> sous-menu des canaux.

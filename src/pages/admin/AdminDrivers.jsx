@@ -1,12 +1,15 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useState } from 'react'
 import { FaMotorcycle, FaPlus, FaEdit, FaTrash, FaImage, FaSpinner, FaIdCard, FaChartLine, FaToggleOn, FaToggleOff, FaCamera, FaTruck, FaUserCircle } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
-import { useToast } from '../../components/Toast.jsx'
-import { Card, Button, Badge, Spinner, EmptyState, Field, Input, Select, Textarea, Modal, ConfirmModal, ActionMenu } from '../../components/ui.jsx'
-import { usePaged, Pagination } from '../../components/Pagination.jsx'
+import { useLoad } from '../../api/useLoad'
+import { useToast } from '../../components/useToast'
+import { Button, Badge, Spinner, EmptyState, Field, Input, Select, Textarea, Modal, ConfirmModal, ActionMenu } from '../../components/ui.jsx'
+import { usePaged } from '../../components/usePaged'
+import { Pagination } from '../../components/Pagination.jsx'
 import { uploadImage, isCloudinaryConfigured } from '../../api/cloudinary'
-import { useAdminView } from './AdminScopeContext.jsx'
+import { useAdminView } from './adminView'
 
+const NO_DRIVERS = []
 const VEHICLES = [
   { id: 'velo', label: 'Vélo' },
   { id: 'moto', label: 'Moto' },
@@ -163,35 +166,30 @@ export default function AdminDrivers() {
   const api = useTindisaApi()
   const { notify } = useToast()
   const { city, withCity } = useAdminView()
-  const [loading, setLoading] = useState(true)
-  const [drivers, setDrivers] = useState([])
+  // Rechargé à chaque changement de ville ; erreur → liste vide.
+  const { data: drivers = NO_DRIVERS, loading, reload } = useLoad(
+    () => api.get(withCity('/v1/admin/drivers')).then((r) => r?.drivers || [], () => []),
+    [city],
+  )
   const [modal, setModal] = useState({ open: false, driver: null })
   const [confirm, setConfirm] = useState({ open: false, driver: null, busy: false })
   const [perf, setPerf] = useState({ open: false, driver: null, loading: false, data: null })
   const { pageItems, page, setPage, totalPages, count } = usePaged(drivers, 10)
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try { const r = await api.get(withCity('/v1/admin/drivers')); setDrivers(r?.drivers || []) }
-    catch { setDrivers([]) } finally { setLoading(false) }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [withCity])
-  useEffect(() => { load() }, [load, city])
-
   const save = async (form) => {
     try {
       if (modal.driver) await api.put(`/v1/admin/drivers/${modal.driver.id}`, form)
       else await api.post('/v1/admin/drivers', form)
-      notify('Livreur enregistré', 'success'); setModal({ open: false, driver: null }); await load()
+      notify('Livreur enregistré', 'success'); setModal({ open: false, driver: null }); reload()
     } catch (e) { notify(e?.message || 'Erreur', 'error') }
   }
   const doDelete = async () => {
     setConfirm((c) => ({ ...c, busy: true }))
-    try { await api.del(`/v1/admin/drivers/${confirm.driver.id}`); notify('Livreur supprimé', 'success'); setConfirm({ open: false, driver: null, busy: false }); await load() }
+    try { await api.del(`/v1/admin/drivers/${confirm.driver.id}`); notify('Livreur supprimé', 'success'); setConfirm({ open: false, driver: null, busy: false }); reload() }
     catch (e) { notify(e?.message || 'Erreur', 'error'); setConfirm((c) => ({ ...c, busy: false })) }
   }
   const toggleActive = async (d) => {
-    try { await api.put(`/v1/admin/drivers/${d.id}`, { active: !d.active }); notify(d.active ? 'Livreur désactivé' : 'Livreur activé', 'success'); await load() }
+    try { await api.put(`/v1/admin/drivers/${d.id}`, { active: !d.active }); notify(d.active ? 'Livreur désactivé' : 'Livreur activé', 'success'); reload() }
     catch (e) { notify(e?.message || 'Erreur', 'error') }
   }
   const openPerf = async (d) => {

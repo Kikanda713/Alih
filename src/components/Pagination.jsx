@@ -1,22 +1,6 @@
-import { useState, useMemo } from 'react'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 
-/**
- * Pagination côté client, réutilisable. Convient à l'échelle d'un marchand ;
- * pour de très gros volumes, basculer vers une pagination serveur (limit/offset).
- */
-export function usePaged(items, size = 10) {
-  const [page, setPage] = useState(1)
-  const list = items || []
-  const totalPages = Math.max(1, Math.ceil(list.length / size))
-  const safePage = Math.min(page, totalPages)
-  const pageItems = useMemo(
-    () => list.slice((safePage - 1) * size, safePage * size),
-    [list, safePage, size],
-  )
-  return { pageItems, page: safePage, setPage, totalPages, count: list.length }
-}
-
+/** Contrôles de pagination (à combiner avec le hook usePaged, cf. usePaged.js). */
 export function Pagination({ page, totalPages, count, onChange }) {
   if (totalPages <= 1) return null
   return (

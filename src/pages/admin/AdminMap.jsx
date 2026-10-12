@@ -1,9 +1,10 @@
-import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
+import { Suspense, lazy, useRef, useState } from 'react'
 import { FaStore, FaMotorcycle, FaMapMarkerAlt, FaPlus, FaCrosshairs } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
-import { useToast } from '../../components/Toast.jsx'
+import { useLoad } from '../../api/useLoad'
+import { useToast } from '../../components/useToast'
 import { Spinner, Button, Modal, Field, Input, Select, Textarea, ConfirmModal } from '../../components/ui.jsx'
-import { useAdminView } from './AdminScopeContext.jsx'
+import { useAdminView } from './adminView'
 
 const MapCanvas = lazy(() => import('./MapCanvas.jsx'))
 
@@ -17,29 +18,27 @@ const KINDS = [
   { id: 'ecole', label: 'École' }, { id: 'hopital', label: 'Hôpital' },
   { id: 'station', label: 'Station-service' }, { id: 'autre', label: 'Autre' },
 ]
+const EMPTY_MAP = { shops: [], drivers: [], landmarks: [], center: CENTER, zoom: ZOOM }
 const EMPTY_LM = { name: '', kind: '', city: '', commune: '', quartier: '', notes: '', gpsLat: '', gpsLng: '' }
 
 export default function AdminMap() {
   const api = useTindisaApi()
   const { notify } = useToast()
   const { city, withCity } = useAdminView()
-  const [loading, setLoading] = useState(true)
-  const [data, setData] = useState({ shops: [], drivers: [], landmarks: [], center: CENTER, zoom: ZOOM })
   const [layers, setLayers] = useState({ shops: true, drivers: true, landmarks: true })
   const [addMode, setAddMode] = useState(false)
   const [form, setForm] = useState(null) // null = fermé ; objet = édition/ajout
   const [confirm, setConfirm] = useState({ open: false, lm: null, busy: false })
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const r = await api.get(withCity('/v1/admin/map'))
-      setData({ shops: r?.shops || [], drivers: r?.drivers || [], landmarks: r?.landmarks || [], center: r?.center || CENTER, zoom: r?.zoom || ZOOM })
-    }
-    catch { /* garde l'état */ } finally { setLoading(false) }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [withCity])
-  useEffect(() => { load() }, [load, city])
+  // Dernières données reçues : en cas d'erreur, on garde l'état précédent.
+  const lastMap = useRef(EMPTY_MAP)
+  const { data = EMPTY_MAP, loading, reload } = useLoad(
+    () => api.get(withCity('/v1/admin/map')).then(
+      (r) => (lastMap.current = { shops: r?.shops || [], drivers: r?.drivers || [], landmarks: r?.landmarks || [], center: r?.center || CENTER, zoom: r?.zoom || ZOOM }),
+      () => lastMap.current, /* garde l'état */
+    ),
+    [city],
+  )
 
   const onMapClick = ({ lat, lng }) => {
     if (!addMode) return
@@ -54,12 +53,12 @@ export default function AdminMap() {
     try {
       if (form.id) await api.put(`/v1/admin/landmarks/${form.id}`, payload)
       else await api.post('/v1/admin/landmarks', payload)
-      notify('Repère enregistré', 'success'); setForm(null); await load()
+      notify('Repère enregistré', 'success'); setForm(null); reload()
     } catch (e) { notify(e?.message || 'Erreur', 'error') }
   }
   const doDelete = async () => {
     setConfirm((c) => ({ ...c, busy: true }))
-    try { await api.del(`/v1/admin/landmarks/${confirm.lm.id}`); notify('Repère supprimé', 'success'); setConfirm({ open: false, lm: null, busy: false }); await load() }
+    try { await api.del(`/v1/admin/landmarks/${confirm.lm.id}`); notify('Repère supprimé', 'success'); setConfirm({ open: false, lm: null, busy: false }); reload() }
     catch (e) { notify(e?.message || 'Erreur', 'error'); setConfirm((c) => ({ ...c, busy: false })) }
   }
 

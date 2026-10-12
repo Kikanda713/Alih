@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaUsers, FaStore, FaShoppingBag, FaMotorcycle, FaCoins, FaCreditCard, FaHistory, FaChartLine, FaMicrochip } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
-import { useT } from '../../i18n/index.jsx'
+import { useLoad } from '../../api/useLoad'
+import { useT } from '../../i18n'
 import { Card, Button, Badge, Spinner, EmptyState } from '../../components/ui.jsx'
 import { StatGrid, StatCard } from '../../components/StatCard.jsx'
-import { usePaged, Pagination } from '../../components/Pagination.jsx'
-import { useAdminView } from './AdminScopeContext.jsx'
+import { usePaged } from '../../components/usePaged'
+import { Pagination } from '../../components/Pagination.jsx'
+import { useAdminView } from './adminView'
 import { planById } from '../../data/plans'
 
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s }
@@ -37,37 +38,35 @@ function isMerchant(u) {
   return /merchant|commer|vendeur|seller/.test(r) || !!u.shopId || !!u.hasShop
 }
 
+const NO_ACTIVITIES = []
+
 export default function AdminHome() {
   const api = useTindisaApi()
   const { t } = useT()
   const { city, global, withCity } = useAdminView()
-  const [stats, setStats] = useState(null)
-  const [metrics, setMetrics] = useState(null)
-  const [activities, setActivities] = useState([])
-  const [loadingAct, setLoadingAct] = useState(true)
-  const { pageItems, page, setPage, totalPages, count } = usePaged(activities, 8)
+  // Tout est rechargé à chaque changement de ville ; pendant le chargement,
+  // stats/metrics valent null (spinners), comme au premier affichage.
+  const statsQ = useLoad(
+    () => api.get(withCity('/v1/admin/stats'))
+      .then((r) => r || {}, () => ({ boutiques: 0, acheteurs: 0, livreurs: 0, gmvUsd: 0 })),
+    [city],
+  )
+  const stats = statsQ.loading ? null : statsQ.data
+  const metricsQ = useLoad(
+    () => api.get(withCity('/v1/admin/metrics'))
+      .then((r) => r || {}, () => ({ business: {}, tokens: {} })),
+    [city],
+  )
+  const metrics = metricsQ.loading ? null : metricsQ.data
 
-  useEffect(() => {
-    let alive = true
-    setStats(null)
-    setMetrics(null)
-    setLoadingAct(true)
-    api.get(withCity('/v1/admin/stats'))
-      .then((r) => alive && setStats(r || {}))
-      .catch(() => alive && setStats({ boutiques: 0, acheteurs: 0, livreurs: 0, gmvUsd: 0 }))
-
-    api.get(withCity('/v1/admin/metrics'))
-      .then((r) => alive && setMetrics(r || {}))
-      .catch(() => alive && setMetrics({ business: {}, tokens: {} }))
-
-    // Activités récentes — montées sur les données DÉJÀ disponibles (mêmes
-    // endpoints que les pages Utilisateurs et Abonnements), agrégées + triées
-    // côté client. Pas de nouvel appel backend dédié.
-    Promise.all([
+  // Activités récentes — montées sur les données DÉJÀ disponibles (mêmes
+  // endpoints que les pages Utilisateurs et Abonnements), agrégées + triées
+  // côté client. Pas de nouvel appel backend dédié.
+  const { data: activities = NO_ACTIVITIES, loading: loadingAct } = useLoad(
+    () => Promise.all([
       api.get(withCity('/v1/admin/users')).catch(() => []),
       api.get(withCity('/v1/admin/subscriptions')).catch(() => null),
     ]).then(([users, subsRes]) => {
-      if (!alive) return
       const list = Array.isArray(users) ? users : users?.users || []
       const subs = subsRes?.subscriptions || []
       const acts = [
@@ -92,13 +91,11 @@ export default function AdminHome() {
           date: s.createdAt || s.created_at || s.currentPeriodEnd || s.trialEndsAt,
         })),
       ].sort((a, b) => ts(b.date) - ts(a.date))
-      setActivities(acts)
-      setLoadingAct(false)
-    })
-
-    return () => { alive = false }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [city])
+      return acts
+    }),
+    [city],
+  )
+  const { pageItems, page, setPage, totalPages, count } = usePaged(activities, 8)
 
   if (!stats) return <div className="dash-page"><Spinner label={t('merchant.loading')} /></div>
 

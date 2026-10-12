@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import {
   FaCertificate,
   FaCheckCircle,
@@ -12,7 +12,8 @@ import {
   FaPrint,
 } from "react-icons/fa";
 import { useTindisaApi } from "../../api/client";
-import { useToast } from "../../components/Toast.jsx";
+import { useLoad } from "../../api/useLoad";
+import { useToast } from "../../components/useToast";
 import {
   Button,
   Badge,
@@ -26,8 +27,9 @@ import {
   ConfirmModal,
 } from "../../components/ui.jsx";
 import { StatGrid, StatCard } from "../../components/StatCard.jsx";
-import { usePaged, Pagination } from "../../components/Pagination.jsx";
-import { useAdminView } from "./AdminScopeContext.jsx";
+import { usePaged } from "../../components/usePaged";
+import { Pagination } from "../../components/Pagination.jsx";
+import { useAdminView } from "./adminView";
 import { certAssetUrl } from "../../api/certificates";
 
 const usd = (v) =>
@@ -62,6 +64,7 @@ const CHECKLIST_TPL = {
     { key: "photos", label: "Photos certifiées" },
   ],
 };
+const EMPTY_CERT = { assets: [], counts: {}, settings: {} };
 const FILTERS = [
   { k: "", label: "Tous" },
   { k: "certified", label: "Certifiés" },
@@ -73,11 +76,8 @@ export default function AdminCertification() {
   const api = useTindisaApi();
   const { notify } = useToast();
   const { city, withCity } = useAdminView();
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState({ assets: [], counts: {}, settings: {} });
   const [filter, setFilter] = useState("");
   const [cfgOpen, setCfgOpen] = useState(false);
-  const [cfg, setCfg] = useState(null);
   const [certify, setCertify] = useState(null); // asset en cours de certification
   const [checks, setChecks] = useState({});
   const [owner, setOwner] = useState({ name: "", contact: "" });
@@ -89,34 +89,33 @@ export default function AdminCertification() {
     asset: null,
     busy: false,
   });
+
+  // Rechargé à chaque changement de ville ou de filtre ; erreur → liste vide.
+  const {
+    data = EMPTY_CERT,
+    loading,
+    reload,
+  } = useLoad(() => {
+    let path = "/v1/admin/certification/assets";
+    if (filter) path += "?filter=" + filter;
+    return api.get(withCity(path)).then(
+      (r) => ({
+        assets: r?.assets || [],
+        counts: r?.counts || {},
+        settings: r?.settings || {},
+      }),
+      () => EMPTY_CERT,
+    );
+  }, [city, filter]);
+  // Paramètres éditables : initialisés depuis les réglages chargés (null tant
+  // qu'aucun chargement n'a abouti), puis modifiés localement.
+  const [cfgEdit, setCfg] = useState(null);
+  const cfg = cfgEdit ?? (data !== EMPTY_CERT ? data.settings : null);
+
   const { pageItems, page, setPage, totalPages, count } = usePaged(
     data.assets,
     10,
   );
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      let path = "/v1/admin/certification/assets";
-      if (filter) path += "?filter=" + filter;
-      path = withCity(path);
-      const r = await api.get(path);
-      setData({
-        assets: r?.assets || [],
-        counts: r?.counts || {},
-        settings: r?.settings || {},
-      });
-      if (!cfg) setCfg(r?.settings || {});
-    } catch {
-      setData({ assets: [], counts: {}, settings: {} });
-    } finally {
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [withCity, filter]);
-  useEffect(() => {
-    load();
-  }, [load, city]);
 
   const saveConfig = async () => {
     setBusy(true);
@@ -138,7 +137,7 @@ export default function AdminCertification() {
       setCfg(r);
       notify("Paramètres enregistrés", "success");
       setCfgOpen(false);
-      await load();
+      reload();
     } catch (e) {
       notify(e?.message || "Erreur", "error");
     } finally {
@@ -183,7 +182,7 @@ export default function AdminCertification() {
       });
       notify("Certificat émis ✅", "success");
       setCertify(null);
-      await load();
+      reload();
     } catch (e) {
       notify(e?.message || "Erreur", "error");
     } finally {
@@ -210,7 +209,7 @@ export default function AdminCertification() {
       );
       notify("Certificat révoqué", "success");
       setConfirm({ open: false, asset: null, busy: false });
-      await load();
+      reload();
     } catch (e) {
       notify(e?.message || "Erreur", "error");
       setConfirm((c) => ({ ...c, busy: false }));

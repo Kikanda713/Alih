@@ -1,11 +1,12 @@
-import { useEffect, useState, useCallback } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import { FaFileInvoiceDollar, FaDownload, FaWallet } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 import { useTindisaApi } from '../../api/client'
-import { useT } from '../../i18n/index.jsx'
+import { useLoad } from '../../api/useLoad'
+import { useT } from '../../i18n'
 import { Badge, Spinner, EmptyState } from '../../components/ui.jsx'
-import { usePaged, Pagination } from '../../components/Pagination.jsx'
+import { usePaged } from '../../components/usePaged'
+import { Pagination } from '../../components/Pagination.jsx'
 import { planById } from '../../data/plans'
 import { downloadInvoice, invoiceRef } from '../../utils/invoice'
 
@@ -28,16 +29,14 @@ function fmtDate(d) {
  * commission). Le paiement des frais et le solde vivent dans le Wallet (pas de
  * doublon ici) ; cette page centralise les DOCUMENTS téléchargeables.
  */
+const NO_INVOICES = []
+
 export default function SubscriptionPage() {
   const api = useTindisaApi()
   const { t } = useT()
   const { user } = useAuth0()
-  const [loading, setLoading] = useState(true)
-  const [invoices, setInvoices] = useState([])
-  const { pageItems, page, setPage, totalPages, count } = usePaged(invoices, 10)
-
-  const load = useCallback(async () => {
-    setLoading(true)
+  // Documents (abonnement + reçus de frais), chargés une fois ; erreur → liste vide.
+  const { data: invoices = NO_INVOICES, loading } = useLoad(async () => {
     try {
       const [subRes, feeRes] = await Promise.all([
         api.get('/v1/merchant/subscription').catch(() => null),
@@ -72,16 +71,12 @@ export default function SubscriptionPage() {
         })
       }
       list.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
-      setInvoices(list)
+      return list
     } catch {
-      setInvoices([])
-    } finally {
-      setLoading(false)
+      return []
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  useEffect(() => { load() }, [load])
+  const { pageItems, page, setPage, totalPages, count } = usePaged(invoices, 10)
 
   const getInvoice = (p) => downloadInvoice({
     ref: p.ref,

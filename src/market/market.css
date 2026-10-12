@@ -373,7 +373,6 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 .mk-gallery-thumbs button.active { border-color: var(--terracotta); }
 .mk-gallery-thumbs img { width: 100%; height: 100%; object-fit: cover; }
 .mk-thumb-video { display: grid; place-items: center; height: 100%; color: var(--terracotta); font-size: 1.2rem; }
-.mk-gallery-badge { position: absolute; top: 12px; left: 12px; }
 .mk-listing-info { display: grid; gap: 14px; }
 .mk-listing-badges { display: flex; flex-wrap: wrap; gap: 6px; }
 .mk-listing-info h1 { font-family: var(--font-heading); font-size: clamp(1.5rem, 3vw, 2.1rem); line-height: 1.15; letter-spacing: -0.5px; }

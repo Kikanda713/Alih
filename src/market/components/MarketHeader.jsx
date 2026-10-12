@@ -7,7 +7,7 @@ import ProfileMenu from '../../components/ProfileMenu'
 import { channels } from '../../auth/config'
 import SearchBar from './SearchBar'
 import { UNIVERSES, universeHref, activeUniverse } from '../lib/universes'
-import { useCart } from '../CartContext'
+import { useCart } from '../useCart'
 
 /*
  * En-tête du marché : logo, recherche centrale, panier, compte. Seconde ligne :

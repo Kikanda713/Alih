@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Modal, Button, Field, Input, Spinner } from "./ui.jsx";
 import { useTindisaApi } from "../api/client";
-import { useToast } from "./Toast.jsx";
-import { useT } from "../i18n/index.jsx";
+import { useToast } from "./useToast";
+import { useT } from "../i18n";
 import mpesa from "../assets/MPESA.png";
 import airtel from "../assets/AIRTEL.png";
 import orange from "../assets/ORANGE.png";

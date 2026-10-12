@@ -1,4 +1,5 @@
-import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
+import { useLoad } from '../../api/useLoad'
 import { Link } from 'react-router-dom'
 import {
   FaWifi, FaPlus, FaEdit, FaTrash, FaStore, FaCity, FaSeedling, FaBroadcastTower, FaExternalLinkAlt,
@@ -6,11 +7,11 @@ import {
 } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { uploadImage, isCloudinaryConfigured } from '../../api/cloudinary'
-import { useToast } from '../../components/Toast.jsx'
+import { useToast } from '../../components/useToast'
 import { Badge, Button, ConfirmModal, EmptyState, Field, Input, Modal, Select, Spinner, Textarea } from '../../components/ui.jsx'
 import { StatGrid, StatCard } from '../../components/StatCard.jsx'
 const LocationPicker = lazy(() => import('../../components/LocationPicker.jsx'))
-import { useAdminView } from './AdminScopeContext.jsx'
+import { useAdminView } from './adminView'
 import { useTaxonomy } from '../../api/taxonomy'
 import { HUB_KINDS, HUB_TYPES, WIFI_STATUSES, wifiInfo, hubTypeLabel } from '../../market/lib/hubs'
 
@@ -123,16 +124,14 @@ function HubForm({ initial, lockedCity, onClose, onSaved }) {
 function HubShops({ hubId, onClose, onChanged }) {
   const api = useTindisaApi()
   const { notify } = useToast()
-  const [hub, setHub] = useState(null)
+  const hubQ = useLoad(
+    () => api.get(`/v1/admin/hubs/${hubId}`).catch((e) => { notify(e?.message || 'Erreur', 'error'); return null }),
+    [hubId],
+  )
+  const hub = hubQ.data
   const [q, setQ] = useState('')
   const [candidates, setCandidates] = useState([])
   const [busy, setBusy] = useState(false)
-
-  const reload = useCallback(async () => {
-    try { setHub(await api.get(`/v1/admin/hubs/${hubId}`)) } catch (e) { notify(e?.message || 'Erreur', 'error') }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hubId])
-  useEffect(() => { reload() }, [reload])
 
   const search = async (e) => {
     e?.preventDefault()
@@ -143,7 +142,7 @@ function HubShops({ hubId, onClose, onChanged }) {
   }
   const act = async (fn, msg) => {
     setBusy(true)
-    try { setHub(await fn()); notify(msg, 'success'); onChanged() } catch (e) { notify(e?.message || 'Erreur', 'error') } finally { setBusy(false) }
+    try { hubQ.setData(await fn()); notify(msg, 'success'); onChanged() } catch (e) { notify(e?.message || 'Erreur', 'error') } finally { setBusy(false) }
   }
 
   return (
@@ -190,19 +189,20 @@ export default function AdminHubs() {
   const api = useTindisaApi()
   const { notify } = useToast()
   const { city, withCity, lockedCity } = useAdminView()
-  const [data, setData] = useState({ items: [], summary: {} })
-  const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(null) // null | {} (nouveau) | hub
   const [shopsOf, setShopsOf] = useState(null)
   const [del, setDel] = useState({ open: false, hub: null, busy: false })
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try { const r = await api.get(withCity('/v1/admin/hubs')); setData({ items: r?.items || [], summary: r?.summary || {} }) }
-    catch { setData({ items: [], summary: {} }) } finally { setLoading(false) }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [withCity])
-  useEffect(() => { load() }, [load, city])
+  const hubsQ = useLoad(
+    () => api.get(withCity('/v1/admin/hubs')).then(
+      (r) => ({ items: r?.items || [], summary: r?.summary || {} }),
+      () => ({ items: [], summary: {} }),
+    ),
+    [city],
+  )
+  const data = hubsQ.data || { items: [], summary: {} }
+  const loading = hubsQ.loading
+  const load = hubsQ.reload
 
   // Avancement rapide du statut Wi-Fi depuis le tableau.
   const setStatus = async (hub, wifiStatus) => {

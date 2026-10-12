@@ -5,12 +5,12 @@ import {
   FaHandshake, FaMoneyBillWave, FaComments, FaChevronDown,
 } from 'react-icons/fa'
 import { Button, EmptyState, Field, Input, Textarea } from '../../components/ui'
-import { useToast } from '../../components/Toast'
+import { useToast } from '../../components/useToast'
 import { useTaxonomy } from '../../api/taxonomy'
 import mpesaLogo from '../../assets/MPESA.png'
 import airtelLogo from '../../assets/AIRTEL.png'
 import orangeLogo from '../../assets/ORANGE.png'
-import { useCart } from '../CartContext'
+import { useCart } from '../useCart'
 import { CartLine } from '../components/CartDrawer'
 import { buildOrderMessage, totalsByCurrency, whatsappLink, openTelegram } from '../lib/chat'
 

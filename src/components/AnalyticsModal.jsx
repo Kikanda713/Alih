@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { FaEye, FaHandshake, FaCheckCircle, FaChartBar } from 'react-icons/fa'
 import { useTindisaApi } from '../api/client'
+import { useLoad } from '../api/useLoad'
 import { Modal, Spinner } from './ui.jsx'
 
 const PERIODS = [
@@ -48,20 +49,14 @@ function FunnelRow({ icon, label, value, rate }) {
 export default function AnalyticsModal({ open, product, onClose }) {
   const api = useTindisaApi()
   const [days, setDays] = useState(30)
-  const [loading, setLoading] = useState(true)
-  const [data, setData] = useState(null)
-
-  useEffect(() => {
-    if (!open || !product?.id) return
-    let alive = true
-    setLoading(true)
-    api.get(`/v1/merchant/products/${product.id}/analytics?days=${days}`)
-      .then((r) => alive && setData(r || null))
-      .catch(() => alive && setData(null))
-      .finally(() => alive && setLoading(false))
-    return () => { alive = false }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, product?.id, days])
+  // Chargé à l'ouverture (et à chaque changement de produit / période) ;
+  // modale fermée → aucun appel.
+  const { data, loading } = useLoad(
+    () => (open && product?.id
+      ? api.get(`/v1/merchant/products/${product.id}/analytics?days=${days}`).then((r) => r || null, () => null)
+      : null),
+    [open, product?.id, days],
+  )
 
   const f = data?.funnel || {}
   const totalViews = useMemo(

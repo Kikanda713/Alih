@@ -1,10 +1,12 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { FaImage, FaSpinner, FaTrash, FaChevronDown, FaMapMarkerAlt, FaLocationArrow, FaPlus } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
+import { useLoad } from '../../api/useLoad'
 import { uploadImage, isCloudinaryConfigured } from '../../api/cloudinary'
 import { useTaxonomy } from '../../api/taxonomy'
 import { Card, Field, Input, Textarea, Select, Button, Spinner } from '../../components/ui.jsx'
 
+const NO_LANDMARKS = []
 const LocationPicker = lazy(() => import('../../components/LocationPicker.jsx'))
 
 // Profil de la boutique : identité, localisation (formel GPS + informel repère/adresse
@@ -20,7 +22,6 @@ export default function BoutiquePage() {
   const [msg, setMsg] = useState('')
   const [msgOk, setMsgOk] = useState(false)
   const [showIds, setShowIds] = useState(false)
-  const [landmarks, setLandmarks] = useState([])
   const [newLm, setNewLm] = useState('') // nom du repère à créer
   const [lmBusy, setLmBusy] = useState(false)
   const fileRef = useRef(null)
@@ -45,15 +46,17 @@ export default function BoutiquePage() {
     return () => { alive = false }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Repères de la ville (gazetteer partagé) : rechargés quand la ville change.
-  useEffect(() => {
-    if (!form?.city) { setLandmarks([]); return }
-    let alive = true
-    api.get(`/v1/merchant/landmarks?city=${encodeURIComponent(form.city)}`)
-      .then((r) => alive && setLandmarks(r?.landmarks || []))
-      .catch(() => alive && setLandmarks([]))
-    return () => { alive = false }
-  }, [form?.city]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Repères de la ville (gazetteer partagé) : rechargés quand la ville change ;
+  // aucune ville → liste vide.
+  const city = form?.city || ''
+  const lm = useLoad(
+    () => (city
+      ? api.get(`/v1/merchant/landmarks?city=${encodeURIComponent(city)}`).then((r) => r?.landmarks || [], () => [])
+      : []),
+    [city],
+  )
+  const landmarks = (city && lm.data) || NO_LANDMARKS
+  const setLandmarks = lm.setData
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
   const setCity = (e) => {
@@ -94,7 +97,7 @@ export default function BoutiquePage() {
         name: newLm.trim(), city: form.city, commune: form.commune, quartier: form.quartier,
         gpsLat: form.gpsLat, gpsLng: form.gpsLng,
       })
-      setLandmarks((arr) => [...arr, l])
+      setLandmarks((arr) => [...(arr || []), l])
       setForm((f) => ({ ...f, landmarkId: l.id, landmark: l.name }))
       setNewLm(''); setMsg('Repère ajouté.'); setMsgOk(true)
     } catch (e) { setMsg(e?.message || 'Échec de l\'ajout du repère.'); setMsgOk(false) }

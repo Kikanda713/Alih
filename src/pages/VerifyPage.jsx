@@ -47,6 +47,16 @@ function fmtValue(v) {
   return cur === "USD" ? `${n} $` : `${n} ${cur}`;
 }
 
+// Vérifie un payload (hash / serial / qr / fileHash). Ne rejette jamais :
+// renvoie le résultat ou { error }.
+function verifyOutcome(payload) {
+  return verifyCertificate(payload).catch((e) => ({
+    error:
+      e?.message ||
+      "Service de vérification indisponible. Réessayez plus tard.",
+  }));
+}
+
 const STATUS_LABEL = {
   authentic: "Certificat authentique",
   revoked: "Certificat révoqué",
@@ -57,10 +67,12 @@ const STATUS_LABEL = {
 export default function VerifyPage() {
   const [params, setParams] = useSearchParams();
   const [method, setMethod] = useState("hash");
-  const [hash, setHash] = useState("");
+  // Scan d'un QR → ouvre /verify?c=SERIAL : champ pré-rempli et vérification
+  // lancée dès l'arrivée (état initial dérivé de l'URL, cf. effet plus bas).
+  const [hash, setHash] = useState(() => params.get("c") || "");
   const [file, setFile] = useState(null); // { name, fileHash } pour PDF
   const [qr, setQr] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(() => !!params.get("c"));
   const [result, setResult] = useState(null);
   const pdfRef = useRef(null);
   const qrRef = useRef(null);
@@ -69,28 +81,18 @@ export default function VerifyPage() {
   const runVerify = useCallback(async (payload) => {
     setBusy(true);
     setResult(null);
-    try {
-      const data = await verifyCertificate(payload);
-      setResult(data);
-    } catch (e) {
-      setResult({
-        error:
-          e?.message ||
-          "Service de vérification indisponible. Réessayez plus tard.",
-      });
-    } finally {
-      setBusy(false);
-    }
+    setResult(await verifyOutcome(payload));
+    setBusy(false);
   }, []);
 
   // Scan d'un QR → ouvre /verify?c=SERIAL : auto-vérification à l'arrivée.
   useEffect(() => {
     const c = params.get("c");
-    if (c) {
-      setMethod("hash");
-      setHash(c);
-      runVerify({ serial: c });
-    }
+    if (!c) return;
+    verifyOutcome({ serial: c }).then((data) => {
+      setResult(data);
+      setBusy(false);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

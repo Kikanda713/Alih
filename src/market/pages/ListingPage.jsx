@@ -7,7 +7,7 @@ import {
 } from 'react-icons/fa'
 import { WifiBadge } from '../components/WifiStatus'
 import { Button, Spinner, EmptyState, Badge } from '../../components/ui'
-import { useToast } from '../../components/Toast'
+import { useToast } from '../../components/useToast'
 import { useTaxonomy, attributesFor } from '../../api/taxonomy'
 import { marketApi } from '../lib/api'
 import {
@@ -15,7 +15,7 @@ import {
 } from '../lib/format'
 import { bookingMode } from '../lib/universes'
 import { buildItemMessage, whatsappLink, openTelegram } from '../lib/chat'
-import { useCart } from '../CartContext'
+import { useCart } from '../useCart'
 import BookingModal from '../components/BookingModal'
 import { ListingGrid } from '../components/ListingCard'
 

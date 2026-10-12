@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useLoad } from '../../api/useLoad'
 import { FaMagic, FaImage, FaUndo, FaExclamationTriangle, FaSpinner } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
-import { useToast } from '../../components/Toast.jsx'
+import { useToast } from '../../components/useToast'
 import { Button, Modal } from '../../components/ui.jsx'
 
 /*
@@ -16,35 +17,31 @@ const PROVIDER_LABEL = { openrouter: 'OpenRouter', azure: 'Azure OpenAI', gemini
 export function EnhancePanel({ withParams, onProgress }) {
   const api = useTindisaApi()
   const { notify } = useToast()
-  const [st, setSt] = useState(null)
   const [starting, setStarting] = useState(false)
   const wasRunning = useRef(false)
+  const statusPath = withParams('/v1/admin/marketplace/enhance/status', {})
+  const statusQ = useLoad(() => api.get(statusPath).catch(() => null), [statusPath])
+  const st = statusQ.data
+  const { reload, setData } = statusQ
+  const running = !!st?.job?.running
 
-  const load = useCallback(async () => {
-    try {
-      const s = await api.get(withParams('/v1/admin/marketplace/enhance/status', {}))
-      setSt(s)
-      // Fin de lot : on rafraîchit la liste une fois.
-      if (wasRunning.current && !s?.job?.running) onProgress?.()
-      wasRunning.current = !!s?.job?.running
-    } catch { setSt(null) }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [withParams])
-
-  useEffect(() => { load() }, [load])
   // Suivi du lot en cours (toutes les 4 s tant qu'il tourne).
   useEffect(() => {
-    if (!st?.job?.running) return
-    const t = setInterval(load, 4000)
+    if (!running) return
+    const t = setInterval(reload, 4000)
     return () => clearInterval(t)
-  }, [st?.job?.running, load])
+  }, [running, reload])
+  // Fin de lot : la liste des annonces est rafraîchie une fois.
+  useEffect(() => {
+    if (wasRunning.current && !running) onProgress?.()
+    wasRunning.current = running
+  }, [running, onProgress])
 
   const start = async () => {
     setStarting(true)
     try {
       const s = await api.post(withParams('/v1/admin/marketplace/enhance/batch', {}), { limit: 20 })
-      setSt(s)
-      wasRunning.current = !!s?.job?.running
+      setData(s)
       notify(s?.job?.total ? `${s.job.total} photo(s) en cours d’amélioration` : 'Aucune photo en attente', 'info')
     } catch (e) { notify(e?.message || 'Erreur', 'error') } finally { setStarting(false) }
   }

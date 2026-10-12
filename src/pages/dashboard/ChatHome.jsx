@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import {
@@ -8,7 +7,7 @@ import {
   FaConciergeBell, FaShoppingBag, FaCheckCircle, FaEye,
 } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
-import { useT } from '../../i18n/index.jsx'
+import { useT } from '../../i18n'
 import { uploadImage, isCloudinaryConfigured } from '../../api/cloudinary'
 import { Spinner } from '../../components/ui.jsx'
 
@@ -84,15 +83,24 @@ function ProductCarousel({ items }) {
 
 /* ---------------- Rendu Markdown (assistant) ----------------
    Tableaux GFM, liens (nouvel onglet), images responsives, et bloc produit. */
+
+// react-markdown passe `node` (AST) : à retirer avant de propager au DOM.
+function withoutNode(props) {
+  const rest = { ...props }
+  delete rest.node
+  return rest
+}
+
 const mdComponents = {
-  table: ({ node, ...props }) => (
-    <div className="md-table-wrap"><table {...props} /></div>
+  table: (props) => (
+    <div className="md-table-wrap"><table {...withoutNode(props)} /></div>
   ),
-  a: ({ node, ...props }) => (
-    <a {...props} target="_blank" rel="noopener noreferrer" />
+  a: (props) => (
+    <a {...withoutNode(props)} target="_blank" rel="noopener noreferrer" />
   ),
-  img: ({ node, ...props }) => <img {...props} className="md-img" alt={props.alt || ''} />,
-  code: ({ node, inline, className, children, ...props }) => {
+  img: (props) => <img {...withoutNode(props)} className="md-img" alt={props.alt || ''} />,
+  code: (allProps) => {
+    const { inline, className, children, ...props } = withoutNode(allProps)
     const lang = /language-([\w-]+)/.exec(className || '')?.[1]
     if (!inline && lang === 'tindisa-products') {
       const raw = String(children || '').trim()
@@ -191,11 +199,15 @@ function Composer({ centered, value, onChange, onSend, attachments, onAttach, on
   )
 }
 
+// Identifiant local de la bulle assistant (appelé à l'envoi, pas au rendu).
+function newAssistantId() {
+  return `a-${Date.now()}`
+}
+
 /* ============================ ChatHome ============================ */
 export default function ChatHome() {
   const api = useTindisaApi()
   const { t } = useT()
-  const navigate = useNavigate()
 
   const [conversations, setConversations] = useState([])
   const [currentId, setCurrentId] = useState(null)
@@ -287,7 +299,7 @@ export default function ChatHome() {
     setInput('')
     setAttachments([])
     setSending(true)
-    const assistantId = `a-${Date.now()}`
+    const assistantId = newAssistantId()
     let acc = ''
     let started = false
     try {

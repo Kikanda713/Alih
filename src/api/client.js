@@ -26,12 +26,13 @@ export async function apiFetch(path, { token, method = 'GET', body } = {}) {
 // (i.e. when Auth0 is configured). It attaches the user's Auth0 access token so
 // the backend can authenticate the user on important operations.
 export function useTindisaApi() {
-  // DEMO: en mode démo, on renvoie l'API fictive (aucun Auth0/backend requis).
-  // Retirer ces 2 lignes en production. DEMO_MODE est constant -> branche stable.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  if (DEMO_MODE) return mockApi
-
+  // Hook appelé inconditionnellement (règles des hooks) : hors Auth0Provider,
+  // useAuth0 renvoie le contexte par défaut sans lever d'erreur.
   const { getAccessTokenSilently, loginWithRedirect } = useAuth0()
+
+  // DEMO: en mode démo, on renvoie l'API fictive (aucun Auth0/backend requis).
+  // Retirer cette ligne en production.
+  if (DEMO_MODE) return mockApi
 
   // Récupère un access token pour l'API Tindisa (audience). Le SDK rafraîchit
   // silencieusement via le refresh token si l'access token est expiré. Si la

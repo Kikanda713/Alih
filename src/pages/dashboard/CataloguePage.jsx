@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   FaExternalLinkAlt,
@@ -16,8 +16,9 @@ import {
   FaPrint,
 } from "react-icons/fa";
 import { useTindisaApi } from "../../api/client";
-import { useT } from "../../i18n/index.jsx";
-import { useToast } from "../../components/Toast.jsx";
+import { useLoad } from "../../api/useLoad";
+import { useT } from "../../i18n";
+import { useToast } from "../../components/useToast";
 import {
   Card,
   Button,
@@ -30,7 +31,8 @@ import {
   Modal,
   ConfirmModal,
 } from "../../components/ui.jsx";
-import { usePaged, Pagination } from "../../components/Pagination.jsx";
+import { usePaged } from "../../components/usePaged";
+import { Pagination } from "../../components/Pagination.jsx";
 import { useTaxonomy, categoriesByType } from "../../api/taxonomy";
 import ProductFormModal from "./ProductFormModal.jsx";
 import AnalyticsModal from "../../components/AnalyticsModal.jsx";
@@ -342,39 +344,38 @@ function ShopRenameModal({ open, current, onClose, onSave }) {
   );
 }
 
+const NO_PRODUCTS = [];
+
 function WanzoTab({ t, onViews }) {
   const api = useTindisaApi();
   const { notify } = useToast();
-  const [state, setState] = useState({
-    loading: true,
-    link: null,
-    products: [],
-  });
   const [busy, setBusy] = useState("");
-  const wp = usePaged(state.products, 10);
-
-  const load = useCallback(async () => {
-    setState((s) => ({ ...s, loading: true }));
+  // Liaison Wanzo + produits Wanzo ; rechargés après connexion / synchro.
+  const {
+    data,
+    loading,
+    reload: load,
+  } = useLoad(async () => {
     try {
       const [link, wanzo] = await Promise.allSettled([
         api.get("/v1/wanzo/link"),
         api.get("/v1/merchant/wanzo/products"),
       ]);
-      setState({
-        loading: false,
+      return {
         link: link.status === "fulfilled" ? link.value : null,
         products:
           wanzo.status === "fulfilled" ? wanzo.value?.products || [] : [],
-      });
+      };
     } catch {
-      setState({ loading: false, link: null, products: [] });
+      return { link: null, products: [] };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  const state = {
+    loading,
+    link: data?.link ?? null,
+    products: data?.products || NO_PRODUCTS,
+  };
+  const wp = usePaged(state.products, 10);
 
   const linked = state.link?.linked;
   const verified = state.link?.link?.verified;
@@ -386,7 +387,7 @@ function WanzoTab({ t, onViews }) {
     try {
       await api.post("/v1/wanzo/link", {});
       notify(t("merchant.connect.success"), "success");
-      await load();
+      load();
     } catch (e) {
       notify(e?.message || t("merchant.error"), "error");
     } finally {
@@ -399,7 +400,7 @@ function WanzoTab({ t, onViews }) {
     try {
       const r = await api.post("/v1/wanzo/sync", {});
       notify(t("merchant.sync.success", { count: r?.synced ?? 0 }), "success");
-      await load();
+      load();
     } catch (e) {
       notify(e?.message || t("merchant.sync.unknown"), "error");
     } finally {
@@ -475,10 +476,36 @@ export default function CataloguePage() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const [tab, setTab] = useState("local");
-  const [loading, setLoading] = useState(true);
-  const [shop, setShop] = useState(null);
-  const [products, setProducts] = useState([]);
-  const [modal, setModal] = useState({ open: false, product: null });
+  // Catalogue (boutique + produits), rechargé après chaque action. En cas
+  // d'erreur : message affiché, dernières données conservées.
+  const lastCatalog = useRef({ shop: null, products: NO_PRODUCTS });
+  const {
+    data: catalog,
+    loading,
+    reload: load,
+  } = useLoad(
+    () =>
+      api.get("/v1/merchant/products").then(
+        (r) =>
+          (lastCatalog.current = {
+            shop: r?.shop || null,
+            products: r?.products || [],
+          }),
+        (e) => ({
+          ...lastCatalog.current,
+          error: e?.message || t("merchant.error"),
+        }),
+      ),
+    [],
+  );
+  const shop = catalog?.shop ?? null;
+  const products = catalog?.products || NO_PRODUCTS;
+  const error = catalog?.error || "";
+  // Arrivée via ?new=1 → ouvre directement le formulaire d'ajout.
+  const [modal, setModal] = useState(() => ({
+    open: params.get("new") === "1",
+    product: null,
+  }));
   const [confirm, setConfirm] = useState({
     open: false,
     product: null,
@@ -486,7 +513,6 @@ export default function CataloguePage() {
   });
   const [analytics, setAnalytics] = useState({ open: false, product: null });
   const [renaming, setRenaming] = useState(false);
-  const [error, setError] = useState("");
   const [filters, setFilters] = useState({
     q: "",
     type: "",
@@ -504,30 +530,21 @@ export default function CataloguePage() {
   const filtered = applyFilters(products, filters, certByProduct);
   const lp = usePaged(filtered, 10);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const r = await api.get("/v1/merchant/products");
-      setShop(r?.shop || null);
-      setProducts(r?.products || []);
-      // Certificats du commerçant (best-effort, ne bloque pas le catalogue).
-      Promise.all([
-        api.get("/v1/merchant/certificates").catch(() => []),
-        api.get("/v1/merchant/certificates/summary").catch(() => null),
-      ]).then(([list, sum]) => {
-        const map = {};
-        for (const c of Array.isArray(list) ? list : []) map[c.productId] = c;
-        setCertByProduct(map);
-        setCertSummary(sum || null);
-      });
-    } catch (e) {
-      setError(e?.message || t("merchant.error"));
-    } finally {
-      setLoading(false);
-    }
+  // Certificats du commerçant (best-effort, ne bloque pas le catalogue) :
+  // rechargés après chaque chargement réussi du catalogue.
+  useEffect(() => {
+    if (!catalog || catalog.error) return;
+    Promise.all([
+      api.get("/v1/merchant/certificates").catch(() => []),
+      api.get("/v1/merchant/certificates/summary").catch(() => null),
+    ]).then(([list, sum]) => {
+      const map = {};
+      for (const c of Array.isArray(list) ? list : []) map[c.productId] = c;
+      setCertByProduct(map);
+      setCertSummary(sum || null);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [catalog]);
 
   // « Certifier » = payer (argent réel) → auto-émission après confirmation.
   const startCertify = (p) => setPay({ open: true, product: p });
@@ -586,13 +603,9 @@ export default function CataloguePage() {
     setViewCert(null);
   };
 
-  useEffect(() => {
-    load();
-  }, [load]);
-
+  // ?new=1 consommé (modale ouverte via l'état initial) : on nettoie l'URL.
   useEffect(() => {
     if (params.get("new") === "1") {
-      setModal({ open: true, product: null });
       params.delete("new");
       setParams(params, { replace: true });
     }
@@ -606,7 +619,7 @@ export default function CataloguePage() {
     else await api.post("/v1/merchant/products", payload);
     setModal({ open: false, product: null });
     notify(editing ? t("toast.updated") : t("toast.created"), "success");
-    await load();
+    load();
   };
 
   const doDelete = async () => {
@@ -616,7 +629,7 @@ export default function CataloguePage() {
       await api.del(`/v1/merchant/products/${p.id}`);
       notify(t("toast.deleted"), "success");
       setConfirm({ open: false, product: null, busy: false });
-      await load();
+      load();
     } catch (e) {
       notify(e?.message || t("merchant.error"), "error");
       setConfirm((c) => ({ ...c, busy: false }));
@@ -628,7 +641,7 @@ export default function CataloguePage() {
       await api.put("/v1/merchant/shop", { name });
       notify(t("toast.shopRenamed"), "success");
       setRenaming(false);
-      await load();
+      load();
     } catch (e) {
       notify(e?.message || t("merchant.error"), "error");
     }

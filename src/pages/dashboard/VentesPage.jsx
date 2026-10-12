@@ -1,9 +1,10 @@
-import { useEffect, useState, useCallback } from 'react'
 import { FaHandshake } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
-import { useT } from '../../i18n/index.jsx'
+import { useLoad } from '../../api/useLoad'
+import { useT } from '../../i18n'
 import { Spinner, EmptyState, Badge } from '../../components/ui.jsx'
-import { usePaged, Pagination } from '../../components/Pagination.jsx'
+import { usePaged } from '../../components/usePaged'
+import { Pagination } from '../../components/Pagination.jsx'
 
 const STATUS_TONE = {
   ACCEPTED: 'success',
@@ -29,27 +30,17 @@ function fmtDate(d) {
   }
 }
 
+const NO_OFFERS = []
+
 export default function VentesPage() {
   const api = useTindisaApi()
   const { t } = useT()
-  const [loading, setLoading] = useState(true)
-  const [offers, setOffers] = useState([])
+  // Offres reçues, chargées une fois ; erreur → liste vide.
+  const { data: offers = NO_OFFERS, loading } = useLoad(
+    () => api.get('/v1/merchant/offers').then((r) => r?.offers || [], () => []),
+    [],
+  )
   const { pageItems, page, setPage, totalPages, count } = usePaged(offers, 10)
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const r = await api.get('/v1/merchant/offers')
-      setOffers(r?.offers || [])
-    } catch {
-      setOffers([])
-    } finally {
-      setLoading(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => { load() }, [load])
 
   return (
     <div className="dash-page">

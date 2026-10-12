@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import { FaLink, FaSyncAlt, FaCheckCircle } from 'react-icons/fa'
 import { useTindisaApi } from '../api/client'
-import { useT } from '../i18n/index.jsx'
+import { useLoad } from '../api/useLoad'
+import { useT } from '../i18n'
 
 /*
  * Light authenticated merchant space. Rendered only when the user is signed in.
@@ -16,9 +17,12 @@ export default function MerchantPanel() {
   const api = useTindisaApi()
   const { t } = useT()
 
-  const [link, setLink] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  // Statut de liaison Wanzo, chargé une fois au montage.
+  const { data: link, loading, error: loadError, setData: setLink } = useLoad(
+    () => api.get('/v1/wanzo/link'),
+    [],
+  )
+  const error = loadError ? t('merchant.error') : ''
 
   const [companyId, setCompanyId] = useState('')
   const [connecting, setConnecting] = useState(false)
@@ -26,25 +30,6 @@ export default function MerchantPanel() {
 
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState('')
-
-  const loadLink = useCallback(async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const data = await api.get('/v1/wanzo/link')
-      setLink(data)
-    } catch {
-      setError(t('merchant.error'))
-    } finally {
-      setLoading(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
-    loadLink()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const handleConnect = async (e) => {
     e.preventDefault()

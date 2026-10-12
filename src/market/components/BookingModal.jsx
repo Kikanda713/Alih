@@ -3,8 +3,8 @@ import { Modal, Button, Field, Input, Textarea } from '../../components/ui'
 import { formatPrice, unitSuffix, unitName } from '../lib/format'
 import { bookingMode } from '../lib/universes'
 import { lineTotal } from '../lib/chat'
-import { useCart } from '../CartContext'
-import { useToast } from '../../components/Toast'
+import { useCart } from '../useCart'
+import { useToast } from '../../components/useToast'
 
 /*
  * Réservation / demande de prestation pour un SERVICE, adaptée à son unité :

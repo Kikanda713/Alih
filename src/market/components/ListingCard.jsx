@@ -3,8 +3,8 @@ import { FaMapMarkerAlt, FaCertificate, FaCartPlus, FaCalendarAlt, FaComments, F
 import { formatPrice, unitSuffix, imageUrl, cityLabel } from '../lib/format'
 import { bookingMode } from '../lib/universes'
 import { useTaxonomy } from '../../api/taxonomy'
-import { useCart } from '../CartContext'
-import { useToast } from '../../components/Toast'
+import { useCart } from '../useCart'
+import { useToast } from '../../components/useToast'
 
 /*
  * Carte d'annonce (produit OU service). Action rapide adaptée au type :

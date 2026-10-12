@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, Link } from 'react-router-dom'
 import { FaArrowLeft, FaBars, FaAngleLeft, FaAngleRight } from 'react-icons/fa'
 import ProfileMenu from './ProfileMenu.jsx'
-import { LanguageSwitcher, useT } from '../i18n/index.jsx'
+import { LanguageSwitcher, useT } from '../i18n'
 import { DEMO_MODE } from '../demo/demo' // DEMO: retirer en production
 import tindisaLogo from '../assets/tindisa-logo.png'
 

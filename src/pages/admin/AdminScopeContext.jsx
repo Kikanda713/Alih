@@ -1,15 +1,16 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { FaMapMarkerAlt, FaGlobeAfrica } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { Select } from '../../components/ui.jsx'
+import { AdminScopeCtx, useAdminView } from './adminView'
 
 /**
  * Périmètre ville du back-office, partagé par toutes les pages admin.
  * - Admin GLOBAL : `city` = ville choisie dans le sélecteur (null = tout le pays).
  * - Admin de VILLE : `city` = sa ville, VERROUILLÉE (pas de sélecteur).
  * Chaque page ajoute `?city=<city>` à ses appels via `withCity()`.
+ * Le contexte et le hook `useAdminView` sont dans adminView.js.
  */
-const Ctx = createContext({ loading: true, global: true, city: null, lockedCity: null, cities: [], setCity: () => {}, withCity: (p) => p })
 
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s }
 
@@ -46,11 +47,7 @@ export function AdminScopeProvider({ children }) {
     () => ({ loading, global: info.global, city, lockedCity: info.lockedCity, cities: info.cities, setCity, withCity }),
     [loading, info, city, withCity],
   )
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>
-}
-
-export function useAdminView() {
-  return useContext(Ctx)
+  return <AdminScopeCtx.Provider value={value}>{children}</AdminScopeCtx.Provider>
 }
 
 /** Barre de portée : sélecteur ville (admin global) ou badge ville verrouillée. */
