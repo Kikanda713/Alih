@@ -4,12 +4,11 @@ import { FaWifi, FaCity, FaSeedling, FaStore, FaBroadcastTower, FaWhatsapp, FaAr
 import { Button, EmptyState, Spinner } from '../../components/ui'
 import { useTaxonomy } from '../../api/taxonomy'
 import { marketApi } from '../lib/api'
-import { cityLabel } from '../lib/format'
 import { HUB_KINDS, HUB_TYPES, WIFI_STATUSES } from '../lib/hubs'
 import { whatsappLink } from '../lib/chat'
 import HubCard from '../components/HubCard'
 // Carte (Leaflet) chargée à la demande.
-const DrcCoverageMap = lazy(() => import('../components/DrcCoverageMap'))
+const HubsCoverageMap = lazy(() => import('../components/HubsCoverageMap'))
 
 /** Annuaire des centres commerciaux et zones agricoles + suivi du Wi-Fi Starlink. */
 export default function HubsPage() {
@@ -81,8 +80,8 @@ export default function HubsPage() {
           </select>
         </div>
 
-        {/* Carte de couverture : toujours visible (même vide, elle montre le territoire couvert à venir). */}
-        {!data.loading && <Suspense fallback={null}><DrcCoverageMap hubs={data.items} /></Suspense>}
+        {/* Carte OpenStreetMap des centres : toujours visible (même vide, elle montre la RDC). */}
+        {!data.loading && <Suspense fallback={null}><HubsCoverageMap hubs={data.items} /></Suspense>}
 
         {data.loading ? <Spinner label="Chargement des centres…" /> : data.items.length === 0 ? (
           <EmptyState icon={<FaWifi />} title={data.error ? 'Le service ne répond pas' : 'Aucun centre pour ces critères'}
@@ -91,7 +90,7 @@ export default function HubsPage() {
         ) : (
           <>
             <div className="mk-hub-grid">
-              {data.items.map((h) => <HubCard key={h.id} hub={h} cityName={cityLabel(taxonomy, h.city)} />)}
+              {data.items.map((h) => <HubCard key={h.id} hub={h} />)}
             </div>
           </>
         )}

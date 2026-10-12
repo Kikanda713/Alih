@@ -626,25 +626,11 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 .mk-cert-btn-lg { margin-top: 6px; font-size: 0.85rem; padding: 6px 12px; }
 .mk-cert-missing { justify-self: start; display: inline-flex; align-items: center; gap: 6px; font-size: 0.74rem; color: #8a5a1e; }
 
-/* ---------- Carte SVG de couverture (RDC) ---------- */
-.drc-map { position: relative; margin: 0 0 22px; padding: 12px; border-radius: var(--radius-card); background: var(--white); border: 1px solid var(--border); }
-.drc-map svg { display: block; width: 100%; max-height: 560px; height: auto; }
-.drc-map-compact svg { max-height: 460px; }
-.drc-provinces path { fill: #EFE4D2; stroke: var(--white); stroke-width: 2; stroke-linejoin: round; transition: fill var(--duration) var(--ease); }
-.drc-provinces path:hover { fill: #E2CFB2; }
-.drc-cities circle { fill: rgba(18, 18, 18, 0.22); pointer-events: none; }
-.drc-hub { cursor: pointer; outline: none; }
-.drc-hub .drc-cover { opacity: 0.14; transition: opacity var(--duration) var(--ease); }
-.drc-hub .drc-dot { stroke: var(--white); stroke-width: 2.5; transition: transform var(--duration) var(--ease); transform-box: fill-box; transform-origin: center; }
-.drc-hub:hover .drc-cover, .drc-hub:focus-visible .drc-cover { opacity: 0.3; }
-.drc-hub:hover .drc-dot, .drc-hub:focus-visible .drc-dot { transform: scale(1.35); }
-.drc-pulse { fill: none; stroke-width: 2.5; transform-box: fill-box; transform-origin: center; animation: drc-pulse 2.2s ease-out infinite; }
-@keyframes drc-pulse { from { transform: scale(0.8); opacity: 0.9; } to { transform: scale(2.6); opacity: 0; } }
-.drc-tip { position: absolute; z-index: 2; transform: translate(-50%, calc(-100% - 12px)); display: grid; gap: 2px; min-width: 150px; max-width: 240px; padding: 8px 10px; border-radius: 10px; background: var(--ebony); color: #F3EADC; font-size: 0.78rem; pointer-events: none; box-shadow: var(--shadow-md); }
-.drc-tip b { font-family: var(--font-heading); font-size: 0.86rem; color: #fff; }
-.drc-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 8px 4px 0; font-size: 0.8rem; color: var(--gray); }
-.drc-legend span { display: inline-flex; align-items: center; gap: 6px; }
-.drc-legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-.drc-empty { color: var(--gray-light); font-style: italic; }
-@media (prefers-reduced-motion: reduce) { .drc-pulse { animation: none; } }
-@media (max-width: 640px) { .drc-map { padding: 6px; } .drc-tip { display: none; } }
+/* ---------- Carte OpenStreetMap des centres ---------- */
+.mk-hubs-map { margin: 0 0 22px; border-radius: var(--radius-card); overflow: hidden; border: 1px solid var(--border); background: var(--white); }
+.mk-hubs-map-canvas { height: 420px; width: 100%; z-index: 0; }
+.mk-hubs-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 10px 14px; font-size: 0.8rem; color: var(--gray); }
+.mk-hubs-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.mk-hubs-legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.mk-hubs-legend-empty { color: var(--gray-light); font-style: italic; }
+@media (max-width: 640px) { .mk-hubs-map-canvas { height: 320px; } }

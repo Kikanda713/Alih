@@ -7,8 +7,8 @@ import { MeshNetworkIllustration } from '../components/MeshNetwork'
 import HubCard from '../components/HubCard'
 import { WIFI_STEPS } from '../lib/hubs'
 
-// Carte SVG de la RDC (chargée à la demande).
-const DrcCoverageMap = lazy(() => import('../components/DrcCoverageMap'))
+// Carte OpenStreetMap des centres (chargée à la demande).
+const HubsCoverageMap = lazy(() => import('../components/HubsCoverageMap'))
 
 const LAYERS = [
   { ic: <FaSatellite />, t: '1. Starlink', s: 'Un terminal satellite installé dans chaque centre apporte l’internet haut débit, même loin de la fibre et des antennes mobiles.' },
@@ -107,7 +107,7 @@ export default function ConnectivityPage() {
         </ol>
         <h2 className="section-title">Couverture du réseau</h2>
         <p className="section-subtitle">Centres en service, en installation et planifiés, partout en RDC.</p>
-        <Suspense fallback={null}><DrcCoverageMap hubs={hubs.items} compact /></Suspense>
+        <Suspense fallback={null}><HubsCoverageMap hubs={hubs.items} /></Suspense>
         {hubs.items.length > 0 && (
           <>
             <div className="mk-rail-head"><h2>Centres du réseau</h2><Link to="/centres">Tous les centres <FaArrowRight /></Link></div>

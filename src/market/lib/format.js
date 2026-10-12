@@ -53,7 +53,10 @@ export function subcategoryLabel(taxonomy, catId, subId) {
 export function cityLabel(taxonomy, value) {
   if (!value) return null
   const key = String(value).toLowerCase().replace(/\s+/g, '-')
-  return (taxonomy?.cities || []).find((c) => c.id === key)?.name || value
+  const found = (taxonomy?.cities || []).find((c) => c.id === key)?.name
+  if (found) return found
+  // Repli lisible (taxonomie pas encore chargée ou ville hors liste) : « goma » → « Goma ».
+  return String(value).replace(/(^|[\s-])(\p{L})/gu, (_m, sep, ch) => sep + ch.toUpperCase())
 }
 export function shopTypeLabel(taxonomy, id) {
   if (!id) return null
