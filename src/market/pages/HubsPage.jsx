@@ -9,7 +9,7 @@ import { HUB_KINDS, HUB_TYPES, WIFI_STATUSES } from '../lib/hubs'
 import { whatsappLink } from '../lib/chat'
 import HubCard from '../components/HubCard'
 // Carte (Leaflet) chargée à la demande.
-const HubsMap = lazy(() => import('../components/HubsMap'))
+const DrcCoverageMap = lazy(() => import('../components/DrcCoverageMap'))
 
 /** Annuaire des centres commerciaux et zones agricoles + suivi du Wi-Fi Starlink. */
 export default function HubsPage() {
@@ -81,13 +81,15 @@ export default function HubsPage() {
           </select>
         </div>
 
+        {/* Carte de couverture : toujours visible (même vide, elle montre le territoire couvert à venir). */}
+        {!data.loading && <Suspense fallback={null}><DrcCoverageMap hubs={data.items} /></Suspense>}
+
         {data.loading ? <Spinner label="Chargement des centres…" /> : data.items.length === 0 ? (
           <EmptyState icon={<FaWifi />} title={data.error ? 'Le service ne répond pas' : 'Aucun centre pour ces critères'}
             text="Le réseau s’étend chaque mois. Proposez un centre commercial, un marché ou une zone agricole à connecter."
             action={<Button as="a" href={whatsappLink('Bonjour Tindisa, je souhaite proposer un site à connecter : ')} target="_blank" rel="noopener noreferrer"><FaWhatsapp /> Proposer un site</Button>} />
         ) : (
           <>
-            <Suspense fallback={null}><HubsMap hubs={data.items} /></Suspense>
             <div className="mk-hub-grid">
               {data.items.map((h) => <HubCard key={h.id} hub={h} cityName={cityLabel(taxonomy, h.city)} />)}
             </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaSatellite, FaBroadcastTower, FaStore, FaCheck, FaWhatsapp, FaArrowRight, FaCity, FaSeedling, FaWifi, FaMoneyBillWave, FaTruck } from 'react-icons/fa'
 import { marketApi } from '../lib/api'
@@ -6,6 +6,9 @@ import { whatsappLink } from '../lib/chat'
 import { MeshNetworkIllustration } from '../components/MeshNetwork'
 import HubCard from '../components/HubCard'
 import { WIFI_STEPS } from '../lib/hubs'
+
+// Carte SVG de la RDC (chargée à la demande).
+const DrcCoverageMap = lazy(() => import('../components/DrcCoverageMap'))
 
 const LAYERS = [
   { ic: <FaSatellite />, t: '1. Starlink', s: 'Un terminal satellite installé dans chaque centre apporte l’internet haut débit, même loin de la fibre et des antennes mobiles.' },
@@ -102,6 +105,9 @@ export default function ConnectivityPage() {
             </li>
           ))}
         </ol>
+        <h2 className="section-title">Couverture du réseau</h2>
+        <p className="section-subtitle">Centres en service, en installation et planifiés, partout en RDC.</p>
+        <Suspense fallback={null}><DrcCoverageMap hubs={hubs.items} compact /></Suspense>
         {hubs.items.length > 0 && (
           <>
             <div className="mk-rail-head"><h2>Centres du réseau</h2><Link to="/centres">Tous les centres <FaArrowRight /></Link></div>

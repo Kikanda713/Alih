@@ -264,11 +264,11 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 .mk-hubs-body { padding-top: 28px; padding-bottom: 56px; }
 .mk-hubs-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
 .mk-hubs-filters .ui-select { width: auto; min-width: 170px; }
-.mk-hubs-map { height: 340px; border-radius: var(--radius-card); margin-bottom: 20px; border: 1px solid var(--border); z-index: 0; }
 .mk-hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; }
 .mk-hub-card { display: flex; flex-direction: column; border-radius: var(--radius-card); overflow: hidden; background: var(--white); border: 1px solid var(--border); text-decoration: none; color: var(--ebony); transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease); }
 .mk-hub-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
 .mk-hub-media { position: relative; aspect-ratio: 16 / 9; background: #2a2a2a; }
+@media (max-width: 640px) { .mk-hub-media { aspect-ratio: 5 / 2; } }
 .mk-hub-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .mk-hub-noimg { position: absolute; inset: 0; display: grid; place-items: center; font-size: 2.2rem; color: var(--copper-gold); background-image: var(--mk-bogolan); background-color: var(--ebony); }
 .mk-hub-rural .mk-hub-noimg { background-color: #3d4419; }
@@ -625,3 +625,26 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 .mk-cert-btn:hover { background: rgba(30, 132, 73, 0.16); }
 .mk-cert-btn-lg { margin-top: 6px; font-size: 0.85rem; padding: 6px 12px; }
 .mk-cert-missing { justify-self: start; display: inline-flex; align-items: center; gap: 6px; font-size: 0.74rem; color: #8a5a1e; }
+
+/* ---------- Carte SVG de couverture (RDC) ---------- */
+.drc-map { position: relative; margin: 0 0 22px; padding: 12px; border-radius: var(--radius-card); background: var(--white); border: 1px solid var(--border); }
+.drc-map svg { display: block; width: 100%; max-height: 560px; height: auto; }
+.drc-map-compact svg { max-height: 460px; }
+.drc-provinces path { fill: #EFE4D2; stroke: var(--white); stroke-width: 2; stroke-linejoin: round; transition: fill var(--duration) var(--ease); }
+.drc-provinces path:hover { fill: #E2CFB2; }
+.drc-cities circle { fill: rgba(18, 18, 18, 0.22); pointer-events: none; }
+.drc-hub { cursor: pointer; outline: none; }
+.drc-hub .drc-cover { opacity: 0.14; transition: opacity var(--duration) var(--ease); }
+.drc-hub .drc-dot { stroke: var(--white); stroke-width: 2.5; transition: transform var(--duration) var(--ease); transform-box: fill-box; transform-origin: center; }
+.drc-hub:hover .drc-cover, .drc-hub:focus-visible .drc-cover { opacity: 0.3; }
+.drc-hub:hover .drc-dot, .drc-hub:focus-visible .drc-dot { transform: scale(1.35); }
+.drc-pulse { fill: none; stroke-width: 2.5; transform-box: fill-box; transform-origin: center; animation: drc-pulse 2.2s ease-out infinite; }
+@keyframes drc-pulse { from { transform: scale(0.8); opacity: 0.9; } to { transform: scale(2.6); opacity: 0; } }
+.drc-tip { position: absolute; z-index: 2; transform: translate(-50%, calc(-100% - 12px)); display: grid; gap: 2px; min-width: 150px; max-width: 240px; padding: 8px 10px; border-radius: 10px; background: var(--ebony); color: #F3EADC; font-size: 0.78rem; pointer-events: none; box-shadow: var(--shadow-md); }
+.drc-tip b { font-family: var(--font-heading); font-size: 0.86rem; color: #fff; }
+.drc-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 8px 4px 0; font-size: 0.8rem; color: var(--gray); }
+.drc-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.drc-legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.drc-empty { color: var(--gray-light); font-style: italic; }
+@media (prefers-reduced-motion: reduce) { .drc-pulse { animation: none; } }
+@media (max-width: 640px) { .drc-map { padding: 6px; } .drc-tip { display: none; } }
