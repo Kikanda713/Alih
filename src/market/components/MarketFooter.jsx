@@ -1,8 +1,12 @@
 import { Link } from 'react-router-dom'
 import { FaWhatsapp, FaTelegramPlane } from 'react-icons/fa'
 import tindisaFooterLogo from '../../assets/tindisa.png'
+import wanzoLogo from '../../assets/wanzo-logo.png'
 import { channels } from '../../auth/config'
 import { UNIVERSES, universeHref } from '../lib/universes'
+
+// Wanzo : gestion, comptabilité et inclusion financière des PME (même écosystème).
+const WANZO_URL = 'https://wanzzo.com/?utm_source=tindisa&utm_medium=footer&utm_campaign=pme'
 
 /** Pied de page compact : liens en lignes (pas de hautes colonnes), messagerie une seule fois. */
 export default function MarketFooter() {
@@ -31,6 +35,12 @@ export default function MarketFooter() {
           </p>
         </nav>
       </div>
+      <a className="mk-container mk-footer-partner" href={WANZO_URL} target="_blank" rel="noopener">
+        <span className="mk-footer-partner-logo"><img src={wanzoLogo} alt="Wanzo" width="74" height="25" loading="lazy" /></span>
+        <span>
+          Vous gérez une boutique ou une PME ? <b>Gestion, comptabilité et accès au financement avec Wanzo</b>
+        </span>
+      </a>
       <div className="mk-container mk-footer-bottom">
         <span>© {new Date().getFullYear()} Tindisa · Le marché du Congo, en ligne et dans votre messagerie</span>
         <span>Cash ou Mobile Money · Séquestre · Livraison ou retrait</span>

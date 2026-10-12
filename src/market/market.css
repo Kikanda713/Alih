@@ -420,6 +420,11 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 .mk-footer a:hover { color: var(--copper-gold); }
 .mk-footer-social { display: flex; gap: 8px; }
 .mk-footer-social a { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: rgba(255, 255, 255, 0.08); font-size: 1rem; }
+.mk-footer .mk-footer-partner { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-size: 0.8rem; color: rgba(243, 234, 220, 0.66); }
+.mk-footer .mk-footer-partner b { font-weight: 600; color: rgba(243, 234, 220, 0.85); }
+.mk-footer .mk-footer-partner:hover b { color: var(--copper-gold); }
+.mk-footer-partner-logo { flex-shrink: 0; display: inline-grid; place-items: center; padding: 3px 7px; border-radius: 7px; background: #fff; line-height: 0; }
+.mk-footer-partner-logo img { height: 18px; width: auto; }
 .mk-footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.75rem; color: rgba(243, 234, 220, 0.55); }
 
 /* ---------- Back-office (marché web, centres) ---------- */
@@ -494,6 +499,8 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
   .mk-price { grid-template-columns: 1fr 1fr; }
   .mk-pay { grid-template-columns: 1fr; }
   .mk-footer-main { flex-direction: column; gap: 14px; }
+  /* Le bouton flottant « Assistant » ne masque plus la dernière ligne. */
+  .mk-footer { padding-bottom: 88px; }
   .mk-footer-links b { min-width: 0; width: 100%; }
   .mk-join { padding: 20px; }
   .mk-sort { min-width: 0; flex: 1; }
