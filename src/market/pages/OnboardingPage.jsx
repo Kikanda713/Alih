@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth0 } from '@auth0/auth0-react'
 import {
-  FaStore, FaMapMarkerAlt, FaPhoneAlt, FaShareAlt, FaCheckCircle, FaImage, FaSpinner, FaWhatsapp,
+  FaStore, FaMapMarkerAlt, FaPhoneAlt, FaShareAlt, FaCheckCircle, FaImage, FaSpinner,
   FaChevronDown, FaUserCog, FaImages, FaUserCircle,
 } from 'react-icons/fa'
 import { Button, Field, Input, Select, Spinner, Textarea } from '../../components/ui'
@@ -11,7 +11,7 @@ import { useLoad } from '../../api/useLoad'
 import { useTaxonomy, businessNoun, isIndividualType, isPlaceholderShopName, proLimits } from '../../api/taxonomy'
 import { uploadImage, isCloudinaryConfigured } from '../../api/cloudinary'
 import { isAuth0Configured } from '../../auth/config'
-import { whatsappLink } from '../lib/chat'
+import ChannelLinks from '../components/ChannelLinks'
 import { EMPTY_PRO, normalizePro, validatePro } from '../lib/pro'
 import SocialLinksForm from '../components/SocialLinksForm'
 import { ShopTypeSelect, TradesPicker, ZonesInput, PhotosEditor, VideosEditor } from '../components/ProFields'
@@ -179,9 +179,7 @@ function Wizard({ proRoute }) {
         <div className="mk-sent-actions">
           <Button as={Link} to="/dashboard/catalogue?new=1">Ajouter ma première offre</Button>
           {shopId && <Button as={Link} to={`/boutique/${shopId}`} variant="secondary">Voir ma vitrine</Button>}
-          <Button as="a" variant="ghost" href={whatsappLink('Bonjour Tindisa, je veux lier mon compte commerçant à ce numéro.')} target="_blank" rel="noopener noreferrer">
-            <FaWhatsapp /> Vendre aussi par WhatsApp
-          </Button>
+          <ChannelLinks text="Bonjour Tindisa, je veux lier mon compte vendeur à cette messagerie." label="Vendre aussi par messagerie :" />
         </div>
       </div>
     )
@@ -355,7 +353,7 @@ export default function OnboardingPage({ pro = false }) {
     <div className="mk-container mk-onb">
       <h1>{title}</h1>
       {!isAuth0Configured ? (
-        <p className="mk-muted">L’inscription en ligne est momentanément indisponible : écrivez à l’assistant sur WhatsApp.</p>
+        <p className="mk-muted">L’inscription en ligne est momentanément indisponible : écrivez à l’assistant sur WhatsApp ou Telegram.</p>
       ) : isLoading ? <Spinner /> : isAuthenticated ? <Wizard proRoute={pro} /> : <SignIn pro={pro} />}
     </div>
   )

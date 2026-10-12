@@ -158,7 +158,7 @@ export default function PaymentModal({
               onClick={onCopyLink}
               disabled={busy}
             >
-              Ou envoyer un lien de paiement (WhatsApp / SMS)
+              Ou envoyer un lien de paiement (messagerie ou SMS)
             </button>
           )}
           <div className="ui-modal-foot">

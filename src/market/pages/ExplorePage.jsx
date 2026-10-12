@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { FaSlidersH, FaTimes, FaWhatsapp, FaSearch } from 'react-icons/fa'
+import { FaSlidersH, FaTimes, FaSearch, FaCommentDots } from 'react-icons/fa'
 import { Button, EmptyState } from '../../components/ui'
 import { useTaxonomy } from '../../api/taxonomy'
 import FiltersPanel from '../components/FiltersPanel'
@@ -12,7 +12,8 @@ import IntentBar from '../components/IntentBar'
 import UniverseRail from '../components/UniverseRail'
 import ProsRail from '../components/ProsRail'
 import { categoryLabel, cityLabel, subcategoryLabel } from '../lib/format'
-import { whatsappLink } from '../lib/chat'
+import ChannelLinks from '../components/ChannelLinks'
+import { useChat } from '../chat/useChat'
 
 const FILTER_KEYS = ['q', 'type', 'category', 'subcategory', 'city', 'condition', 'priceMin', 'priceMax', 'currency', 'certified', 'sort']
 const SORTS = [
@@ -77,6 +78,8 @@ export default function ExplorePage() {
     setParam({ [chip.k]: '' })
   }
 
+  const { openChat } = useChat()
+  const ask = () => openChat({ text: askText, send: true })
   const askText = `Bonjour Tindisa, je cherche : ${q || universe?.title || 'un article'}${params.get('city') ? ` à ${cityLabel(taxonomy, params.get('city'))}` : ''}. Pouvez-vous m'aider à trouver et commander ?`
 
   if (overview) {
@@ -92,7 +95,8 @@ export default function ExplorePage() {
         {UNIVERSES.map((u) => <UniverseRail key={u.id} universe={u} onBook={setBooking} />)}
         <div className="mk-assist">
           <span>Vous ne trouvez pas ? L’assistant cherche aussi chez les vendeurs pas encore en ligne.</span>
-          <a href={whatsappLink(askText)} target="_blank" rel="noopener noreferrer"><FaWhatsapp /> Demander sur WhatsApp</a>
+          <button type="button" className="mk-assist-btn" onClick={ask}><FaCommentDots /> Demander à l’assistant</button>
+          <ChannelLinks text={askText} />
         </div>
         {booking && <BookingModal item={booking} onClose={() => setBooking(null)} />}
       </div>
@@ -151,7 +155,7 @@ export default function ExplorePage() {
               action={(
                 <div className="mk-empty-actions">
                   {chips.length > 0 && <Button variant="ghost" onClick={() => setParams(new URLSearchParams())}>Effacer les filtres</Button>}
-                  <Button as="a" href={whatsappLink(askText)} target="_blank" rel="noopener noreferrer"><FaWhatsapp /> Demander sur WhatsApp</Button>
+                  <Button onClick={ask}><FaCommentDots /> Demander à l’assistant</Button>
                 </div>
               )}
             />
@@ -165,7 +169,8 @@ export default function ExplorePage() {
               )}
               <div className="mk-assist">
                 <span>Vous ne trouvez pas exactement ce qu’il faut ?</span>
-                <a href={whatsappLink(askText)} target="_blank" rel="noopener noreferrer"><FaWhatsapp /> L’assistant cherche pour vous</a>
+                <button type="button" className="mk-assist-btn" onClick={ask}><FaCommentDots /> L’assistant cherche pour vous</button>
+                <ChannelLinks text={askText} />
               </div>
             </>
           )}

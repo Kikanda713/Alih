@@ -74,7 +74,7 @@ export default function LinkPage() {
       setStatus('done')
     } catch (e) {
       setStatus('error')
-      setMsg(e?.message || 'Échec de la liaison. Demandez un nouveau lien sur WhatsApp.')
+      setMsg(e?.message || 'Échec de la liaison. Demandez un nouveau lien dans votre messagerie (WhatsApp ou Telegram).')
     }
   }
 
@@ -100,7 +100,7 @@ export default function LinkPage() {
 
         {status === 'confirm' && (
           <>
-            <p style={{ color: '#6b6560', marginBottom: 4 }}>Lier votre numéro WhatsApp au compte :</p>
+            <p style={{ color: '#6b6560', marginBottom: 4 }}>Lier votre messagerie (WhatsApp ou Telegram) au compte :</p>
             <p style={{ fontSize: '1.05rem', fontWeight: 700 }}>{user?.email || user?.name}</p>
             <p style={{ color: '#6b6560', fontSize: '0.9rem', marginTop: 8 }}>
               Confirmez que c'est bien <strong>votre</strong> compte. Sinon, changez de compte.
@@ -113,7 +113,7 @@ export default function LinkPage() {
         {status === 'done' && (
           <>
             <p style={{ fontSize: '1.1rem', color: '#1a9e54', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><FaCheckCircle /> Votre compte est lié !</p>
-            <p>Vous pouvez maintenant gérer votre établissement depuis WhatsApp. Retournez à votre conversation Tindisa.</p>
+            <p>Vous pouvez maintenant gérer votre établissement depuis votre messagerie. Retournez à votre conversation Tindisa.</p>
             {/* Même boutique que celle créée par l'assistant : on la complète ici (nom, ville, contact, réseaux). */}
             <Link to="/vendre/boutique" style={{ color: '#635dff', fontWeight: 600 }}>Compléter mon espace pro (2 minutes)</Link>
             <Link to="/dashboard" style={{ color: '#635dff' }}>Ouvrir mon tableau de bord</Link>

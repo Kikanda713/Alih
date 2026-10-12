@@ -558,7 +558,7 @@ export default function CataloguePage() {
       if (r?.url && navigator.clipboard) {
         await navigator.clipboard.writeText(r.url);
         notify(
-          "Lien de paiement copié : collez-le dans WhatsApp/SMS",
+          "Lien de paiement copié : collez-le dans votre messagerie ou par SMS",
           "success",
         );
       } else if (r?.url) {

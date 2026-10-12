@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { FaStore, FaTools, FaUserFriends, FaArrowRight, FaWhatsapp } from 'react-icons/fa'
-import { whatsappLink } from '../lib/chat'
+import { FaStore, FaTools, FaUserFriends, FaArrowRight } from 'react-icons/fa'
+import ChannelLinks from '../components/ChannelLinks'
 
 const TIERS = [['10 %', '0 à 10 $'], ['3 %', '10 à 100 $'], ['2 %', '100 à 1 000 $'], ['1,5 %', '1 000 à 10 000 $'], ['0,5 %', '+ de 10 000 $']]
 
@@ -25,13 +25,16 @@ export default function SellPage() {
           <span><b>Je suis technicien ou artisan</b><small>Plombier, électricien, mécanicien, maçon… : votre profil pro avec vos réalisations</small></span>
           <FaArrowRight className="mk-sell-go" />
         </Link>
-        {/* Vente entre particuliers : rattachée au NUMÉRO WhatsApp (3 annonces max par numéro),
-            donc publiée depuis WhatsApp et non depuis le chat anonyme du site. */}
-        <a className="mk-sell-choice" href={whatsappLink('Bonjour Tindisa, je veux vendre un article : ')} target="_blank" rel="noopener noreferrer">
+        {/* Vente entre particuliers : rattachée à l'identifiant de MESSAGERIE (3 annonces max),
+            donc publiée depuis WhatsApp ou Telegram et non depuis le chat anonyme du site. */}
+        <div className="mk-sell-choice mk-sell-choice-static">
           <FaUserFriends />
-          <span><b>Vendre un article</b><small>En tant que particulier, sur WhatsApp : une photo et un prix suffisent</small></span>
-          <FaWhatsapp className="mk-sell-go" />
-        </a>
+          <span>
+            <b>Vendre un article</b>
+            <small>En tant que particulier, sur nos messageries : une photo et un prix suffisent</small>
+            <ChannelLinks text="Bonjour Tindisa, je veux vendre un article : " label="" className="mk-sell-channels" />
+          </span>
+        </div>
       </div>
 
       <details className="mk-sell-fees">

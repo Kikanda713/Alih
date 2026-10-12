@@ -632,7 +632,12 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 .mk-order-btn { height: 48px; font-size: 0.98rem; }
 .mk-alt-channels { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 14px; font-size: 0.84rem; color: var(--gray); }
 .mk-alt-channels a, .mk-alt-channels button { display: inline-flex; align-items: center; gap: 6px; border: none; background: none; padding: 4px 0; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; }
-.mk-alt-channels a, .mk-alt-channels button:first-of-type { color: #128C7E; }
+.mk-alt-channels a, .mk-alt-channels .mk-ch-wa { color: #128C7E; }
+.mk-alt-channels .mk-ch-tg { color: #229ED9; }
+.mk-assist-btn { display: inline-flex; align-items: center; gap: 8px; border: none; background: none; font: inherit; font-weight: 700; color: var(--terracotta); cursor: pointer; padding: 4px 0; }
+.mk-sell-choice-static { cursor: default; }
+.mk-sell-choice-static .mk-sell-channels { justify-content: flex-start; margin-top: 6px; }
+.mk-menu-tg { color: #229ED9; }
 .mk-alt-channels button:last-child { color: #0088cc; }
 .mk-search-photo { border: none; background: transparent; color: var(--gray); padding: 0 12px; display: grid; place-items: center; cursor: pointer; font-size: 1.05rem; }
 .mk-search-photo:hover { color: var(--terracotta); }

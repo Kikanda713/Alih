@@ -232,7 +232,7 @@ export default function AdminAI() {
             <small> · {new Date(agentSync.at).toLocaleString('fr-FR')}</small>
           </span>
         ) : (
-          <span>Assistant : modèle actuel du serveur. Le choix ci-dessous s’applique automatiquement dans les 5 minutes, sans couper WhatsApp.</span>
+          <span>Assistant : modèle actuel du serveur. Le choix ci-dessous s’applique automatiquement dans les 5 minutes, sans couper les messageries.</span>
         )}
       </Card>
       <h2 className="admin-ai-h2">Fournisseurs</h2>

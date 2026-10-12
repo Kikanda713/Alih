@@ -67,7 +67,7 @@ export default function ProsRail({ city }) {
           {Array.from({ length: 4 }).map((_, i) => <div key={i} className="mk-pro-card mk-skel" />)}
         </div>
       ) : !items.length ? (
-        <p className="mk-muted">Aucun profil pour ce métier pour l’instant. L’assistant peut chercher pour vous sur WhatsApp.</p>
+        <p className="mk-muted">Aucun profil pour ce métier pour l’instant. L’assistant peut chercher pour vous, ici ou sur nos messageries.</p>
       ) : (
         <>
           <div className="mk-pros-grid">{items.map((p) => <ProCard key={p.shopId} pro={p} />)}</div>

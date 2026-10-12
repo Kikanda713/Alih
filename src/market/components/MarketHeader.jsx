@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useSearchParams } from 'react-router-dom'
-import { FaShoppingCart, FaBars, FaTimes, FaShieldAlt, FaStore, FaWhatsapp, FaWifi, FaSearch } from 'react-icons/fa'
+import { FaShoppingCart, FaBars, FaTimes, FaShieldAlt, FaStore, FaWhatsapp, FaTelegramPlane, FaWifi, FaSearch } from 'react-icons/fa'
 import tindisaLogo from '../../assets/tindisa-logo.png'
 import { LanguageSwitcher } from '../../i18n'
 import ProfileMenu from '../../components/ProfileMenu'
@@ -121,6 +121,9 @@ export default function MarketHeader() {
               <Link to="/verify" className="mk-menu-link"><FaShieldAlt /> Vérifier un certificat</Link>
               <a href={channels.whatsapp} target="_blank" rel="noopener noreferrer" className="mk-menu-link mk-menu-wa">
                 <FaWhatsapp /> Discuter sur WhatsApp
+              </a>
+              <a href={channels.telegram} target="_blank" rel="noopener noreferrer" className="mk-menu-link mk-menu-tg">
+                <FaTelegramPlane /> Discuter sur Telegram
               </a>
             </div>
           </aside>
