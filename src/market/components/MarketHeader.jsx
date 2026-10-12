@@ -6,12 +6,13 @@ import { LanguageSwitcher } from '../../i18n'
 import ProfileMenu from '../../components/ProfileMenu'
 import { channels } from '../../auth/config'
 import SearchBar from './SearchBar'
+import UniverseNavLink from './UniverseNavLink'
 import { UNIVERSES, universeHref, activeUniverse } from '../lib/universes'
 import { useCart } from '../useCart'
 
 /*
  * En-tête du marché : logo, recherche centrale, panier, compte. Seconde ligne :
- * les univers (portes d'entrée) défilables. Menu tiroir sur mobile.
+ * les univers (portes d'entrée) défilables, détail au survol. Menu tiroir sur mobile.
  */
 export default function MarketHeader() {
   const location = useLocation()
@@ -65,11 +66,7 @@ export default function MarketHeader() {
           <NavLink to="/marche" end className={() => `mk-unav-link${location.pathname === '/marche' && !current ? ' active' : ''}`}>
             Tout le marché
           </NavLink>
-          {UNIVERSES.map((u) => (
-            <Link key={u.id} to={universeHref(u)} className={`mk-unav-link${current?.id === u.id ? ' active' : ''}`}>
-              <u.icon /> {u.label}
-            </Link>
-          ))}
+          {UNIVERSES.map((u) => <UniverseNavLink key={u.id} universe={u} active={current?.id === u.id} />)}
           <Link to="/centres" className={`mk-unav-link mk-unav-accent${location.pathname.startsWith("/centres") ? " active" : ""}`}><FaWifi /> Centres & Wi-Fi</Link>
           <Link to="/connectivite" className={`mk-unav-link${location.pathname === "/connectivite" ? " active" : ""}`}><FaSatelliteDish /> Connectivité</Link>
           <Link to="/vendre" className={`mk-unav-link${location.pathname === "/vendre" ? " active" : ""}`}><FaStore /> Vendre</Link>

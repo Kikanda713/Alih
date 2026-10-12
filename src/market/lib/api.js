@@ -15,7 +15,6 @@ function qs(params = {}) {
 export const marketApi = {
   listings: (params) => apiFetch(`/v1/market/listings${qs(params)}`),
   listing: (id) => apiFetch(`/v1/market/listings/${encodeURIComponent(id)}`),
-  stats: () => apiFetch('/v1/market/stats'),
   shop: (id) => apiFetch(`/v1/market/shops/${encodeURIComponent(id)}`),
   shopListings: (id, params) => apiFetch(`/v1/market/shops/${encodeURIComponent(id)}/listings${qs(params)}`),
   hubs: (params) => apiFetch(`/v1/market/hubs${qs(params)}`),

@@ -112,8 +112,6 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 .mk-hero-search { max-width: 820px; margin: 0 auto; }
 .mk-suggest { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin: 18px auto 0; max-width: 860px; }
 .mk-suggest > span { color: var(--gray); font-size: 0.85rem; }
-
-.mk-universes { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 36px; text-align: left; }
 .mk-universe { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: var(--radius-card); background: var(--white); border: 1px solid var(--border); text-decoration: none; color: var(--ebony); position: relative; overflow: hidden; transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease), border-color var(--duration) var(--ease); }
 .mk-universe::after { content: ''; position: absolute; right: -18px; bottom: -18px; width: 64px; height: 64px; background-image: var(--mk-bogolan); opacity: 0.18; border-radius: 50%; }
 .mk-universe:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: rgba(198, 93, 46, 0.4); }
@@ -130,11 +128,6 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 .mk-u-transport { --u-tone: #121212; }
 .mk-u-immobilier { --u-tone: #7A5A43; }
 .mk-u-services { --u-tone: #2F5D62; }
-
-.mk-stats { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px 36px; margin-top: 32px; }
-.mk-stats div { display: grid; text-align: center; }
-.mk-stats strong { font-family: var(--font-heading); font-size: 1.7rem; }
-.mk-stats span { color: var(--gray); font-size: 0.82rem; }
 
 /* ---------- Rayons ---------- */
 .mk-rails { padding: 12px 24px 24px; }
@@ -530,7 +523,6 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
   .mk-search-lg .mk-search-btn span, .mk-search-sm .mk-search-btn span { display: none; }
   .mk-search-lg .mk-search-btn { padding: 0 18px; }
   .mk-search-type { max-width: 82px; font-size: 0.78rem; }
-  .mk-universes { grid-template-columns: 1fr 1fr; gap: 8px; }
   .mk-universe { flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px; }
   .mk-universe-tx small { display: none; }
   .mk-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
@@ -608,3 +600,9 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
   .admin-ai-grid { grid-template-columns: 1fr; }
   .admin-compare { grid-template-columns: 1fr; }
 }
+
+/* ---------- Carte d'univers au survol (en-tête) ---------- */
+.mk-unav-tip { position: fixed; z-index: 1100; display: grid; gap: 4px; padding: 10px 12px; border-radius: 12px; background: var(--white); border: 1px solid var(--border); box-shadow: var(--shadow-md); pointer-events: none; animation: mk-fade 150ms var(--ease); }
+.mk-unav-tip b { font-family: var(--font-heading); font-size: 0.9rem; color: var(--ebony); }
+.mk-unav-tip span { font-size: 0.8rem; color: var(--gray); line-height: 1.4; }
+@media (hover: none) { .mk-unav-tip { display: none; } }
