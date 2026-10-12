@@ -12,7 +12,7 @@ function uid() {
 
 function seed() {
   return {
-    shop: { id: 'demo-shop', name: 'Ma boutique démo', source: 'LOCAL', ownerId: 'demo-merchant' },
+    shop: { id: 'demo-shop', name: 'Mon établissement démo', source: 'LOCAL', ownerId: 'demo-merchant' },
     products: [
       {
         id: uid(), sku: 'DEMO-SAV', name: 'Savon de Marseille (lot de 4)', category: 'maison',
@@ -95,7 +95,7 @@ function agentReply(text) {
   if (/(vente|chiffre|gagn|résum|resum)/.test(s)) return "Aujourd'hui : 2 offres reçues, 1 vente conclue (Samsung Galaxy A14 à 175 000 CDF), livrée et payée. Solde disponible : 188 200 CDF."
   if (/(prix|négoci|negoci|plancher|marge)/.test(s)) return "Fixez un prix affiché et un prix plancher : je ne descends jamais sous le plancher en négociant, et il reste privé. Sur quel produit voulez-vous l'ajuster ?"
   if (/(transport|livr|colis)/.test(s)) return "Je peux trouver un transporteur et organiser la livraison après accord et paiement sous séquestre. Indiquez la destination."
-  if (/(bonjour|salut|hello|aide|aider)/.test(s)) return "Bonjour 👋 Je suis l'assistant Tindisa. Je gère vos produits, négocie avec les acheteurs, et organise paiement et livraison — directement par message. Que voulez-vous faire ?"
+  if (/(bonjour|salut|hello|aide|aider)/.test(s)) return "Bonjour 👋 Je suis l'assistant Tindisa. Je gère vos produits, négocie avec les acheteurs, et organise paiement et livraison, directement par message. Que voulez-vous faire ?"
   return "Bien reçu. Je m'en occupe via vos outils Tindisa (catalogue, négociation, paiement sécurisé, livraison). Donnez-moi un peu plus de détails et je lance l'action."
 }
 

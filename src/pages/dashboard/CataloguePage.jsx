@@ -125,9 +125,9 @@ function curLabel(currency) {
   return c === "USD" ? "$" : "FC";
 }
 function fmtPrice(v, currency) {
-  if (v == null || v === "") return "—";
+  if (v == null || v === "") return "·";
   const n = Number(v);
-  if (Number.isNaN(n)) return "—";
+  if (Number.isNaN(n)) return "·";
   return `${n.toLocaleString("fr-FR")} ${curLabel(currency)}`;
 }
 
@@ -167,7 +167,7 @@ function CertCell({ p, cert, eligible, onView, onRequest }) {
         <FaCertificate /> En attente de paiement
       </span>
     );
-  if (!eligible) return <span className="cat-cert-dash">—</span>;
+  if (!eligible) return <span className="cat-cert-dash">·</span>;
   return (
     <button className="cat-cert-req" onClick={() => onRequest(p)}>
       <FaCertificate /> Certifier
@@ -222,7 +222,7 @@ function ProductTable({
                 <span className="cat-pname">{p.name}</span>
                 {p.sku && <span className="cat-sku">{p.sku}</span>}
               </td>
-              <td>{p.category || "—"}</td>
+              <td>{p.category || "·"}</td>
               <td>{fmtPrice(p.pricing?.displayPrice, p.pricing?.currency)}</td>
               {!readOnly && (
                 <td className="cat-floor">
@@ -417,7 +417,7 @@ function WanzoTab({ t, onViews }) {
           <FaLink />
           {linked ? (
             <span>
-              {t("merchant.status.linked")} —{" "}
+              {t("merchant.status.linked")} ·{" "}
               <Badge tone={verified ? "success" : "warn"}>
                 {verified
                   ? t("merchant.status.verified")
@@ -558,7 +558,7 @@ export default function CataloguePage() {
       if (r?.url && navigator.clipboard) {
         await navigator.clipboard.writeText(r.url);
         notify(
-          "Lien de paiement copié — collez-le dans WhatsApp/SMS",
+          "Lien de paiement copié : collez-le dans WhatsApp/SMS",
           "success",
         );
       } else if (r?.url) {
@@ -657,7 +657,7 @@ export default function CataloguePage() {
             <button
               className="cat-shop-chip"
               onClick={() => navigate("/dashboard/boutique")}
-              title="Gérer ma boutique"
+              title="Gérer mon espace pro"
             >
               <FaStore /> {shop.name} <FaEdit className="cat-shop-edit" />
             </button>
@@ -852,7 +852,7 @@ export default function CataloguePage() {
                     <span>
                       {viewCert.value?.amount != null
                         ? `${Number(viewCert.value.amount).toLocaleString("fr-FR")} ${viewCert.value.currency || ""}`
-                        : "—"}
+                        : "·"}
                     </span>
                   </div>
                   <div>
@@ -862,7 +862,7 @@ export default function CataloguePage() {
                         ? new Date(viewCert.issuedAt).toLocaleDateString(
                             "fr-FR",
                           )
-                        : "—"}
+                        : "·"}
                     </span>
                   </div>
                   <div>
@@ -882,7 +882,7 @@ export default function CataloguePage() {
                   ? "Ancré (mode test)"
                   : viewCert.blockchain?.status === "pending"
                     ? "Empreinte enregistrée (ancrage en attente)"
-                    : "—"}
+                    : "·"}
               {viewCert.blockchain?.anchorHash && (
                 <div className="cat-sku">
                   empreinte {viewCert.blockchain.anchorHash}

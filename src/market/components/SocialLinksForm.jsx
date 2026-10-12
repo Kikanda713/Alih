@@ -3,8 +3,8 @@ import { Field, Input } from '../../components/ui'
 import { SOCIAL_NETWORKS } from '../lib/socials'
 
 /**
- * Saisie des réseaux sociaux d'une boutique (onboarding et page « Ma boutique »).
- * Pseudo (« @maboutique ») ou lien acceptés ; le serveur valide et normalise.
+ * Saisie des réseaux sociaux d'un établissement (onboarding et page « Mon espace pro »).
+ * Pseudo (« @monentreprise ») ou lien acceptés ; le serveur valide et normalise.
  * `onSave(values)` doit renvoyer une promesse (erreur affichée sous le formulaire).
  */
 export default function SocialLinksForm({ initial = {}, onSave, saveLabel = 'Enregistrer', secondary }) {

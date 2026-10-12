@@ -8,7 +8,7 @@ import {
 import { WifiBadge } from '../components/WifiStatus'
 import { Button, Spinner, EmptyState, Badge } from '../../components/ui'
 import { useToast } from '../../components/useToast'
-import { useTaxonomy, attributesFor } from '../../api/taxonomy'
+import { useTaxonomy, attributesFor, businessNoun } from '../../api/taxonomy'
 import { marketApi } from '../lib/api'
 import {
   formatPrice, unitSuffix, imageUrl, conditionLabel, categoryLabel, subcategoryLabel, cityLabel, shopTypeLabel,
@@ -174,7 +174,7 @@ function ListingPage({ id }) {
             <li><FaShieldAlt /> <span><b>Paiement protégé</b> : le vendeur n’est payé qu’après votre confirmation.</span></li>
             <li><FaMoneyBillWave /> <span>Cash ou Mobile Money (M-Pesa, Airtel, Orange).</span></li>
             {item.type !== 'service'
-              ? <li><FaTruck /> <span>Livraison par nos livreurs ou retrait en boutique, au choix.</span></li>
+              ? <li><FaTruck /> <span>Livraison par nos livreurs ou retrait sur place, au choix.</span></li>
               : <li><FaCheckCircle /> <span>Disponibilité confirmée par l’assistant avant tout paiement.</span></li>}
             {item.certificateSerial && (
               <li><FaCertificate /> <span><b>Certificat d’authentification</b> vérifiable (ancré sur la blockchain). <CertificateLine item={item} large /></span></li>
@@ -205,7 +205,7 @@ function ListingPage({ id }) {
             <span className="mk-shop-logo">{shop.logoUrl ? <img src={imageUrl(shop.logoUrl, 120)} alt="" /> : <FaStore />}</span>
             <div>
               <strong>{shop.isP2P ? 'Vente entre particuliers' : shop.name}</strong>
-              <span className="mk-muted">{shop.isP2P ? 'Annonce modérée par Tindisa' : shopTypeLabel(taxonomy, shop.shopType) || 'Boutique'}</span>
+              <span className="mk-muted">{shop.isP2P ? 'Annonce modérée par Tindisa' : shopTypeLabel(taxonomy, shop.shopType) || 'Établissement'}</span>
             </div>
           </div>
           {shop.verified && <p className="mk-ok"><FaCheckCircle /> Vendeur vérifié</p>}
@@ -216,7 +216,7 @@ function ListingPage({ id }) {
             <FaMapMarkerAlt /> {[shop.quartier, shop.commune, cityLabel(taxonomy, shop.city)].filter(Boolean).join(', ') || 'Localisation communiquée par l’assistant'}
             {shop.landmark ? <><br />Repère : {shop.landmark}</> : null}
           </p>
-          {!shop.isP2P && shop.id && <Link to={`/boutique/${shop.id}`} className="ui-btn ui-btn-secondary mk-btn-block">Voir la boutique</Link>}
+          {!shop.isP2P && shop.id && <Link to={`/boutique/${shop.id}`} className="ui-btn ui-btn-secondary mk-btn-block">Voir {businessNoun(taxonomy, shop.shopType, shop.noun).the}</Link>}
           <p className="mk-hint">Les coordonnées du vendeur et l’itinéraire sont transmis par l’assistant, au moment de conclure.</p>
         </aside>
       </div>

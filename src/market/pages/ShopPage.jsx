@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { FaStore, FaMapMarkerAlt, FaCheckCircle, FaWhatsapp, FaSearch, FaWifi } from 'react-icons/fa'
 import { WifiBadge } from '../components/WifiStatus'
 import { Button, Spinner, EmptyState } from '../../components/ui'
-import { useTaxonomy } from '../../api/taxonomy'
+import { useTaxonomy, businessNoun } from '../../api/taxonomy'
 import { marketApi } from '../lib/api'
 import { useListings } from '../lib/useListings'
 import { imageUrl, cityLabel, shopTypeLabel } from '../lib/format'
@@ -11,6 +11,7 @@ import { whatsappLink } from '../lib/chat'
 import { ListingGrid } from '../components/ListingCard'
 import BookingModal from '../components/BookingModal'
 import ShopSocials from '../components/ShopSocials'
+import { ProFacts, ProWorks } from '../components/ProShowcase'
 
 function ShopPage({ id }) {
   const navigate = useNavigate()
@@ -33,18 +34,22 @@ function ShopPage({ id }) {
   const s = shop.data
   useEffect(() => { if (s) document.title = `${s.name} · Marché Tindisa` }, [s])
 
-  if (shop.loading) return <div className="mk-container mk-page-pad"><Spinner label="Chargement de la boutique…" /></div>
+  if (shop.loading) return <div className="mk-container mk-page-pad"><Spinner label="Chargement…" /></div>
   if (!s) {
     return (
       <div className="mk-container mk-page-pad">
-        <EmptyState icon={<FaStore />} title="Boutique introuvable" text="Elle n’est plus active sur Tindisa."
+        <EmptyState icon={<FaStore />} title="Établissement introuvable" text="Il n’est plus actif sur Tindisa."
           action={<Button onClick={() => navigate('/marche')}>Retour au marché</Button>} />
       </div>
     )
   }
 
   const place = [s.quartier, s.commune, cityLabel(taxonomy, s.city)].filter(Boolean).join(', ')
-  const ask = `Bonjour Tindisa, je souhaite commander auprès de la boutique « ${s.name} »${s.city ? ` (${cityLabel(taxonomy, s.city)})` : ''}. Que proposent-ils ?`
+  const noun = businessNoun(taxonomy, s.shopType, s.noun)
+  const pro = s.pro || null
+  const ask = pro
+    ? `Bonjour Tindisa, je souhaite faire appel à « ${s.name} »${s.city ? ` (${cityLabel(taxonomy, s.city)})` : ''}. Est-il disponible ?`
+    : `Bonjour Tindisa, je souhaite commander auprès de « ${s.name} »${s.city ? ` (${cityLabel(taxonomy, s.city)})` : ''}. Que proposent-ils ?`
 
   return (
     <div className="mk-container mk-shop">
@@ -53,7 +58,7 @@ function ShopPage({ id }) {
         <div className="mk-shop-hero-info">
           <h1>{s.name}</h1>
           <p className="mk-muted">
-            {shopTypeLabel(taxonomy, s.shopType) || 'Boutique'}
+            {shopTypeLabel(taxonomy, s.shopType) || noun.noun.charAt(0).toUpperCase() + noun.noun.slice(1)}
             {place && <> · <FaMapMarkerAlt /> {place}</>}
           </p>
           {s.landmark && <p className="mk-muted">Repère : {s.landmark}</p>}
@@ -62,12 +67,14 @@ function ShopPage({ id }) {
             <p><Link to={`/centres/${s.hub.id}`} className="mk-hub-link"><FaWifi /> {s.hub.name}</Link> <WifiBadge status={s.hub.wifiStatus} compact /></p>
           )}
           {s.description && <p className="mk-shop-desc">{s.description}</p>}
+          {pro && <ProFacts pro={pro} />}
         </div>
         <a className="platform-btn whatsapp" href={whatsappLink(ask)} target="_blank" rel="noopener noreferrer">
-          <FaWhatsapp className="platform-icon" /> <span>Commander via l’assistant</span>
+          <FaWhatsapp className="platform-icon" /> <span>{pro ? 'Contacter via l’assistant' : 'Commander via l’assistant'}</span>
         </a>
       </header>
 
+      {pro && <ProWorks pro={pro} name={s.name} />}
       <ShopSocials socials={s.socials} shopName={s.name} />
 
       <div className="mk-shop-tools">
@@ -77,13 +84,13 @@ function ShopPage({ id }) {
           ))}
         </div>
         <form className="mk-shop-search" onSubmit={(e) => { e.preventDefault(); setQuery(q.trim()) }}>
-          <input className="ui-input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Chercher dans cette boutique" />
+          <input className="ui-input" value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Chercher chez ${s.name}`} />
           <button type="submit" className="ui-btn ui-btn-primary ui-btn-sm" aria-label="Rechercher"><FaSearch /></button>
         </form>
       </div>
 
       {!listings.loading && listings.items.length === 0 ? (
-        <EmptyState icon={<FaStore />} title="Aucune annonce" text={query ? 'Rien ne correspond à cette recherche dans la boutique.' : 'Cette boutique n’a pas encore d’annonce en ligne.'} />
+        <EmptyState icon={<FaStore />} title="Aucune annonce" text={query ? 'Rien ne correspond à cette recherche.' : pro ? 'Pas encore de prestation en ligne : demandez un devis via l’assistant.' : `${noun.This} n’a pas encore d’annonce en ligne.`} />
       ) : (
         <>
           <ListingGrid items={listings.items} loading={listings.loading} onBook={setBooking} />

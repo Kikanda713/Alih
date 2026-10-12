@@ -1,18 +1,22 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
-import { FaImage, FaSpinner, FaTrash, FaChevronDown, FaMapMarkerAlt, FaLocationArrow, FaPlus } from 'react-icons/fa'
+import { Link } from 'react-router-dom'
+import { FaImage, FaSpinner, FaTrash, FaChevronDown, FaMapMarkerAlt, FaLocationArrow, FaPlus, FaAward, FaArrowRight } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useLoad } from '../../api/useLoad'
 import { uploadImage, isCloudinaryConfigured } from '../../api/cloudinary'
-import { useTaxonomy } from '../../api/taxonomy'
+import { useTaxonomy, businessNoun, isIndividualType, proLimits } from '../../api/taxonomy'
 import { Card, Field, Input, Textarea, Select, Button, Spinner } from '../../components/ui.jsx'
 import { useToast } from '../../components/useToast'
 import SocialLinksForm from '../../market/components/SocialLinksForm'
+import { ShopTypeSelect, TradesPicker, ZonesInput, PhotosEditor, VideosEditor } from '../../market/components/ProFields'
+import { normalizePro, validatePro, missingLabels } from '../../market/lib/pro'
 
 const NO_LANDMARKS = []
 const LocationPicker = lazy(() => import('../../components/LocationPicker.jsx'))
 
-// Profil de la boutique : identité, localisation (formel GPS + informel repère/adresse
-// locale → même gazetteer que le back-office) et identifiants officiels OPTIONNELS.
+// Profil de l'établissement (libellés selon le type : « Mon garage », « Mon profil pro »…) :
+// identité, localisation (formel GPS + informel repère/adresse locale → même gazetteer
+// que le back-office) et identifiants officiels OPTIONNELS. Technicien : carte « Profil pro ».
 export default function BoutiquePage() {
   const api = useTindisaApi()
   const taxonomy = useTaxonomy()
@@ -122,7 +126,7 @@ export default function BoutiquePage() {
     setSaving(true); setMsg('')
     try {
       await api.put('/v1/merchant/shop', form)
-      setMsg('Boutique enregistrée.'); setMsgOk(true)
+      setMsg('Informations enregistrées.'); setMsgOk(true)
     } catch (e2) { setMsg(e2?.message || 'Erreur. Réessayez.'); setMsgOk(false) }
     finally { setSaving(false) }
   }
@@ -130,19 +134,21 @@ export default function BoutiquePage() {
   if (loading || !form) return <div className="dash-loading"><Spinner label="Chargement…" /></div>
 
   const cityOptions = (taxonomy?.cities || []).map((c) => ({ id: c.id, label: c.name }))
-  const lmOptions = landmarks.map((l) => ({ id: l.id, label: l.commune ? `${l.name} — ${l.commune}` : l.name }))
+  const lmOptions = landmarks.map((l) => ({ id: l.id, label: l.commune ? `${l.name}, ${l.commune}` : l.name }))
+  const noun = businessNoun(taxonomy, form.shopType)
+  const isPro = isIndividualType(taxonomy, form.shopType)
   const hasPos = Number.isFinite(form.gpsLat) && Number.isFinite(form.gpsLng)
   // Centre la carte sur un repère de la ville si pas encore de position.
   const mapCenter = landmarks.length ? [landmarks[0].gpsLat, landmarks[0].gpsLng] : undefined
 
   return (
     <div className="dash-page">
-      <h1 className="dash-title">Ma boutique</h1>
-      <p className="dash-subtitle">Ces informations rassurent les acheteurs et aident à vous trouver près de chez eux.</p>
+      <h1 className="dash-title">{noun.My}</h1>
+      <p className="dash-subtitle">Ces informations rassurent les clients et aident à vous trouver près de chez eux.</p>
       {shopId && (
         <p className="dash-subtitle">
-          Votre vitrine publique sur le marché Tindisa :{' '}
-          <a href={`/boutique/${shopId}`} target="_blank" rel="noopener noreferrer">voir ma vitrine</a>
+          {isPro ? 'Votre profil public' : 'Votre vitrine publique'} sur le marché Tindisa :{' '}
+          <a href={`/boutique/${shopId}`} target="_blank" rel="noopener noreferrer">{isPro ? 'voir mon profil' : 'voir ma vitrine'}</a>
           {' '}(votre téléphone et vos pièces légales n’y sont jamais affichés).
         </p>
       )}
@@ -163,16 +169,16 @@ export default function BoutiquePage() {
             </div>
           </div>
 
-          <Field label="Nom de la boutique">
-            <Input value={form.name} onChange={set('name')} placeholder="Ex : Maison Kivu Cosmétiques" />
+          <Field label={isPro ? 'Nom affiché ou nom de marque' : `Nom de ${noun.your}`}>
+            <Input value={form.name} onChange={set('name')} placeholder={isPro ? 'Ex : Jean Plomberie' : 'Ex : Maison Kivu Cosmétiques'} />
           </Field>
 
           <div className="form-row">
-            <Field label="Type d'établissement">
-              <Select value={form.shopType} onChange={set('shopType')} options={taxonomy?.shopTypes || []} placeholder="— choisir —" />
+            <Field label="Type d’activité">
+              <ShopTypeSelect taxonomy={taxonomy} value={form.shopType} onChange={set('shopType')} />
             </Field>
             <Field label="Ville">
-              <Select value={form.city} onChange={setCity} options={cityOptions} placeholder="— choisir —" />
+              <Select value={form.city} onChange={setCity} options={cityOptions} placeholder="Choisir…" />
             </Field>
           </div>
 
@@ -185,7 +191,7 @@ export default function BoutiquePage() {
               <Input value={form.phone} onChange={set('phone')} placeholder="+243…" />
             </Field>
             <Field label="Email (contact)">
-              <Input type="email" value={form.email} onChange={set('email')} placeholder="boutique@exemple.cd" />
+              <Input type="email" value={form.email} onChange={set('email')} placeholder="contact@exemple.cd" />
             </Field>
           </div>
 
@@ -200,16 +206,16 @@ export default function BoutiquePage() {
             <Input value={form.address} onChange={set('address')} />
           </Field>
 
-          <Field label="Repère local" hint="Choisissez un lieu connu proche de votre boutique">
+          <Field label="Repère local" hint={isPro ? 'Choisissez un lieu connu proche de chez vous' : `Choisissez un lieu connu proche de ${noun.your}`}>
             <Select value={form.landmarkId} onChange={pickLandmark} options={lmOptions}
-              placeholder={form.city ? (lmOptions.length ? '— choisir un repère —' : 'Aucun repère dans cette ville') : 'Choisissez d\'abord la ville'}
+              placeholder={form.city ? (lmOptions.length ? 'Choisir un repère' : 'Aucun repère dans cette ville') : 'Choisissez d\'abord la ville'}
               disabled={!lmOptions.length} />
           </Field>
 
-          {/* Carte : pointer la boutique (précision) */}
+          {/* Carte : pointer l'établissement (précision) */}
           <div className="shop-map-field">
             <div className="shop-map-head">
-              <span><FaMapMarkerAlt /> Pointez votre boutique sur la carte</span>
+              <span><FaMapMarkerAlt /> {isPro ? 'Pointez votre atelier sur la carte (facultatif)' : `Pointez ${noun.your} sur la carte`}</span>
               <div className="shop-map-actions">
                 <Button type="button" variant="ghost" size="sm" onClick={geolocate}><FaLocationArrow /> Ma position</Button>
                 {hasPos && <button type="button" className="cat-icon-btn danger" title="Effacer la position" onClick={() => setForm((f) => ({ ...f, gpsLat: null, gpsLng: null }))}><FaTrash /></button>}
@@ -258,12 +264,92 @@ export default function BoutiquePage() {
           </div>
         </form>
       </Card>
+      {shopId && isPro && <ProProfileCard />}
       {shopId && <SocialsCard />}
     </div>
   )
 }
 
-// Réseaux sociaux de la boutique : liens et fil de publications sur la vitrine publique.
+// Profil pro (technicien / artisan) : métiers, zones, expérience, disponibilité,
+// réalisations. GET/PUT /v1/merchant/shop/pro (mêmes contrôles qu'à l'onboarding).
+function ProProfileCard() {
+  const api = useTindisaApi()
+  const taxonomy = useTaxonomy()
+  const limits = proLimits(taxonomy)
+  const { notify } = useToast()
+  const q = useLoad(() => api.get('/v1/merchant/shop/pro').catch(() => null), [])
+  const [pro, setPro] = useState(null)
+  const [exp, setExp] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  if (pro === null && !q.loading) {
+    const p = normalizePro(q.data)
+    setPro(p)
+    setExp(p.experienceYears ?? '')
+  }
+  if (!pro) return <Card><Spinner /></Card>
+  const setP = (k) => (v) => setPro((p) => ({ ...p, [k]: v }))
+  const missing = missingLabels(q.data?.missing || [])
+
+  const save = async () => {
+    const s = String(exp).trim()
+    const next = { ...pro, experienceYears: s === '' ? null : Number(s) }
+    const err = validatePro(next, limits)
+    if (err) return setError(err)
+    setSaving(true); setError('')
+    try {
+      const saved = await api.put('/v1/merchant/shop/pro', next)
+      if (saved) q.setData(saved)
+      notify('Profil pro enregistré', 'success')
+    } catch (e) { setError(e?.message || 'Enregistrement impossible') }
+    finally { setSaving(false) }
+  }
+
+  return (
+    <Card className="shop-socials-card">
+      <h2 className="dash-title" style={{ fontSize: '1.1rem' }}>Profil pro</h2>
+      <p className="dash-subtitle">Vos métiers, vos zones et vos réalisations : c’est ce que les clients regardent avant de vous appeler.</p>
+      {q.data && !q.data.complete && missing.length > 0 && (
+        <p className="pro-missing">Profil incomplet : il manque {missing.join(', ')}.</p>
+      )}
+      <div className="product-form">
+        <label className="pro-switch">
+          <input type="checkbox" checked={pro.available} onChange={(e) => setP('available')(e.target.checked)} />
+          {pro.available ? 'Disponible pour de nouveaux travaux' : 'Indisponible pour le moment'}
+        </label>
+        <Field label={`Métiers (${limits.maxTrades} maximum)`}>
+          <TradesPicker taxonomy={taxonomy} value={pro.trades} onChange={setP('trades')} max={limits.maxTrades} />
+        </Field>
+        <Field label="Communes et quartiers couverts">
+          <ZonesInput value={pro.zones} onChange={setP('zones')} max={limits.maxZones} />
+        </Field>
+        <Field label="Années d’expérience (facultatif)">
+          <Input type="number" inputMode="numeric" min={0} max={70} value={exp} onChange={(e) => setExp(e.target.value)} style={{ maxWidth: 140 }} />
+        </Field>
+        <Field label={`Photos de réalisations (${limits.minPhotos} à ${limits.maxPhotos})`}>
+          <PhotosEditor value={pro.photos} onChange={setP('photos')} min={limits.minPhotos} max={limits.maxPhotos} />
+        </Field>
+        <Field label={`Vidéos de démonstration (facultatif, ${limits.maxVideos} maximum)`} hint="Liens de vidéos TikTok ou YouTube">
+          <VideosEditor value={pro.videos} onChange={setP('videos')} max={limits.maxVideos} />
+        </Field>
+        {error && <p className="form-error">{error}</p>}
+        <div className="ui-modal-foot">
+          <Button type="button" onClick={save} disabled={saving}>{saving ? 'Enregistrement…' : 'Enregistrer le profil pro'}</Button>
+        </div>
+      </div>
+      <Link to="/dashboard/certificat-pro" className="pro-cert-link">
+        <FaAward />
+        <span>
+          <b>Certificat d’aptitude professionnelle</b>
+          <small>Faites reconnaître votre savoir-faire : un badge certifié s’affiche sur votre profil.</small>
+        </span>
+        <FaArrowRight />
+      </Link>
+    </Card>
+  )
+}
+
+// Réseaux sociaux de l'établissement : liens et fil de publications sur la vitrine publique.
 function SocialsCard() {
   const api = useTindisaApi()
   const { notify } = useToast()

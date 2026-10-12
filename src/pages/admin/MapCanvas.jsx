@@ -27,7 +27,7 @@ export default function MapCanvas({ center, zoom, layers, shops = [], drivers = 
 
       {layers.shops && shops.filter(hasCoords).map((s) => (
         <Marker key={`s${s.id}`} position={[s.gpsLat, s.gpsLng]} icon={ICONS.shop}>
-          <Popup><strong>{s.name}</strong><br />Boutique{s.city ? ` · ${s.city}` : ''}</Popup>
+          <Popup><strong>{s.name}</strong><br />Établissement{s.city ? ` · ${s.city}` : ''}</Popup>
         </Marker>
       ))}
 

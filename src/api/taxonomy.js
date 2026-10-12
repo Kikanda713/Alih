@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { apiBaseUrl } from '../auth/config'
 
 // Taxonomie marketplace (catégories/sous-catégories/attributs, conditions, villes
-// RDC, types de boutique…) servie par le backend : GET /v1/catalog/taxonomy.
+// RDC, types d'activité…) servie par le backend : GET /v1/catalog/taxonomy.
 // SOURCE UNIQUE partagée avec l'agent — on ne duplique pas les constantes côté front.
 // Mise en cache mémoire (chargée une fois par session).
 
@@ -70,6 +70,74 @@ export function unitsFor(taxonomy, categoryId, isService) {
   return [...preferred, ...global.filter((u) => !prefIds.has(u.id))]
 }
 
+// ---------- Type d'activité : nom à employer à la place de « boutique » ----------
+// Miroir des règles backend : le libellé suit le type (« mon garage », « votre
+// agence », « mon profil pro »…), « établissement » quand le type est inconnu.
+
+const VOWEL_START = /^[aeiouyhàâäéèêëîïôöùûü]/i
+const capFirst = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
+
+export function findShopType(taxonomy, shopType) {
+  if (!shopType) return null
+  return (taxonomy?.shopTypes || []).find((s) => s.id === shopType) || null
+}
+
+/** Activité exercée seul (technicien, artisan) : profil pro plutôt qu'établissement. */
+export function isIndividualType(taxonomy, shopType) {
+  if (!shopType) return false
+  const t = findShopType(taxonomy, shopType)
+  return t ? !!t.individual : shopType === 'technicien'
+}
+
+/**
+ * Formes du nom de l'activité : { noun, my, your, the, this, My, Your, The, This }.
+ * `fallbackNoun` (ex. champ `noun` renvoyé par l'API publique) sert si le type
+ * n'est pas (encore) dans la taxonomie.
+ */
+export function businessNoun(taxonomy, shopType, fallbackNoun) {
+  const t = findShopType(taxonomy, shopType)
+  const noun = t?.noun || fallbackNoun || 'établissement'
+  const fem = t?.noun ? t.gender === 'f' : false
+  const vowel = VOWEL_START.test(noun)
+  const my = `${fem && !vowel ? 'ma' : 'mon'} ${noun}`
+  const your = `votre ${noun}`
+  const the = vowel ? `l’${noun}` : `${fem ? 'la' : 'le'} ${noun}`
+  const thisOne = `${fem ? 'cette' : vowel ? 'cet' : 'ce'} ${noun}`
+  return {
+    noun, my, your, the, this: thisOne,
+    My: capFirst(my), Your: capFirst(your), The: capFirst(the), This: capFirst(thisOne),
+  }
+}
+
+// Noms provisoires donnés par l'assistant à la création automatique : comptent comme « pas de nom ».
+const PLACEHOLDER_NAMES = ['ma boutique', 'mon établissement', 'mon profil pro']
+export function isPlaceholderShopName(name) {
+  return !name || PLACEHOLDER_NAMES.includes(String(name).trim().toLowerCase())
+}
+
+export function tradeLabel(taxonomy, id) {
+  if (!id) return null
+  return (taxonomy?.trades || []).find((t) => t.id === id)?.label || id
+}
+
+/** Types d'activité groupés par famille (pour un <select> avec <optgroup>). */
+export function shopTypeGroups(taxonomy, { exclude } = {}) {
+  const types = (taxonomy?.shopTypes || []).filter((t) => !exclude || !exclude(t))
+  const families = taxonomy?.shopTypeFamilies || []
+  const groups = families
+    .map((f) => ({ id: f.id, label: f.label, options: types.filter((t) => t.family === f.id) }))
+    .filter((g) => g.options.length)
+  const known = new Set(families.map((f) => f.id))
+  const rest = types.filter((t) => !known.has(t.family))
+  if (rest.length) groups.push({ id: '_other', label: groups.length ? 'Autres' : '', options: rest })
+  return groups
+}
+
+export const PRO_PORTFOLIO_DEFAULTS = { minPhotos: 2, maxPhotos: 6, maxVideos: 3, maxTrades: 3, maxZones: 10 }
+export function proLimits(taxonomy) {
+  return { ...PRO_PORTFOLIO_DEFAULTS, ...(taxonomy?.proPortfolio || {}) }
+}
+
 const EMPTY_TAXONOMY = {
   itemTypes: [
     { id: 'product', label: 'Produit' },
@@ -100,6 +168,9 @@ const EMPTY_TAXONOMY = {
     { id: 'lot', label: 'au lot (ensemble)' },
   ],
   shopTypes: [],
+  shopTypeFamilies: [],
+  trades: [],
+  proPortfolio: PRO_PORTFOLIO_DEFAULTS,
   cities: [],
   provinces: [],
   maxImages: 4,

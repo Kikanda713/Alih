@@ -39,7 +39,7 @@ export function MeshMini({ nodes = 0, live = false, shops = 0 }) {
       <rect x="138" y="98" width="44" height="44" rx="12" className="mesh-hub" />
       <path d="M149 125 a 14 8 -25 0 1 22 -12" className="mesh-dish" />
       <text x="160" y="232" className="mesh-zone-sub" textAnchor="middle">
-        {nodes || 0} nœud{nodes > 1 ? 's' : ''} · {shops} boutique{shops > 1 ? 's' : ''}
+        {nodes || 0} nœud{nodes > 1 ? 's' : ''} · {shops} établissement{shops > 1 ? 's' : ''}
       </text>
     </svg>
   )

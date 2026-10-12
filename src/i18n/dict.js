@@ -57,7 +57,7 @@ export const dict = {
 
     // Accueil conversationnel (canal interne)
     'chat.greeting': 'Bonjour 👋',
-    'chat.greetingSub': 'Demandez à votre assistant Tindisa de chercher, négocier, vendre ou livrer — directement ici.',
+    'chat.greetingSub': 'Demandez à votre assistant Tindisa de chercher, négocier, vendre ou livrer, directement ici.',
     'chat.placeholder': 'Écrivez votre message…',
     'chat.send': 'Envoyer',
     'chat.attach': 'Joindre un fichier',
@@ -80,7 +80,7 @@ export const dict = {
     // Mode démo (à retirer en production)
     'demo.login': 'Essayer en démo',
     'demo.exit': 'Quitter la démo',
-    'demo.banner': 'Mode démonstration — données fictives, aucune connexion réelle.',
+    'demo.banner': 'Mode démonstration : données fictives, aucune connexion réelle.',
 
     // Dashboard — navigation & layout
     'dash.nav.home': 'Accueil',
@@ -134,7 +134,7 @@ export const dict = {
     'form.edit.title': 'Modifier le produit',
     'form.name': 'Nom du produit',
     'form.sku': 'Référence (SKU)',
-    'form.skuHint': 'Optionnel — générée automatiquement si vide',
+    'form.skuHint': 'Optionnel, générée automatiquement si vide',
     'form.category': 'Catégorie',
     'form.description': 'Description',
     'form.displayPrice': 'Prix affiché (CDF)',
@@ -147,7 +147,7 @@ export const dict = {
     'form.nameRequired': 'Le nom est obligatoire.',
 
     // Catalogue Wanzo (lecture seule)
-    'cat.wanzo.readonly': 'Lecture seule — ces produits sont gérés dans Wanzo. Synchronisez pour mettre à jour.',
+    'cat.wanzo.readonly': 'Lecture seule : ces produits sont gérés dans Wanzo. Synchronisez pour mettre à jour.',
     'cat.wanzo.notLinked': "Vous n'avez pas encore relié de compte Wanzo.",
     'cat.wanzo.empty': 'Aucun produit Wanzo synchronisé. Cliquez sur « Publier mon catalogue ».',
 
@@ -159,15 +159,15 @@ export const dict = {
     'form.invalidNumber': 'Les montants doivent être des nombres positifs.',
     'form.floorTooHigh': 'Le prix plancher ne peut pas dépasser le prix affiché.',
 
-    // Boutique
-    'shop.rename': 'Renommer ma boutique',
-    'shop.name': 'Nom de la boutique',
+    // Établissement (boutique, agence, garage, profil pro…)
+    'shop.rename': 'Renommer mon établissement',
+    'shop.name': 'Nom affiché',
 
     // Toasts
     'toast.created': 'Produit ajouté.',
     'toast.updated': 'Produit mis à jour.',
     'toast.deleted': 'Produit supprimé.',
-    'toast.shopRenamed': 'Boutique renommée.',
+    'toast.shopRenamed': 'Nom mis à jour.',
 
     // Ventes / négociations reçues
     'sales.title': 'Mes ventes',

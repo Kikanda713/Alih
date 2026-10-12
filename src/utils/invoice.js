@@ -108,7 +108,7 @@ export async function downloadInvoice(data) {
   doc.text('Montant HT', W - M - 12, y + 17, { align: 'right' })
   y += 26
   doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(...DARK)
-  doc.text(`Abonnement Tindisa — Plan ${data.planName}`, M + 12, y + 18)
+  doc.text(`Abonnement Tindisa · Plan ${data.planName}`, M + 12, y + 18)
   doc.text(money(ht), W - M - 220, y + 18, { align: 'right' })
   doc.text('1', W - M - 120, y + 18, { align: 'right' })
   doc.text(money(ht), W - M - 12, y + 18, { align: 'right' })
@@ -135,11 +135,11 @@ export async function downloadInvoice(data) {
   y += 34
   doc.setFillColor(248, 249, 251); doc.rect(M, y, W - 2 * M, 54, 'F')
   doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(...DARK)
-  doc.text(`Méthode de paiement : ${data.method || '—'}`, M + 14, y + 22)
+  doc.text(`Méthode de paiement : ${data.method || '·'}`, M + 14, y + 22)
   doc.text('Statut : ', M + 14, y + 40)
   const paid = /pa(id|yé)|active|confirm/i.test(String(data.status || ''))
   doc.setFont('helvetica', 'bold'); doc.setTextColor(...(paid ? [26, 158, 84] : GRAY))
-  doc.text(paid ? 'Payé' : String(data.status || '—'), M + 58, y + 40)
+  doc.text(paid ? 'Payé' : String(data.status || '·'), M + 58, y + 40)
 
   // Adresse
   y += 84

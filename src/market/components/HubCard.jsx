@@ -21,7 +21,7 @@ export default function HubCard({ hub }) {
         <p className="mk-muted">{hubTypeLabel(hub.hubType)}</p>
         <p className="mk-hub-meta">
           <span><FaMapMarkerAlt /> {[hub.commune, cityLabel(taxonomy, hub.city)].filter(Boolean).join(', ') || 'RDC'}</span>
-          <span><FaStore /> {hub.shopCount ?? 0} boutique{hub.shopCount > 1 ? 's' : ''}</span>
+          <span><FaStore /> {hub.shopCount ?? 0} établissement{hub.shopCount > 1 ? 's' : ''}</span>
           {hub.meshNodes > 0 && <span><FaBroadcastTower /> {hub.meshNodes} nœud{hub.meshNodes > 1 ? 's' : ''}</span>}
         </p>
       </div>

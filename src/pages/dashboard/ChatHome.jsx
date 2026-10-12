@@ -13,7 +13,7 @@ import ShopCompletionNudge from '../../components/ShopCompletionNudge.jsx'
 
 function money(v, c = 'CDF') {
   const n = Number(v)
-  return Number.isNaN(n) ? '—' : `${n.toLocaleString('fr-FR')} ${c}`
+  return Number.isNaN(n) ? '·' : `${n.toLocaleString('fr-FR')} ${c}`
 }
 
 /* ---------------- Bloc statistiques flottant (réductible / fermable) ---------------- */

@@ -67,7 +67,7 @@ export default function AdminMap() {
   return (
     <div className="dash-page admin-map-page">
       <header className="dash-page-head cat-head">
-        <div><h1 className="dash-h1">Carte</h1><p className="dash-sub">Boutiques, livreurs et repères locaux. Le repérage GPS + adresse locale guide les livraisons.</p></div>
+        <div><h1 className="dash-h1">Carte</h1><p className="dash-sub">Établissements, livreurs et repères locaux. Le repérage GPS + adresse locale guide les livraisons.</p></div>
         <Button variant={addMode ? 'primary' : 'ghost'} onClick={() => setAddMode((v) => !v)}>
           {addMode ? <><FaCrosshairs /> Cliquez sur la carte…</> : <><FaPlus /> Ajouter un repère</>}
         </Button>
@@ -88,7 +88,7 @@ export default function AdminMap() {
 
           {/* Widget discret : couches + légende */}
           <div className="map-widget">
-            <label className="map-layer"><input type="checkbox" checked={layers.shops} onChange={(e) => setLayers((l) => ({ ...l, shops: e.target.checked }))} /><span className="map-dot" style={{ background: '#2563eb' }} /><FaStore /> Boutiques <em>{geolocated.shops}</em></label>
+            <label className="map-layer"><input type="checkbox" checked={layers.shops} onChange={(e) => setLayers((l) => ({ ...l, shops: e.target.checked }))} /><span className="map-dot" style={{ background: '#2563eb' }} /><FaStore /> Établissements <em>{geolocated.shops}</em></label>
             <label className="map-layer"><input type="checkbox" checked={layers.drivers} onChange={(e) => setLayers((l) => ({ ...l, drivers: e.target.checked }))} /><span className="map-dot" style={{ background: '#16a34a' }} /><FaMotorcycle /> Livreurs <em>{geolocated.drivers}</em></label>
             <label className="map-layer"><input type="checkbox" checked={layers.landmarks} onChange={(e) => setLayers((l) => ({ ...l, landmarks: e.target.checked }))} /><span className="map-dot" style={{ background: '#ea580c' }} /><FaMapMarkerAlt /> Repères <em>{data.landmarks.length}</em></label>
           </div>

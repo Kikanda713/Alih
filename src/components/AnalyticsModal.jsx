@@ -65,7 +65,7 @@ export default function AnalyticsModal({ open, product, onClose }) {
   )
 
   return (
-    <Modal open={open} title={`Analytics — ${product?.name || ''}`} onClose={onClose}>
+    <Modal open={open} title={`Analytics · ${product?.name || ''}`} onClose={onClose}>
       <div className="an-periods">
         {PERIODS.map((p) => (
           <button key={p.d} className={`an-period${days === p.d ? ' active' : ''}`} onClick={() => setDays(p.d)}>

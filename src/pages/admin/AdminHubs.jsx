@@ -148,7 +148,7 @@ function HubShops({ hubId, onClose, onChanged }) {
   }
 
   return (
-    <Modal open title={hub ? `Boutiques · ${hub.name}` : 'Boutiques'} onClose={onClose}>
+    <Modal open title={hub ? `Établissements · ${hub.name}` : 'Établissements'} onClose={onClose}>
       {!hub ? <Spinner /> : (
         <div className="admin-hub-shops">
           {hub.shops?.length ? (
@@ -157,24 +157,24 @@ function HubShops({ hubId, onClose, onChanged }) {
                 <li key={s.id}>
                   <span><b>{s.name}</b><small>{[s.commune, cap(s.city)].filter(Boolean).join(', ')}</small></span>
                   <button className="cat-icon-btn danger" title="Détacher" disabled={busy}
-                    onClick={() => act(() => api.del(`/v1/admin/hubs/${hubId}/shops/${s.id}`), 'Boutique détachée')}><FaTimes /></button>
+                    onClick={() => act(() => api.del(`/v1/admin/hubs/${hubId}/shops/${s.id}`), 'Établissement détaché')}><FaTimes /></button>
                 </li>
               ))}
             </ul>
-          ) : <p className="dash-sub">Aucune boutique rattachée pour l’instant.</p>}
+          ) : <p className="dash-sub">Aucun établissement rattaché pour l’instant.</p>}
 
-          <h4 className="admin-hub-h">Rattacher une boutique{hubCity ? ` (${cap(hubCity)})` : ''}</h4>
+          <h4 className="admin-hub-h">Rattacher un établissement{hubCity ? ` (${cap(hubCity)})` : ''}</h4>
           <form className="admin-mk-search" onSubmit={(e) => { e.preventDefault(); setQuery(q.trim()) }}>
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Nom de la boutique${hub.city ? ` (${cap(hub.city)})` : ''}`} />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={`Nom de l’établissement${hub.city ? ` (${cap(hub.city)})` : ''}`} />
             <button type="submit" className="cat-icon-btn" aria-label="Rechercher"><FaSearch /></button>
           </form>
-          {candQ.loading ? <Spinner /> : !candidates.length && <p className="dash-sub">{query ? 'Aucune boutique ne correspond.' : 'Toutes les boutiques de la ville sont déjà rattachées.'}</p>}
+          {candQ.loading ? <Spinner /> : !candidates.length && <p className="dash-sub">{query ? 'Aucun établissement ne correspond.' : 'Tous les établissements de la ville sont déjà rattachés.'}</p>}
           <ul className="admin-hub-shoplist">
             {candidates.map((s) => (
               <li key={s.id}>
                 <span><b>{s.name}</b><small>{[s.commune, cap(s.city)].filter(Boolean).join(', ')}{s.hubName ? ` · actuellement : ${s.hubName}` : ''}</small></span>
                 <Button size="sm" variant="secondary" disabled={busy}
-                  onClick={() => act(() => api.post(`/v1/admin/hubs/${hubId}/shops`, { shopId: s.id }), s.hubName ? `Boutique déplacée depuis ${s.hubName}` : 'Boutique rattachée')}>
+                  onClick={() => act(() => api.post(`/v1/admin/hubs/${hubId}/shops`, { shopId: s.id }), s.hubName ? `Établissement déplacé depuis ${s.hubName}` : 'Établissement rattaché')}>
                   <FaPlus /> {s.hubName ? 'Déplacer ici' : 'Rattacher'}
                 </Button>
               </li>
@@ -222,7 +222,7 @@ export default function AdminHubs() {
       <header className="dash-page-head admin-head-row">
         <div>
           <h1 className="dash-h1"><FaWifi style={{ marginRight: 8 }} />Wifi Zone</h1>
-          <p className="dash-sub">Centres commerciaux et zones agricoles (urbains / ruraux) qui regroupent les boutiques, et suivi du déploiement du Wi-Fi maillé Starlink. Visible sur <Link to="/centres" target="_blank">tindisa.com/centres</Link>.</p>
+          <p className="dash-sub">Centres commerciaux et zones agricoles (urbains / ruraux) qui regroupent les établissements, et suivi du déploiement du Wi-Fi maillé Starlink. Visible sur <Link to="/centres" target="_blank">tindisa.com/centres</Link>.</p>
         </div>
         <Button onClick={() => setEditing({})}><FaPlus /> Nouveau centre</Button>
       </header>
@@ -232,7 +232,7 @@ export default function AdminHubs() {
         <StatCard icon={<FaBroadcastTower />} value={s.in_progress ?? 0} label="Étude / installation" />
         <StatCard icon={<FaCity />} value={`${s.urban ?? 0} / ${s.rural ?? 0}`} label="Urbains / ruraux" />
         <StatCard icon={<FaBroadcastTower />} value={s.live_nodes ?? 0} label="Nœuds actifs" />
-        <StatCard icon={<FaStore />} value={s.connected_shops ?? 0} label="Boutiques connectées" />
+        <StatCard icon={<FaStore />} value={s.connected_shops ?? 0} label="Établissements connectés" />
       </StatGrid>
 
       {loading ? <Spinner label="Chargement…" /> : data.items.length === 0 ? (
@@ -241,7 +241,7 @@ export default function AdminHubs() {
       ) : (
         <div className="cat-table-wrap">
           <table className="cat-table">
-            <thead><tr><th>Centre</th><th>Zone</th><th>Ville</th><th>Wi-Fi Starlink</th><th>Nœuds</th><th>Boutiques</th><th className="cat-col-actions">Actions</th></tr></thead>
+            <thead><tr><th>Centre</th><th>Zone</th><th>Ville</th><th>Wi-Fi Starlink</th><th>Nœuds</th><th>Établissements</th><th className="cat-col-actions">Actions</th></tr></thead>
             <tbody>
               {data.items.map((h) => (
                 <tr key={h.id}>
@@ -261,7 +261,7 @@ export default function AdminHubs() {
                   <td><Button size="sm" variant="secondary" onClick={() => setShopsOf(h.id)}><FaStore /> {h.shopCount ?? 0} · Gérer</Button></td>
                   <td className="cat-col-actions">
                     <Link className="cat-icon-btn" title="Voir la page publique" to={`/centres/${h.id}`} target="_blank"><FaExternalLinkAlt /></Link>
-                    <button className="cat-icon-btn" title="Boutiques" onClick={() => setShopsOf(h.id)}><FaStore /></button>
+                    <button className="cat-icon-btn" title="Établissements" onClick={() => setShopsOf(h.id)}><FaStore /></button>
                     <button className="cat-icon-btn" title="Modifier" onClick={() => setEditing(h)}><FaEdit /></button>
                     <button className="cat-icon-btn danger" title="Supprimer" onClick={() => setDel({ open: true, hub: h, busy: false })}><FaTrash /></button>
                   </td>
@@ -278,7 +278,7 @@ export default function AdminHubs() {
       )}
       {shopsOf && <HubShops hubId={shopsOf} onClose={() => setShopsOf(null)} onChanged={load} />}
       <ConfirmModal open={del.open} danger busy={del.busy} title="Supprimer le centre"
-        message={del.hub ? `Supprimer « ${del.hub.name} » ? Les boutiques sont détachées (elles restent en ligne).` : ''}
+        message={del.hub ? `Supprimer « ${del.hub.name} » ? Les établissements sont détachés (ils restent en ligne).` : ''}
         confirmLabel="Supprimer" cancelLabel="Annuler" onConfirm={doDelete} onClose={() => setDel({ open: false, hub: null, busy: false })} />
     </div>
   )

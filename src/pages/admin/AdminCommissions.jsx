@@ -9,7 +9,7 @@ import { useAdminView } from './adminView'
 const TONE = { ok: 'neutral', due: 'warn', reminder: 'warn', blocked: 'danger' }
 const LABEL = { ok: 'OK', due: 'À verser', reminder: 'Rappel', blocked: 'Bloqué' }
 const usd = (v) => `${Number(v || 0).toLocaleString('fr-FR')} $`
-const mask = (id) => (id && id.length > 12 ? `…${id.slice(-8)}` : id || '—')
+const mask = (id) => (id && id.length > 12 ? `…${id.slice(-8)}` : id || '·')
 
 export default function AdminCommissions() {
   const api = useTindisaApi()

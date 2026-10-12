@@ -10,11 +10,11 @@ import PaymentModal from '../../components/PaymentModal.jsx'
 
 function fmt(v, currency = 'CDF') {
   const n = Number(v)
-  return Number.isNaN(n) ? '—' : `${n.toLocaleString('fr-FR')} ${currency}`
+  return Number.isNaN(n) ? '·' : `${n.toLocaleString('fr-FR')} ${currency}`
 }
 function fmtDate(d) {
-  if (!d) return '—'
-  try { return new Date(d).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) } catch { return '—' }
+  if (!d) return '·'
+  try { return new Date(d).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) } catch { return '·' }
 }
 function isCredit(type) {
   return String(type || '').toUpperCase().includes('CREDIT')

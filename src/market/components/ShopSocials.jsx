@@ -3,7 +3,7 @@ import { FaPlay } from 'react-icons/fa'
 import { SOCIAL_NETWORKS, tiktokHandle, youtubeEmbed, facebookEmbed } from '../lib/socials'
 
 /*
- * Réseaux sociaux d'une boutique sur sa vitrine : liens, puis fil de publications
+ * Réseaux sociaux d'un établissement sur sa vitrine : liens, puis fil de publications
  * intégré (Facebook, TikTok, YouTube) chargé SEULEMENT à la demande : les widgets
  * tiers déposent des cookies et consomment des données (connexions 3G).
  */
@@ -40,7 +40,7 @@ export default function ShopSocials({ socials = {}, shopName }) {
     <section className="mk-socials">
       <div className="mk-socials-links">
         {links.map((n) => (
-          <a key={n.id} href={socials[n.id]} target="_blank" rel="noopener noreferrer" className={`mk-social mk-social-${n.id}`} aria-label={`${shopName || 'Boutique'} sur ${n.label}`}>
+          <a key={n.id} href={socials[n.id]} target="_blank" rel="noopener noreferrer" className={`mk-social mk-social-${n.id}`} aria-label={`${shopName || 'Établissement'} sur ${n.label}`}>
             <n.icon /> <span>{n.label}</span>
           </a>
         ))}

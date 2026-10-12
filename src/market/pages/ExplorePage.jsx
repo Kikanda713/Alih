@@ -10,6 +10,7 @@ import { useListings } from '../lib/useListings'
 import { activeUniverse, UNIVERSES } from '../lib/universes'
 import IntentBar from '../components/IntentBar'
 import UniverseRail from '../components/UniverseRail'
+import ProsRail from '../components/ProsRail'
 import { categoryLabel, cityLabel, subcategoryLabel } from '../lib/format'
 import { whatsappLink } from '../lib/chat'
 
@@ -129,6 +130,9 @@ export default function ExplorePage() {
           <button type="button" className="mk-link-btn" onClick={() => setParams(new URLSearchParams())}>Tout effacer</button>
         </div>
       )}
+
+      {/* Main d'œuvre : profils de techniciens et artisans au-dessus des annonces. */}
+      {universe?.id === 'main-oeuvre' && !q && <ProsRail city={params.get('city') || ''} />}
 
       <div className="mk-explore-body">
         <div className="mk-hide-md">

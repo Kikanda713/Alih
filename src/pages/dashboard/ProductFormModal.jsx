@@ -134,7 +134,7 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
           value={val}
           onChange={setAttr(a.id)}
           options={a.options || []}
-          placeholder="—"
+          placeholder="·"
         />
       );
     if (a.type === "boolean")
@@ -143,7 +143,7 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
           value={val}
           onChange={setAttr(a.id)}
           options={["Oui", "Non"]}
-          placeholder="—"
+          placeholder="·"
         />
       );
     if (a.type === "date")

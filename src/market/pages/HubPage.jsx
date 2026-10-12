@@ -41,7 +41,7 @@ function HubPage({ id }) {
   }
 
   const live = hub.wifiStatus === 'live'
-  const join = `Bonjour Tindisa, je souhaite ouvrir ma boutique au centre « ${hub.name} » (${cityLabel(taxonomy, hub.city) || ''}).`
+  const join = `Bonjour Tindisa, je souhaite ouvrir mon établissement au centre « ${hub.name} » (${cityLabel(taxonomy, hub.city) || ''}).`
 
   return (
     <div className="mk-hub-page">
@@ -58,7 +58,7 @@ function HubPage({ id }) {
             {hub.description && <p className="mk-hub-desc">{hub.description}</p>}
             <div className="mk-hub-facts">
               <WifiBadge status={hub.wifiStatus} />
-              <span><FaStore /> {hub.shopCount ?? 0} boutique{hub.shopCount > 1 ? 's' : ''}</span>
+              <span><FaStore /> {hub.shopCount ?? 0} établissement{hub.shopCount > 1 ? 's' : ''}</span>
               {hub.meshNodes > 0 && <span><FaBroadcastTower /> {hub.meshNodes} nœuds Wi-Fi</span>}
               {hub.bandwidthMbps > 0 && <span><FaTachometerAlt /> {hub.bandwidthMbps} Mb/s</span>}
               {hub.coverageM > 0 && <span>Couverture ≈ {hub.coverageM} m</span>}
@@ -74,14 +74,14 @@ function HubPage({ id }) {
       <div className="mk-container">
         {hub.shops?.length > 0 && (
           <section className="mk-rail-section">
-            <div className="mk-rail-head"><h2>Boutiques du centre</h2></div>
+            <div className="mk-rail-head"><h2>Établissements du centre</h2></div>
             <div className="mk-shop-chips">
               {hub.shops.map((s) => (
                 <Link key={s.id} to={`/boutique/${s.id}`} className="mk-shop-chip">
                   <span className="mk-shop-logo">{s.logoUrl ? <img src={imageUrl(s.logoUrl, 80)} alt="" /> : <FaStore />}</span>
                   <span>
                     <b>{s.name}</b>
-                    <small>{shopTypeLabel(taxonomy, s.shopType) || 'Boutique'}{s.verified ? ' · vérifiée' : ''}</small>
+                    <small>{shopTypeLabel(taxonomy, s.shopType) || 'Établissement'}{s.verified ? ' · compte vérifié' : ''}</small>
                   </span>
                   {s.verified && <FaCheckCircle className="mk-ok" />}
                 </Link>
@@ -100,7 +100,7 @@ function HubPage({ id }) {
             </div>
           </div>
           {!listings.loading && listings.items.length === 0 ? (
-            <EmptyState icon={<FaStore />} title="Pas encore d’offre en ligne" text="Les boutiques de ce centre publient bientôt leurs produits et services." />
+            <EmptyState icon={<FaStore />} title="Pas encore d’offre en ligne" text="Les établissements de ce centre publient bientôt leurs produits et services." />
           ) : (
             <>
               <ListingGrid items={listings.items} loading={listings.loading} onBook={setBooking} />
@@ -112,7 +112,7 @@ function HubPage({ id }) {
         <section className="mk-join">
           <div>
             <h2>Vous êtes commerçant ou producteur ici ?</h2>
-            <p>Rejoignez le centre : votre boutique apparaît sur le marché, vous profitez du Wi-Fi Tindisa et des livraisons groupées.</p>
+            <p>Rejoignez le centre : votre établissement apparaît sur le marché, vous profitez du Wi-Fi Tindisa et des livraisons groupées.</p>
           </div>
           <a className="platform-btn whatsapp" href={whatsappLink(join)} target="_blank" rel="noopener noreferrer">
             <FaWhatsapp className="platform-icon" /> <span>Rejoindre ce centre</span>

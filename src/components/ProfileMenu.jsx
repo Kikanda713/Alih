@@ -72,7 +72,7 @@ function ProfileMenuInner() {
               role="menuitem"
               onClick={() => { setOpen(false); navigate('/dashboard/boutique') }}
             >
-              <FaStore /> Ma boutique
+              <FaStore /> Mon espace pro
             </button>
           )}
           {isAdmin && (

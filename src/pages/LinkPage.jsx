@@ -106,16 +106,16 @@ export default function LinkPage() {
               Confirmez que c'est bien <strong>votre</strong> compte. Sinon, changez de compte.
             </p>
             <button style={btnPrimary} onClick={doLink}>Oui, lier à ce compte</button>
-            <button style={btnGhost} onClick={() => login()}>Ce n'est pas moi — changer de compte</button>
+            <button style={btnGhost} onClick={() => login()}>Ce n'est pas moi, changer de compte</button>
           </>
         )}
 
         {status === 'done' && (
           <>
             <p style={{ fontSize: '1.1rem', color: '#1a9e54', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><FaCheckCircle /> Votre compte est lié !</p>
-            <p>Vous pouvez maintenant gérer votre boutique depuis WhatsApp. Retournez à votre conversation Tindisa.</p>
+            <p>Vous pouvez maintenant gérer votre établissement depuis WhatsApp. Retournez à votre conversation Tindisa.</p>
             {/* Même boutique que celle créée par l'assistant : on la complète ici (nom, ville, contact, réseaux). */}
-            <Link to="/vendre/boutique" style={{ color: '#635dff', fontWeight: 600 }}>Compléter ma boutique (2 minutes)</Link>
+            <Link to="/vendre/boutique" style={{ color: '#635dff', fontWeight: 600 }}>Compléter mon espace pro (2 minutes)</Link>
             <Link to="/dashboard" style={{ color: '#635dff' }}>Ouvrir mon tableau de bord</Link>
           </>
         )}

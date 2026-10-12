@@ -14,6 +14,8 @@ import {
   FaDownload,
   FaCube,
   FaCertificate,
+  FaTools,
+  FaUserCheck,
 } from "react-icons/fa";
 import tindisaLogo from "../assets/tindisa-logo.png";
 import {
@@ -23,6 +25,7 @@ import {
   certAssetUrl,
   getDemoCertificate,
 } from "../api/certificates";
+import { apiBaseUrl } from "../auth/config";
 import "../App.css";
 
 const METHODS = [
@@ -32,11 +35,11 @@ const METHODS = [
 ];
 
 function fmtDate(d) {
-  if (!d) return "—";
+  if (!d) return "·";
   try {
     return new Date(d).toLocaleDateString("fr-FR", { dateStyle: "long" });
   } catch {
-    return "—";
+    return "·";
   }
 }
 
@@ -56,6 +59,29 @@ function verifyOutcome(payload) {
       "Service de vérification indisponible. Réessayez plus tard.",
   }));
 }
+
+// Spécimen gratuit : 'asset' (certificat de valeur) ou 'pro' (aptitude professionnelle).
+async function fetchDemo(kind) {
+  if (kind !== "pro") return getDemoCertificate();
+  const res = await fetch(`${apiBaseUrl}/v1/certificates/demo?kind=pro`, {
+    method: "POST",
+  });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) {
+    throw new Error(data?.message || `Démo indisponible (${res.status})`);
+  }
+  return data;
+}
+
+// Libellé lisible d'un métier ({ id, label } ou chaîne).
+const tradeName = (t) => (typeof t === "string" ? t : t?.label || t?.id || "");
+
+const PRO_STATE = {
+  valid: { tone: "ok", label: "Valide", title: "Certificat valide" },
+  expired: { tone: "warn", label: "Expiré", title: "Certificat expiré" },
+  revoked: { tone: "bad", label: "Révoqué", title: "Certificat révoqué" },
+};
 
 const STATUS_LABEL = {
   authentic: "Certificat authentique",
@@ -97,11 +123,11 @@ export default function VerifyPage() {
   }, []);
 
   // Démo gratuite : génère/obtient un certificat SPÉCIMEN et le vérifie (test complet).
-  const viewExample = async () => {
+  const viewExample = async (kind = "asset") => {
     setBusy(true);
     setResult(null);
     try {
-      const d = await getDemoCertificate();
+      const d = await fetchDemo(kind);
       if (d?.serial) {
         setMethod("hash");
         setHash(d.serial);
@@ -140,7 +166,7 @@ export default function VerifyPage() {
       else
         setResult({
           error:
-            "QR non lisible sur cet appareil — collez le code du certificat ci-dessous.",
+            "QR non lisible sur cet appareil : collez le code du certificat ci-dessous.",
         });
     } finally {
       setBusy(false);
@@ -155,7 +181,7 @@ export default function VerifyPage() {
   const verify = () => {
     if (method === "hash") {
       const v = hash.trim();
-      runVerify(/tindisa-cert/i.test(v) ? { serial: v } : { hash: v });
+      runVerify(/^tindisa-/i.test(v) ? { serial: v } : { hash: v });
     } else if (method === "pdf") {
       runVerify({ fileHash: file.fileHash, fileName: file.name });
     } else {
@@ -180,6 +206,18 @@ export default function VerifyPage() {
   const pdfSrc = cert?.pdfUrl ? certAssetUrl(cert.pdfUrl) : null;
   // Alerte si un PDF importé ne correspond PAS à l'empreinte ancrée (document altéré).
   const tampered = cert && cert.hashMatch === false;
+  // Certificat d'aptitude professionnelle (technicien / artisan).
+  const isPro = (cert?.kind || result?.kind) === "pro";
+  const proState =
+    cert?.status === "revoked"
+      ? PRO_STATE.revoked
+      : cert?.expired || cert?.status === "expired"
+        ? PRO_STATE.expired
+        : PRO_STATE.valid;
+  const proTrades = (cert?.trades || []).map(tradeName).filter(Boolean);
+  const proZones = (Array.isArray(cert?.zones) ? cert.zones : [])
+    .map((z) => (typeof z === "string" ? z : z?.label || z?.name || ""))
+    .filter(Boolean);
 
   return (
     <div className="verify-page">
@@ -199,20 +237,32 @@ export default function VerifyPage() {
           </div>
           <h1>Vérifier un certificat</h1>
           <p>
-            Confirmez l'authenticité d'un actif certifié Tindisa. La
-            vérification s'appuie sur un
+            Confirmez l'authenticité d'un certificat Tindisa : actif de valeur
+            ou aptitude professionnelle d'un technicien. La vérification
+            s'appuie sur un
             <strong> registre infalsifiable (blockchain)</strong> : importez le
             certificat PDF, scannez le QR code, ou saisissez son numéro de
             série.
           </p>
-          <button
-            className="verify-example"
-            onClick={viewExample}
-            disabled={busy}
-          >
-            {busy ? <FaSpinner className="spin" /> : <FaCertificate />} Voir un
-            exemple de certificat
-          </button>
+          <div className="verify-examples">
+            <span>Voir un exemple :</span>
+            <button
+              className="verify-example"
+              onClick={() => viewExample("asset")}
+              disabled={busy}
+            >
+              {busy ? <FaSpinner className="spin" /> : <FaCertificate />}{" "}
+              Certificat de valeur
+            </button>
+            <button
+              className="verify-example"
+              onClick={() => viewExample("pro")}
+              disabled={busy}
+            >
+              {busy ? <FaSpinner className="spin" /> : <FaTools />} Certificat
+              d'aptitude professionnelle
+            </button>
+          </div>
         </div>
 
         <div className="verify-card">
@@ -236,7 +286,7 @@ export default function VerifyPage() {
             {method === "hash" && (
               <input
                 className="verify-field"
-                placeholder="Numéro de série (TINDISA-CERT-…) ou empreinte (0x…)"
+                placeholder="N° de série (TINDISA-CERT-… ou TINDISA-CAP-…) ou empreinte (0x…)"
                 value={hash}
                 onChange={(e) => setHash(e.target.value)}
               />
@@ -317,15 +367,136 @@ export default function VerifyPage() {
               <>
                 <FaTimesCircle />{" "}
                 <span>
-                  Aucun certificat trouvé. L'actif n'est peut-être pas (encore)
-                  certifié par Tindisa.
+                  Aucun certificat trouvé. Ce code ne correspond à aucun
+                  certificat délivré par Tindisa.
                 </span>
               </>
             )}
           </div>
         )}
 
-        {cert && (
+        {cert && isPro && (
+          <div className={`verify-cert tone-${proState.tone}`}>
+            <div className="verify-cert-head">
+              {proState.tone === "ok" ? (
+                <FaUserCheck />
+              ) : proState.tone === "bad" ? (
+                <FaTimesCircle />
+              ) : (
+                <FaExclamationTriangle />
+              )}
+              <div>
+                <strong>Certificat d'aptitude professionnelle</strong>
+                <span>
+                  <em className={`verify-pill tone-${proState.tone}`}>
+                    {proState.label}
+                  </em>
+                  {cert.serial ? ` ${cert.serial}` : ""}
+                </span>
+              </div>
+            </div>
+
+            {tampered && (
+              <div className="verify-tamper">
+                <FaExclamationTriangle /> Le document importé ne correspond pas
+                à l'empreinte enregistrée : il a pu être modifié.
+              </div>
+            )}
+
+            <dl className="verify-cert-grid">
+              <div className="wide">
+                <dt>Titulaire</dt>
+                <dd>{cert.holderName || "Non précisé"}</dd>
+              </div>
+              {proTrades.length > 0 && (
+                <div className="wide">
+                  <dt>Métiers</dt>
+                  <dd>{proTrades.join(", ")}</dd>
+                </div>
+              )}
+              {proZones.length > 0 && (
+                <div className="wide">
+                  <dt>Zones d'intervention</dt>
+                  <dd>{proZones.join(", ")}</dd>
+                </div>
+              )}
+              {cert.experienceYears != null && (
+                <div>
+                  <dt>Expérience</dt>
+                  <dd>
+                    {cert.experienceYears} an
+                    {Number(cert.experienceYears) > 1 ? "s" : ""}
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt>Délivré le</dt>
+                <dd>{fmtDate(cert.issuedAt)}</dd>
+              </div>
+              <div>
+                <dt>{proState === PRO_STATE.expired ? "A expiré le" : "Valable jusqu'au"}</dt>
+                <dd>{fmtDate(cert.validUntil)}</dd>
+              </div>
+              <div>
+                <dt>Émetteur</dt>
+                <dd>{cert.issuer || "Tindisa"}</dd>
+              </div>
+              {cert.hash && (
+                <div className="wide">
+                  <dt>Empreinte (SHA-256)</dt>
+                  <dd className="mono">{cert.hash}</dd>
+                </div>
+              )}
+            </dl>
+
+            {pdfSrc && (
+              <div className="verify-pdf-wrap">
+                <div className="verify-pdf-bar">
+                  <span>
+                    <FaFilePdf /> Certificat officiel
+                  </span>
+                  <a
+                    href={pdfSrc}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                  >
+                    <FaDownload /> Télécharger
+                  </a>
+                </div>
+                <iframe
+                  className="verify-pdf"
+                  src={pdfSrc}
+                  title="Certificat d'aptitude professionnelle Tindisa"
+                />
+              </div>
+            )}
+
+            <div className="verify-cert-links">
+              {cert.shop?.id && (
+                <Link to={`/boutique/${encodeURIComponent(cert.shop.id)}`}>
+                  <FaExternalLinkAlt /> Voir le profil
+                  {cert.shop.name ? ` de ${cert.shop.name}` : ""}
+                  {cert.shop.city ? ` (${cert.shop.city})` : ""}
+                </Link>
+              )}
+              {cert.explorerUrl && (
+                <a
+                  href={cert.explorerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaExternalLinkAlt /> Voir la transaction blockchain
+                </a>
+              )}
+            </div>
+            <button className="verify-again" onClick={reset}>
+              Vérifier un autre certificat
+            </button>
+          </div>
+        )}
+
+        {cert && !isPro && (
           <div className={`verify-cert tone-${statusTone}`}>
             <div className="verify-cert-head">
               {statusTone === "ok" ? (
@@ -357,11 +528,11 @@ export default function VerifyPage() {
             <dl className="verify-cert-grid">
               <div>
                 <dt>Actif</dt>
-                <dd>{cert.productName || "—"}</dd>
+                <dd>{cert.productName || "·"}</dd>
               </div>
               <div>
                 <dt>Propriétaire</dt>
-                <dd>{cert.ownerName || "—"}</dd>
+                <dd>{cert.ownerName || "·"}</dd>
               </div>
               {cert.sellerName && (
                 <div>
@@ -420,10 +591,10 @@ export default function VerifyPage() {
                     <tbody>
                       {cert.history.map((h, i) => (
                         <tr key={i}>
-                          <td className="mono">{h.date || "—"}</td>
+                          <td className="mono">{h.date || "·"}</td>
                           <td>{h.label}</td>
                           <td>{h.value}</td>
-                          <td>{h.category || "—"}</td>
+                          <td>{h.category || "·"}</td>
                         </tr>
                       ))}
                     </tbody>

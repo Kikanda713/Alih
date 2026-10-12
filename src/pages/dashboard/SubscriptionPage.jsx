@@ -20,8 +20,8 @@ const STATUS_LABEL = {
 }
 
 function fmtDate(d) {
-  if (!d) return '—'
-  try { return new Date(d).toLocaleDateString('fr-FR', { dateStyle: 'medium' }) } catch { return '—' }
+  if (!d) return '·'
+  try { return new Date(d).toLocaleDateString('fr-FR', { dateStyle: 'medium' }) } catch { return '·' }
 }
 
 /**
@@ -55,7 +55,7 @@ export default function SubscriptionPage() {
           amount: Number(sub.priceUsd) || 0,
           status: sub.status,
           trial: sub.status === 'trialing',
-          method: sub.telecom ? `Mobile Money (${sub.telecom})` : '—',
+          method: sub.telecom ? `Mobile Money (${sub.telecom})` : '·',
         })
       }
       // Règlements de frais de commission → reçus.
@@ -83,7 +83,7 @@ export default function SubscriptionPage() {
     dateStr: fmtDate(p.date),
     clientName: user?.name || user?.email || 'Client Tindisa',
     paidBy: user?.name || user?.email || '',
-    planName: `${p.type} — ${p.label}`,
+    planName: `${p.type} · ${p.label}`,
     priceTtc: p.amount,
     status: p.trial ? 'Essai' : (STATUS_LABEL[p.status] || p.status),
     method: p.method,

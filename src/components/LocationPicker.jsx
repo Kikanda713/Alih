@@ -2,7 +2,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaf
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
-// Pins colorés — mêmes codes que la carte back-office (boutique bleu, repère orange).
+// Pins colorés — mêmes codes que la carte back-office (établissement bleu, repère orange).
 const pin = (color) =>
   L.divIcon({ className: 'map-pin', html: `<span class="map-pin-dot" style="background:${color}"></span>`, iconSize: [18, 18], iconAnchor: [9, 9] })
 const SHOP = pin('#2563eb')
@@ -29,14 +29,14 @@ export default function LocationPicker({ lat, lng, center, landmarks = [], onCha
           draggable
           eventHandlers={{ dragend: (e) => { const p = e.target.getLatLng(); onChange({ lat: p.lat, lng: p.lng }) } }}
         >
-          <Popup>Votre boutique (glissez pour ajuster)</Popup>
+          <Popup>Votre emplacement (glissez pour ajuster)</Popup>
         </Marker>
       )}
       {landmarks.filter((l) => ok(l.gpsLat) && ok(l.gpsLng)).map((l) => (
         <Marker key={l.id} position={[l.gpsLat, l.gpsLng]} icon={LM}>
           <Popup>
             <strong>{l.name}</strong>{l.commune ? <><br />{l.commune}</> : null}
-            <div className="map-popup-actions"><button onClick={() => onUseLandmark?.(l)}>Situer ma boutique ici</button></div>
+            <div className="map-popup-actions"><button onClick={() => onUseLandmark?.(l)}>Me situer ici</button></div>
           </Popup>
         </Marker>
       ))}

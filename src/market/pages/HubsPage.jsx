@@ -42,7 +42,7 @@ export default function HubsPage() {
           <p className="mk-eyebrow mk-eyebrow-light">Wifi Zone</p>
           <h1>Centres commerciaux et zones agricoles connectés</h1>
           <p>
-            Chaque centre regroupe des boutiques, des producteurs et des prestataires autour d’un Wi-Fi maillé Tindisa
+            Chaque centre regroupe des commerces, des producteurs et des prestataires autour d’un Wi-Fi maillé Tindisa
             raccordé à Starlink. Suivez où le réseau est déjà en service et où il arrive.
           </p>
           <div className="mk-kpis">
@@ -50,7 +50,7 @@ export default function HubsPage() {
             <div><strong>{s.in_progress ?? 0}</strong><span><FaBroadcastTower /> en installation</span></div>
             <div><strong>{s.planned ?? 0}</strong><span>planifiés</span></div>
             <div><strong>{s.urban ?? 0} / {s.rural ?? 0}</strong><span><FaCity /> urbains / <FaSeedling /> ruraux</span></div>
-            <div><strong>{s.connected_shops ?? 0}</strong><span><FaStore /> boutiques connectées</span></div>
+            <div><strong>{s.connected_shops ?? 0}</strong><span><FaStore /> établissements connectés</span></div>
           </div>
         </div>
       </section>

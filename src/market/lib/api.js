@@ -17,6 +17,8 @@ export const marketApi = {
   listing: (id) => apiFetch(`/v1/market/listings/${encodeURIComponent(id)}`),
   shop: (id) => apiFetch(`/v1/market/shops/${encodeURIComponent(id)}`),
   shopListings: (id, params) => apiFetch(`/v1/market/shops/${encodeURIComponent(id)}/listings${qs(params)}`),
+  // Techniciens et artisans indépendants (profils pro) : ?trade=&city=&q=&limit=&offset=
+  pros: (params) => apiFetch(`/v1/market/pros${qs(params)}`),
   hubs: (params) => apiFetch(`/v1/market/hubs${qs(params)}`),
   hub: (id) => apiFetch(`/v1/market/hubs/${encodeURIComponent(id)}`),
 }

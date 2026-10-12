@@ -25,13 +25,13 @@ const ACCT_TONE = { active: 'success', suspended: 'danger', pending: 'warn' }
 const SUB_TONE = { trialing: 'warn', active: 'success', cancelled: 'danger', expired: 'neutral' }
 
 function fmtDate(d) {
-  if (!d) return '—'
-  try { return new Date(d).toLocaleDateString('fr-FR', { dateStyle: 'medium' }) } catch { return '—' }
+  if (!d) return '·'
+  try { return new Date(d).toLocaleDateString('fr-FR', { dateStyle: 'medium' }) } catch { return '·' }
 }
 function ts(d) { const n = d ? new Date(d).getTime() : 0; return Number.isFinite(n) ? n : 0 }
 function userName(u) {
   const n = [u.firstname, u.lastname].filter(Boolean).join(' ').trim()
-  return n || u.name || u.email || u.phone || '—'
+  return n || u.name || u.email || u.phone || '·'
 }
 function isMerchant(u) {
   const r = String(u.role || u.type || '').toLowerCase()
@@ -73,7 +73,7 @@ export default function AdminHome() {
         ...list.map((u) => ({
           id: 'u-' + (u.id || u.email || Math.random()),
           icon: isMerchant(u) ? <FaStore /> : <FaShoppingBag />,
-          type: isMerchant(u) ? 'Nouvelle boutique' : 'Nouvel acheteur',
+          type: isMerchant(u) ? 'Nouvel établissement' : 'Nouvel acheteur',
           detail: userName(u) + (u.email ? ` · ${u.email}` : u.phone ? ` · ${u.phone}` : ''),
           status: u.status || 'active',
           tone: ACCT_TONE[u.status] || 'success',
@@ -84,7 +84,7 @@ export default function AdminHome() {
           id: 's-' + (s.id || s.userId || Math.random()),
           icon: <FaCreditCard />,
           type: `Abonnement ${planById(s.plan)?.name || s.plan || ''}`.trim(),
-          detail: s.userName || s.userId || '—',
+          detail: s.userName || s.userId || '·',
           status: s.status,
           tone: SUB_TONE[s.status] || 'neutral',
           statusLabel: s.status,
@@ -100,7 +100,7 @@ export default function AdminHome() {
   if (!stats) return <div className="dash-page"><Spinner label={t('merchant.loading')} /></div>
 
   const cards = [
-    { icon: <FaStore />, value: stats.boutiques ?? stats.merchants ?? 0, label: 'Boutiques' },
+    { icon: <FaStore />, value: stats.boutiques ?? stats.merchants ?? 0, label: 'Établissements' },
     { icon: <FaShoppingBag />, value: stats.acheteurs ?? stats.buyers ?? 0, label: 'Acheteurs' },
     { icon: <FaMotorcycle />, value: stats.livreurs ?? 0, label: 'Livreurs' },
     { icon: <FaCoins />, value: money(stats.gmvUsd), label: 'Recettes (GMV)' },
@@ -170,7 +170,7 @@ export default function AdminHome() {
       <Card>
         <div className="dash-page-head" style={{ marginBottom: 14 }}>
           <h2 className="dash-h2"><FaMicrochip style={{ marginRight: 8 }} />Consommation IA (tokens)</h2>
-          <p className="dash-sub">Estimée — Azure ne renvoie pas l’usage exact en streaming. Coût indicatif.</p>
+          <p className="dash-sub">Estimée : Azure ne renvoie pas l’usage exact en streaming. Coût indicatif.</p>
         </div>
         {!metrics ? <Spinner label={t('cat.loading')} /> : (
           <>

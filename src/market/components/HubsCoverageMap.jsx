@@ -53,7 +53,7 @@ export default function HubsCoverageMap({ hubs = [] }) {
                   <strong>{h.name}</strong><br />
                   {hubTypeLabel(h.hubType)} · {h.kind === 'rural' ? 'zone rurale' : 'zone urbaine'}<br />
                   <span style={{ color }}>{wifiInfo(h.wifiStatus).label}</span>
-                  {' · '}{h.shopCount ?? 0} boutique(s){h.meshNodes ? ` · ${h.meshNodes} nœuds` : ''}<br />
+                  {' · '}{h.shopCount ?? 0} établissement(s){h.meshNodes ? ` · ${h.meshNodes} nœuds` : ''}<br />
                   <Link to={`/centres/${h.id}`}>Voir le centre</Link>
                 </Popup>
               </CircleMarker>

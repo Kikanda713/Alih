@@ -75,7 +75,7 @@ export function buildOrderMessage(items, info = {}) {
     const where = [info.city, info.address].filter(Boolean).join(', ')
     lines.push(info.reception === 'delivery'
       ? `Réception : livraison${where ? ` à ${where}` : ''}`
-      : 'Réception : retrait en boutique')
+      : 'Réception : retrait sur place')
   } else if (info.city) {
     lines.push(`Ville : ${info.city}`)
   }

@@ -10,7 +10,7 @@ import { Pagination } from '../../components/Pagination.jsx'
 import { useAdminView } from './adminView'
 
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
-const money = (v, c) => (v == null ? '—' : `${Number(v).toLocaleString('fr-FR')} ${c === 'USD' ? '$' : 'FC'}`)
+const money = (v, c) => (v == null ? '·' : `${Number(v).toLocaleString('fr-FR')} ${c === 'USD' ? '$' : 'FC'}`)
 const STATUS = {
   published: { tone: 'success', label: 'Publiée' },
   removed: { tone: 'danger', label: 'Retirée' },
@@ -59,7 +59,7 @@ export default function AdminP2P() {
     <div className="dash-page">
       <header className="dash-page-head">
         <h1 className="dash-h1"><FaHandshake style={{ marginRight: 8 }} />Marché P2P</h1>
-        <p className="dash-sub">Ventes spontanées (sans boutique). Modérez : retirez ce qui enfreint les règles.</p>
+        <p className="dash-sub">Ventes spontanées (sans établissement). Modérez : retirez ce qui enfreint les règles.</p>
       </header>
 
       <StatGrid>
@@ -91,8 +91,8 @@ export default function AdminP2P() {
                       <td><span className="cat-thumb">{i.image ? <img src={i.image} alt="" /> : <FaImage />}</span></td>
                       <td><span className="cat-pname">{i.name}</span>{i.category && <span className="cat-sku">{i.category}</span>}</td>
                       <td>{money(i.displayPrice, i.currency)}</td>
-                      <td>{cap(i.city) || '—'}</td>
-                      <td><span className="cat-sku">{i.sellerPhone || '—'}</span></td>
+                      <td>{cap(i.city) || '·'}</td>
+                      <td><span className="cat-sku">{i.sellerPhone || '·'}</span></td>
                       <td><Badge tone={st.tone}>{st.label}</Badge></td>
                       <td className="cat-col-actions">
                         {i.status === 'removed' ? (

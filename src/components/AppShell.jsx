@@ -24,7 +24,7 @@ function Logo() {
  * - badge: petit libellé sous le logo (ex. "Back-office")
  * Rend <Outlet/> pour les routes enfants.
  */
-export default function AppShell({ nav = [], sidebarExtra = null, badge = null, headerExtra = null }) {
+export default function AppShell({ nav = [], sidebarExtra = null, badge = null, headerExtra = null, notice = null }) {
   const { t } = useT()
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem(COLLAPSE_KEY) === '1' } catch { return false }
@@ -91,6 +91,7 @@ export default function AppShell({ nav = [], sidebarExtra = null, badge = null, 
         </aside>
 
         <main className="dash-main">
+          {notice}
           <Outlet />
         </main>
       </div>

@@ -23,6 +23,7 @@ const BoutiquePage = lazy(() => import("./pages/dashboard/BoutiquePage.jsx"));
 const VentesPage = lazy(() => import("./pages/dashboard/VentesPage.jsx"));
 const WalletPage = lazy(() => import("./pages/dashboard/WalletPage.jsx"));
 const SubscriptionPage = lazy(() => import("./pages/dashboard/SubscriptionPage.jsx"));
+const ProCertificatePage = lazy(() => import("./pages/dashboard/ProCertificatePage.jsx"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout.jsx"));
 const AdminHome = lazy(() => import("./pages/admin/AdminHome.jsx"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers.jsx"));
@@ -32,6 +33,7 @@ const AdminCertification = lazy(() => import("./pages/admin/AdminCertification.j
 const AdminP2P = lazy(() => import("./pages/admin/AdminP2P.jsx"));
 const AdminMarketplace = lazy(() => import("./pages/admin/AdminMarketplace.jsx"));
 const AdminHubs = lazy(() => import("./pages/admin/AdminHubs.jsx"));
+const AdminSellers = lazy(() => import("./pages/admin/AdminSellers.jsx"));
 const AdminAI = lazy(() => import("./pages/admin/AdminAI.jsx"));
 const AdminDrivers = lazy(() => import("./pages/admin/AdminDrivers.jsx"));
 const AdminMap = lazy(() => import("./pages/admin/AdminMap.jsx"));
@@ -53,7 +55,8 @@ export default function Root() {
         <Route path="/centres/:id" element={<HubPage />} />
         <Route path="/connectivite" element={<Navigate to="/centres" replace />} />
         <Route path="/vendre" element={<SellPage />} />
-        <Route path="/vendre/boutique" element={<OnboardingPage />} />
+        <Route path="/vendre/boutique" element={<OnboardingPage key="business" />} />
+        <Route path="/vendre/pro" element={<OnboardingPage key="pro" pro />} />
       </Route>
       <Route path="/auth/callback" element={<Callback />} />
       <Route path="/link" element={<LinkPage />} />
@@ -67,6 +70,7 @@ export default function Root() {
         <Route path="ventes" element={<VentesPage />} />
         <Route path="wallet" element={<WalletPage />} />
         <Route path="abonnement" element={<SubscriptionPage />} />
+        <Route path="certificat-pro" element={<ProCertificatePage />} />
       </Route>
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminHome />} />
@@ -75,6 +79,7 @@ export default function Root() {
         <Route path="commissions" element={<AdminCommissions />} />
         <Route path="certification" element={<AdminCertification />} />
         <Route path="marche" element={<AdminMarketplace />} />
+        <Route path="vendeurs" element={<AdminSellers />} />
         <Route path="centres" element={<AdminHubs />} />
         <Route path="ia" element={<AdminAI />} />
         <Route path="p2p" element={<AdminP2P />} />

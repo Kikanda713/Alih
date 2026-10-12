@@ -16,17 +16,17 @@ const STATUS_TONE = {
 const DELIVERY_TONE = { CONFIRMED: 'success', BOOKED: 'warn', CANCELLED: 'danger' }
 
 function fmtPrice(v, currency = 'CDF') {
-  if (v == null) return '—'
+  if (v == null) return '·'
   const n = Number(v)
-  return Number.isNaN(n) ? '—' : `${n.toLocaleString('fr-FR')} ${currency}`
+  return Number.isNaN(n) ? '·' : `${n.toLocaleString('fr-FR')} ${currency}`
 }
 
 function fmtDate(d) {
-  if (!d) return '—'
+  if (!d) return '·'
   try {
     return new Date(d).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })
   } catch {
-    return '—'
+    return '·'
   }
 }
 
@@ -79,7 +79,7 @@ export default function VentesPage() {
                     {o.delivery ? (
                       <Badge tone={DELIVERY_TONE[o.delivery.status] || 'neutral'}>{t(`sales.delivery.${o.delivery.status}`)}</Badge>
                     ) : (
-                      <span className="cat-sku">—</span>
+                      <span className="cat-sku">·</span>
                     )}
                   </td>
                 </tr>

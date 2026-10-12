@@ -14,11 +14,11 @@ const NO_USERS = []
 
 function name(u) {
   const n = [u.firstname, u.lastname].filter(Boolean).join(' ').trim()
-  return n || u.name || u.email || u.phone || '—'
+  return n || u.name || u.email || u.phone || '·'
 }
 function fmtDate(d) {
-  if (!d) return '—'
-  try { return new Date(d).toLocaleDateString('fr-FR', { dateStyle: 'medium' }) } catch { return '—' }
+  if (!d) return '·'
+  try { return new Date(d).toLocaleDateString('fr-FR', { dateStyle: 'medium' }) } catch { return '·' }
 }
 // Colonnes d'export (données déjà chargées, filtrées à l'écran).
 const EXPORT_COLS = [
@@ -26,7 +26,7 @@ const EXPORT_COLS = [
   { key: 'email', label: 'Email' },
   { key: 'phone', label: 'Téléphone' },
   { key: 'type', label: 'Type', map: (u) => (u.type === 'merchant' ? 'Commerçant' : 'Acheteur') },
-  { key: 'shopName', label: 'Boutique' },
+  { key: 'shopName', label: 'Établissement' },
   { key: 'city', label: 'Ville' },
   { key: 'province', label: 'Province' },
   { key: 'status', label: 'Statut' },
@@ -113,7 +113,7 @@ export default function AdminUsers() {
                   <th>{t('admin.users.col.user')}</th>
                   <th>{t('admin.users.col.contact')}</th>
                   <th>{t('admin.users.col.type')}</th>
-                  <th>Boutique</th>
+                  <th>Établissement</th>
                   <th>Ville</th>
                   <th>{t('admin.users.col.status')}</th>
                   <th>{t('admin.users.col.joined')}</th>
@@ -124,10 +124,10 @@ export default function AdminUsers() {
                 {pageItems.map((u) => (
                   <tr key={u.id}>
                     <td><span className="cat-pname">{name(u)}</span></td>
-                    <td><span className="cat-sku">{u.email || u.phone || '—'}</span></td>
+                    <td><span className="cat-sku">{u.email || u.phone || '·'}</span></td>
                     <td><Badge tone={TYPE_TONE[u.type] || 'neutral'}>{t(`admin.type.${u.type || 'buyer'}`)}</Badge></td>
-                    <td>{u.shopName || '—'}</td>
-                    <td>{u.city || '—'}</td>
+                    <td>{u.shopName || '·'}</td>
+                    <td>{u.city || '·'}</td>
                     <td><Badge tone={STATUS_TONE[u.status] || 'neutral'}>{t(`admin.status.${u.status || 'active'}`)}</Badge></td>
                     <td>{fmtDate(u.createdAt)}</td>
                     <td className="cat-col-actions">

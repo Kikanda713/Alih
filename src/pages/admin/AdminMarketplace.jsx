@@ -155,7 +155,7 @@ export default function AdminMarketplace() {
         <Select value={photo} onChange={(e) => { setPhoto(e.target.value); setPage(1) }}
           options={[{ id: 'pending', label: 'Photos à améliorer' }, { id: 'enhanced', label: 'Photos améliorées' }]} placeholder="Toutes les photos" />
         <form className="admin-mk-search" onSubmit={(e) => { e.preventDefault(); setQuery(q.trim()); setPage(1) }}>
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nom, boutique ou réf. TND-…" />
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nom, établissement ou réf. TND-…" />
           <button type="submit" className="cat-icon-btn" aria-label="Rechercher"><FaSearch /></button>
         </form>
       </div>

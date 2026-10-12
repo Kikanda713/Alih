@@ -20,7 +20,7 @@ const VEHICLES = [
   { id: 'pied', label: 'À pied' },
 ]
 const SEX = [{ id: 'M', label: 'Masculin' }, { id: 'F', label: 'Féminin' }]
-const vehLabel = (v) => VEHICLES.find((x) => x.id === v)?.label || v || '—'
+const vehLabel = (v) => VEHICLES.find((x) => x.id === v)?.label || v || '·'
 
 const EMPTY = {
   name: '', phone: '', sex: '', idNumber: '', vehicleType: '', active: true,
@@ -30,7 +30,7 @@ const EMPTY = {
   emergencyName: '', emergencyPhone: '', idCardUrl: '', residenceProofUrl: '', notes: '',
 }
 // Date lisible (fr) — suivi de fraîcheur des profils.
-const fmtDate = (d) => (d ? new Date(d).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—')
+const fmtDate = (d) => (d ? new Date(d).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '·')
 // Capacité par défaut (kg) selon le moyen — repère affiché dans le form.
 const CAP_DEFAULT = { pied: 10, velo: 15, moto: 50, voiture: 200, moto_tricycle: 300, bus: 500, camionnette: 1000 }
 
@@ -220,13 +220,13 @@ export default function AdminDrivers() {
                         <span className="driver-avatar">{d.photoUrl ? <img src={d.photoUrl} alt="" /> : <FaUserCircle />}</span>
                         <span className="driver-cell-txt">
                           <span className="cat-pname">{d.name}</span>
-                          <span className="cat-sku">{d.matricule || '—'}</span>
+                          <span className="cat-sku">{d.matricule || '·'}</span>
                         </span>
                       </div>
                     </td>
                     <td><span className="driver-veh"><FaMotorcycle /> {vehLabel(d.vehicleType)}</span></td>
-                    <td><span className="cat-sku">{d.phone || '—'}</span></td>
-                    <td><span className="cat-sku">{[d.commune, d.city].filter(Boolean).join(', ') || '—'}</span></td>
+                    <td><span className="cat-sku">{d.phone || '·'}</span></td>
+                    <td><span className="cat-sku">{[d.commune, d.city].filter(Boolean).join(', ') || '·'}</span></td>
                     <td><span className="cat-sku">{fmtDate(d.updatedAt)}</span></td>
                     <td><Badge tone={d.active ? 'success' : 'neutral'}>{d.active ? 'Actif' : 'Inactif'}</Badge></td>
                     <td className="cat-col-actions">
@@ -251,7 +251,7 @@ export default function AdminDrivers() {
         message={confirm.driver ? `Supprimer ${confirm.driver.name} ?` : ''} confirmLabel="Supprimer" cancelLabel="Annuler"
         onConfirm={doDelete} onClose={() => setConfirm({ open: false, driver: null, busy: false })} />
 
-      <Modal open={perf.open} title={perf.driver ? `Performances — ${perf.driver.name}` : 'Performances'} onClose={() => setPerf({ open: false, driver: null, loading: false, data: null })}>
+      <Modal open={perf.open} title={perf.driver ? `Performances · ${perf.driver.name}` : 'Performances'} onClose={() => setPerf({ open: false, driver: null, loading: false, data: null })}>
         {perf.loading ? <Spinner label="Chargement…" /> : !perf.data ? (
           <p className="dash-sub">Aucune donnée de livraison pour ce livreur.</p>
         ) : (
@@ -269,7 +269,7 @@ export default function AdminDrivers() {
                 <p className="perf-recent-title">Missions récentes</p>
                 {perf.data.recent.map((r) => (
                   <div className="perf-recent-row" key={r.id}>
-                    <span className="perf-recent-dest">{r.destination || '—'}</span>
+                    <span className="perf-recent-dest">{r.destination || '·'}</span>
                     <Badge tone={r.status === 'CONFIRMED' || r.status === 'DELIVERED' ? 'success' : r.status === 'CANCELLED' ? 'danger' : 'neutral'}>{r.status}</Badge>
                     <span className="perf-recent-cost">{(r.cost || 0).toLocaleString('fr-FR')} {perf.data.currency}</span>
                   </div>

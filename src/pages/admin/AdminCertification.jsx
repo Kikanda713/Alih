@@ -10,7 +10,12 @@ import {
   FaCog,
   FaLink,
   FaPrint,
+  FaTools,
+  FaFileAlt,
+  FaPhone,
+  FaSyncAlt,
 } from "react-icons/fa";
+import { useTaxonomy } from "../../api/taxonomy";
 import { useTindisaApi } from "../../api/client";
 import { useLoad } from "../../api/useLoad";
 import { useToast } from "../../components/useToast";
@@ -45,7 +50,7 @@ const BC = {
   anchored: { tone: "success", label: "Ancré on-chain" },
   mock: { tone: "success", label: "Ancré (test)" },
   pending: { tone: "warn", label: "Empreinte enregistrée" },
-  none: { tone: "neutral", label: "—" },
+  none: { tone: "neutral", label: "·" },
 };
 
 // Modèle de checklist (miroir du backend) — l'admin coche à l'authentification.
@@ -71,12 +76,64 @@ const FILTERS = [
   { k: "uncertified", label: "Non certifiés" },
   { k: "requested", label: "Demandés" },
 ];
+const PRO_FILTERS = [
+  { k: "", label: "Tous" },
+  { k: "requested", label: "À vérifier" },
+  { k: "certified", label: "Délivrés" },
+];
+const KINDS = [
+  { k: "asset", label: "Actifs de valeur" },
+  { k: "pro", label: "Aptitude professionnelle" },
+];
+
+// ---- Aptitude professionnelle (CAP) ----
+const DOC_LABEL = {
+  identity: "Pièce d'identité",
+  diploma: "Diplôme / formation",
+  attestation: "Attestation d'employeur",
+  other: "Autre justificatif",
+};
+const DEFAULT_PRO_CHECKLIST = [
+  "Identité vérifiée",
+  "Diplôme ou attestation authentique",
+  "Références contactées",
+  "Expérience cohérente avec le profil",
+];
+const fmtDate = (d) => {
+  if (!d) return "-";
+  const t = new Date(d);
+  return Number.isNaN(t.getTime())
+    ? "-"
+    : t.toLocaleDateString("fr-FR", { dateStyle: "medium" });
+};
+const isImg = (u) =>
+  !/\.pdf(\?|$)/i.test(u || "") &&
+  (/\.(png|jpe?g|webp|gif|avif)(\?|$)/i.test(u || "") ||
+    /\/image\/upload\//.test(u || ""));
+const itemLabel = (i) =>
+  typeof i === "string" ? i : i?.label || i?.key || "";
+const itemDone = (i) => !!(i && (i.done ?? i.ok ?? i.checked ?? false));
+const proStatus = (r) => r?.certStatus || r?.status || "requested";
+const proExpired = (r) =>
+  !!r?.expired ||
+  (proStatus(r) === "issued" &&
+    !!r?.validUntil &&
+    new Date(r.validUntil).getTime() < Date.now());
+const proCfg = (cfg, camel, snake) => cfg?.[camel] ?? cfg?.[snake];
+const toLines = (v) =>
+  Array.isArray(v)
+    ? v.map(itemLabel).filter(Boolean).join("\n")
+    : String(v || "");
 
 export default function AdminCertification() {
   const api = useTindisaApi();
   const { notify } = useToast();
   const { city, withCity } = useAdminView();
+  const taxonomy = useTaxonomy();
+  const [kind, setKind] = useState("asset");
   const [filter, setFilter] = useState("");
+  const [proView, setProView] = useState(null); // dossier pro affiché
+  const [proChecks, setProChecks] = useState({});
   const [cfgOpen, setCfgOpen] = useState(false);
   const [certify, setCertify] = useState(null); // asset en cours de certification
   const [checks, setChecks] = useState({});
@@ -96,17 +153,22 @@ export default function AdminCertification() {
     loading,
     reload,
   } = useLoad(() => {
-    let path = "/v1/admin/certification/assets";
-    if (filter) path += "?filter=" + filter;
+    const qs = [
+      kind === "pro" ? "kind=pro" : "",
+      filter ? "filter=" + filter : "",
+    ]
+      .filter(Boolean)
+      .join("&");
+    const path = "/v1/admin/certification/assets" + (qs ? "?" + qs : "");
     return api.get(withCity(path)).then(
       (r) => ({
-        assets: r?.assets || [],
+        assets: r?.assets || r?.items || r?.certificates || [],
         counts: r?.counts || {},
         settings: r?.settings || {},
       }),
       () => EMPTY_CERT,
     );
-  }, [city, filter]);
+  }, [city, filter, kind]);
   // Paramètres éditables : initialisés depuis les réglages chargés (null tant
   // qu'aucun chargement n'a abouti), puis modifiés localement.
   const [cfgEdit, setCfg] = useState(null);
@@ -133,6 +195,28 @@ export default function AdminCertification() {
         issuePriceUsd: Number(cfg.issuePriceUsd),
         updatePriceUsd: Number(cfg.updatePriceUsd),
       };
+      // Aptitude professionnelle : envoyé en camelCase ET snake_case (le
+      // backend accepte l'une ou l'autre forme selon sa version).
+      const proIssue = proCfg(cfg, "proIssuePriceUsd", "pro_issue_price_usd");
+      const proUpdate = proCfg(cfg, "proUpdatePriceUsd", "pro_update_price_usd");
+      const proMonths = proCfg(cfg, "proValidityMonths", "pro_validity_months");
+      const proList = proCfg(cfg, "proChecklist", "pro_checklist");
+      if (proIssue !== undefined && proIssue !== "") {
+        body.proIssuePriceUsd = body.pro_issue_price_usd = Number(proIssue);
+      }
+      if (proUpdate !== undefined && proUpdate !== "") {
+        body.proUpdatePriceUsd = body.pro_update_price_usd = Number(proUpdate);
+      }
+      if (proMonths !== undefined && proMonths !== "") {
+        body.proValidityMonths = body.pro_validity_months = Number(proMonths);
+      }
+      if (proList !== undefined) {
+        body.proChecklist = body.pro_checklist = (
+          Array.isArray(proList) ? proList.map(itemLabel) : String(proList).split("\n")
+        )
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
       const r = await api.put("/v1/admin/certification/config", body);
       setCfg(r);
       notify("Paramètres enregistrés", "success");
@@ -216,8 +300,78 @@ export default function AdminCertification() {
     }
   };
 
+  // ---- Aptitude professionnelle ----
+  const tradeLabel = (t) => {
+    if (t && typeof t === "object") return t.label || t.id || "";
+    return (taxonomy?.trades || []).find((x) => x.id === t)?.label || t;
+  };
+  const proChecklistTpl = (row) => {
+    const fromSettings = proCfg(data.settings, "proChecklist", "pro_checklist");
+    const base =
+      Array.isArray(fromSettings) && fromSettings.length
+        ? fromSettings.map(itemLabel)
+        : DEFAULT_PRO_CHECKLIST;
+    const fromRow = Array.isArray(row?.checklist)
+      ? row.checklist.map(itemLabel)
+      : [];
+    return Array.from(new Set([...fromRow, ...base].filter(Boolean)));
+  };
+  const openPro = (row) => {
+    const init = {};
+    (Array.isArray(row.checklist) ? row.checklist : []).forEach((i) => {
+      if (itemDone(i)) init[itemLabel(i)] = true;
+    });
+    setProChecks(init);
+    setNotes("");
+    setProView(row);
+  };
+  const proId = (row) => row?.certId || row?.id;
+  const doProIssue = async () => {
+    const row = proView;
+    const renew = proStatus(row) === "issued";
+    setBusy(true);
+    try {
+      const checklist = proChecklistTpl(row).map((label) => ({
+        label,
+        checked: !!proChecks[label],
+        done: !!proChecks[label],
+      }));
+      if (renew) {
+        await api.put(
+          `/v1/admin/certification/cert/${encodeURIComponent(proId(row))}`,
+          { kind: "pro", checklist, notes },
+        );
+      } else {
+        await api.post("/v1/admin/certification/issue", {
+          kind: "pro",
+          certId: proId(row),
+          checklist,
+          notes,
+        });
+      }
+      notify(renew ? "Certificat renouvelé" : "Certificat délivré", "success");
+      setProView(null);
+      reload();
+    } catch (e) {
+      notify(e?.message || "Erreur", "error");
+    } finally {
+      setBusy(false);
+    }
+  };
+  const askRevokePro = (row) =>
+    setConfirm({
+      open: true,
+      asset: {
+        certId: proId(row),
+        name: row.subject?.holderName || row.holderName || row.serial,
+      },
+      busy: false,
+    });
+
   const s = data.settings || {};
   const c = data.counts || {};
+  const isPro = kind === "pro";
+  const filters = isPro ? PRO_FILTERS : FILTERS;
 
   return (
     <div className="dash-page">
@@ -227,22 +381,69 @@ export default function AdminCertification() {
             <FaCertificate style={{ marginRight: 8 }} />
             Certification
           </h1>
-          <p className="dash-sub">
-            Actifs de valeur (≥{" "}
-            {usd(
-              s.thresholdCurrency === "USD"
-                ? s.thresholdAmount
-                : (s.thresholdAmount || 0) / (s.exchangeRate || 2400),
-            )}{" "}
-            équiv.) — authentification, suivi propriété, checklist légale &
-            technique.
-          </p>
+          {isPro ? (
+            <p className="dash-sub">
+              Certificats d'aptitude professionnelle des techniciens et
+              artisans : vérification du dossier (identité, diplômes,
+              références), délivrance et renouvellement.
+            </p>
+          ) : (
+            <p className="dash-sub">
+              Actifs de valeur (≥{" "}
+              {usd(
+                s.thresholdCurrency === "USD"
+                  ? s.thresholdAmount
+                  : (s.thresholdAmount || 0) / (s.exchangeRate || 2400),
+              )}{" "}
+              équiv.) : authentification, suivi propriété, checklist légale &
+              technique.
+            </p>
+          )}
         </div>
         <Button variant="ghost" onClick={() => setCfgOpen(true)}>
           <FaCog /> Paramètres
         </Button>
       </header>
 
+      <div className="cat-tabs admin-tabs admin-cert-kinds">
+        {KINDS.map((k) => (
+          <button
+            key={k.k}
+            className={`cat-tab${kind === k.k ? " active" : ""}`}
+            onClick={() => {
+              setKind(k.k);
+              setFilter("");
+            }}
+          >
+            {k.k === "pro" ? <FaTools /> : <FaCertificate />} {k.label}
+          </button>
+        ))}
+      </div>
+
+      {isPro ? (
+        <StatGrid>
+          <StatCard
+            icon={<FaTools />}
+            value={c.total ?? data.assets.length}
+            label="Dossiers"
+          />
+          <StatCard
+            icon={<FaCheckCircle />}
+            value={c.certified ?? c.issued ?? 0}
+            label="Délivrés"
+          />
+          <StatCard
+            icon={<FaClock />}
+            value={c.requested ?? 0}
+            label="À vérifier"
+          />
+          <StatCard
+            icon={<FaTimesCircle />}
+            value={c.expired ?? 0}
+            label="Expirés"
+          />
+        </StatGrid>
+      ) : (
       <StatGrid>
         <StatCard
           icon={<FaCertificate />}
@@ -265,10 +466,11 @@ export default function AdminCertification() {
           label="Non certifiés"
         />
       </StatGrid>
+      )}
 
       <div className="admin-toolbar">
         <div className="cat-tabs admin-tabs">
-          {FILTERS.map((f) => (
+          {filters.map((f) => (
             <button
               key={f.k}
               className={`cat-tab${filter === f.k ? " active" : ""}`}
@@ -283,11 +485,108 @@ export default function AdminCertification() {
       {loading ? (
         <Spinner label="Chargement…" />
       ) : data.assets.length === 0 ? (
-        <EmptyState
-          icon={<FaCertificate />}
-          title="Aucun actif"
-          text="Aucun actif éligible pour ce filtre / cette ville."
-        />
+        isPro ? (
+          <EmptyState
+            icon={<FaTools />}
+            title="Aucun dossier"
+            text="Aucune demande de certificat d'aptitude professionnelle pour ce filtre / cette ville."
+          />
+        ) : (
+          <EmptyState
+            icon={<FaCertificate />}
+            title="Aucun actif"
+            text="Aucun actif éligible pour ce filtre / cette ville."
+          />
+        )
+      ) : isPro ? (
+        <>
+          <div className="cat-table-wrap">
+            <table className="cat-table">
+              <thead>
+                <tr>
+                  <th>Titulaire</th>
+                  <th>Métiers</th>
+                  <th>Établissement / Ville</th>
+                  <th>Expire le</th>
+                  <th>Statut</th>
+                  <th className="cat-col-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageItems.map((r) => {
+                  const stKey = proStatus(r);
+                  const expired = proExpired(r);
+                  const st = STATUS[stKey] || STATUS.none;
+                  const subj = r.subject || {};
+                  const trades = (subj.trades || r.trades || [])
+                    .map(tradeLabel)
+                    .filter(Boolean);
+                  return (
+                    <tr key={proId(r) || r.serial}>
+                      <td>
+                        <span className="cat-pname">
+                          {subj.holderName || r.holderName || "-"}
+                        </span>
+                        {r.serial && (
+                          <span className="cat-sku"> · {r.serial}</span>
+                        )}
+                      </td>
+                      <td className="admin-cert-wrap">
+                        {trades.length ? trades.join(", ") : "-"}
+                      </td>
+                      <td>
+                        {r.shopName || r.shop?.name || "-"}
+                        {r.city || r.shop?.city
+                          ? ` · ${cap(r.city || r.shop?.city)}`
+                          : ""}
+                      </td>
+                      <td>{fmtDate(r.validUntil)}</td>
+                      <td>
+                        {expired ? (
+                          <Badge tone="danger">Expiré</Badge>
+                        ) : (
+                          <Badge tone={st.tone}>
+                            {stKey === "issued" ? "Délivré" : st.label}
+                          </Badge>
+                        )}
+                        {stKey === "requested" && r.paid === false && (
+                          <>
+                            {" "}
+                            <Badge tone="neutral">Non payé</Badge>
+                          </>
+                        )}
+                      </td>
+                      <td className="cat-col-actions">
+                        <button
+                          className="cat-icon-btn"
+                          title="Voir le dossier"
+                          onClick={() => openPro(r)}
+                        >
+                          <FaEye />
+                        </button>
+                        {stKey === "issued" && (
+                          <button
+                            className="cat-icon-btn danger"
+                            title="Révoquer"
+                            onClick={() => askRevokePro(r)}
+                          >
+                            <FaBan />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            count={count}
+            onChange={setPage}
+          />
+        </>
       ) : (
         <>
           <div className="cat-table-wrap">
@@ -297,7 +596,7 @@ export default function AdminCertification() {
                   <th>Actif</th>
                   <th>Catégorie</th>
                   <th>Valeur</th>
-                  <th>Boutique / Ville</th>
+                  <th>Établissement / Ville</th>
                   <th>Statut</th>
                   <th>Blockchain</th>
                   <th className="cat-col-actions">Actions</th>
@@ -315,10 +614,10 @@ export default function AdminCertification() {
                           <span className="cat-sku"> · {a.serial}</span>
                         )}
                       </td>
-                      <td>{a.category || "—"}</td>
+                      <td>{a.category || "·"}</td>
                       <td>{usd(a.valueUsd)}</td>
                       <td>
-                        {a.shopName || "—"}
+                        {a.shopName || "·"}
                         {a.city ? ` · ${cap(a.city)}` : ""}
                       </td>
                       <td>
@@ -330,7 +629,7 @@ export default function AdminCertification() {
                             <FaLink /> {bc.label}
                           </Badge>
                         ) : (
-                          "—"
+                          "·"
                         )}
                       </td>
                       <td className="cat-col-actions">
@@ -450,6 +749,52 @@ export default function AdminCertification() {
                 />
               </Field>
             </div>
+            <h3 className="dash-h3">Aptitude professionnelle (techniciens)</h3>
+            <div className="form-row">
+              <Field label="Prix émission (USD)">
+                <Input
+                  type="number"
+                  min="0"
+                  value={proCfg(cfg, "proIssuePriceUsd", "pro_issue_price_usd") ?? ""}
+                  placeholder="25"
+                  onChange={(e) =>
+                    setCfg({ ...cfg, proIssuePriceUsd: e.target.value })
+                  }
+                />
+              </Field>
+              <Field label="Prix renouvellement (USD)">
+                <Input
+                  type="number"
+                  min="0"
+                  value={proCfg(cfg, "proUpdatePriceUsd", "pro_update_price_usd") ?? ""}
+                  placeholder="10"
+                  onChange={(e) =>
+                    setCfg({ ...cfg, proUpdatePriceUsd: e.target.value })
+                  }
+                />
+              </Field>
+            </div>
+            <Field label="Durée de validité (mois)">
+              <Input
+                type="number"
+                min="1"
+                value={proCfg(cfg, "proValidityMonths", "pro_validity_months") ?? ""}
+                placeholder="24"
+                onChange={(e) =>
+                  setCfg({ ...cfg, proValidityMonths: e.target.value })
+                }
+              />
+            </Field>
+            <Field label="Checklist de vérification (un point par ligne)">
+              <Textarea
+                rows={4}
+                value={toLines(proCfg(cfg, "proChecklist", "pro_checklist"))}
+                placeholder={DEFAULT_PRO_CHECKLIST.join("\n")}
+                onChange={(e) =>
+                  setCfg({ ...cfg, proChecklist: e.target.value })
+                }
+              />
+            </Field>
             <div className="ui-modal-foot">
               <Button variant="ghost" onClick={() => setCfgOpen(false)}>
                 Annuler
@@ -465,13 +810,13 @@ export default function AdminCertification() {
       {/* Certifier (checklist) */}
       <Modal
         open={!!certify}
-        title={certify ? `Certifier — ${certify.name}` : ""}
+        title={certify ? `Certifier · ${certify.name}` : ""}
         onClose={() => setCertify(null)}
       >
         {certify && (
           <div className="product-form">
             <p className="dash-sub">
-              Valeur {usd(certify.valueUsd)} · {certify.shopName || "—"}.
+              Valeur {usd(certify.valueUsd)} · {certify.shopName || "·"}.
               L'émission coûte {usd(s.issuePriceUsd)} au commerçant (cumul).
             </p>
             <h3 className="dash-h3">Checklist légale</h3>
@@ -575,19 +920,19 @@ export default function AdminCertification() {
                       </div>
                       <div>
                         <span className="metric-item-label">Catégorie</span>
-                        <span>{doc.category || "—"}</span>
+                        <span>{doc.category || "·"}</span>
                       </div>
                       <div>
                         <span className="metric-item-label">Valeur</span>
                         <span>
                           {doc.value?.amount != null
                             ? `${Number(doc.value.amount).toLocaleString("fr-FR")} ${doc.value.currency || ""}`
-                            : "—"}
+                            : "-"}
                         </span>
                       </div>
                       <div>
                         <span className="metric-item-label">Propriétaire</span>
-                        <span>{doc.ownership?.current?.name || "—"}</span>
+                        <span>{doc.ownership?.current?.name || "·"}</span>
                       </div>
                     </div>
                     <h3 className="dash-h3">Checklist de contrôle</h3>
@@ -649,6 +994,212 @@ export default function AdminCertification() {
                       rel="noopener noreferrer"
                     >
                       <FaPrint /> Ouvrir / télécharger le PDF
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+      </Modal>
+
+      {/* Dossier aptitude professionnelle */}
+      <Modal
+        open={!!proView}
+        title={
+          proView
+            ? `Dossier · ${proView.subject?.holderName || proView.holderName || ""}`
+            : ""
+        }
+        onClose={() => setProView(null)}
+      >
+        {proView &&
+          (() => {
+            const r = proView;
+            const subj = r.subject || {};
+            const stKey = proStatus(r);
+            const issued = stKey === "issued";
+            const revoked = stKey === "revoked";
+            const expired = proExpired(r);
+            const trades = (subj.trades || r.trades || [])
+              .map(tradeLabel)
+              .filter(Boolean);
+            const zones = (subj.zones || r.zones || [])
+              .map((z) => (typeof z === "string" ? z : z?.label || z?.name))
+              .filter(Boolean);
+            const docs = Array.isArray(r.documents) ? r.documents : [];
+            const refs = Array.isArray(r.references) ? r.references : [];
+            const pdfUrl =
+              issued && r.serial
+                ? certAssetUrl(
+                    `/v1/certificates/${encodeURIComponent(r.serial)}/pdf`,
+                  )
+                : null;
+            const price = issued
+              ? proCfg(s, "proUpdatePriceUsd", "pro_update_price_usd")
+              : proCfg(s, "proIssuePriceUsd", "pro_issue_price_usd");
+            return (
+              <div className="cert-view admin-procert">
+                <div className="admin-procert-head">
+                  {subj.photoUrl && (
+                    <img src={subj.photoUrl} alt="" className="admin-procert-photo" />
+                  )}
+                  <div>
+                    <strong>{subj.holderName || r.holderName || "-"}</strong>
+                    <div className="cat-sku">
+                      {r.serial || "Pas encore de numéro"} ·{" "}
+                      {r.shopName || r.shop?.name || "-"}
+                      {r.city || r.shop?.city ? ` · ${cap(r.city || r.shop?.city)}` : ""}
+                    </div>
+                    <div className="admin-procert-badges">
+                      {expired ? (
+                        <Badge tone="danger">Expiré</Badge>
+                      ) : (
+                        <Badge tone={(STATUS[stKey] || STATUS.none).tone}>
+                          {issued ? "Délivré" : (STATUS[stKey] || STATUS.none).label}
+                        </Badge>
+                      )}
+                      {r.paid === true && <Badge tone="success">Payé</Badge>}
+                      {r.paid === false && <Badge tone="neutral">Non payé</Badge>}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="cert-doc-grid">
+                  <div>
+                    <span className="metric-item-label">Métiers</span>
+                    <span>{trades.length ? trades.join(", ") : "-"}</span>
+                  </div>
+                  <div>
+                    <span className="metric-item-label">Zones</span>
+                    <span>{zones.length ? zones.join(", ") : "-"}</span>
+                  </div>
+                  <div>
+                    <span className="metric-item-label">Expérience</span>
+                    <span>
+                      {subj.experienceYears != null
+                        ? `${subj.experienceYears} an${subj.experienceYears > 1 ? "s" : ""}`
+                        : "-"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="metric-item-label">Valable jusqu'au</span>
+                    <span>{fmtDate(r.validUntil)}</span>
+                  </div>
+                </div>
+
+                <h3 className="dash-h3">Documents ({docs.length})</h3>
+                {docs.length ? (
+                  <div className="admin-procert-docs">
+                    {docs.map((d, i) => (
+                      <a
+                        key={i}
+                        href={d.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="admin-procert-doc"
+                      >
+                        {isImg(d.url) ? (
+                          <img src={d.url} alt={DOC_LABEL[d.type] || "Document"} />
+                        ) : (
+                          <span className="admin-procert-docicon">
+                            <FaFileAlt />
+                          </span>
+                        )}
+                        <span>
+                          {DOC_LABEL[d.type] || "Document"}
+                          {d.note ? ` · ${d.note}` : ""}
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="dash-sub">Aucun document joint.</p>
+                )}
+
+                <h3 className="dash-h3">Références ({refs.length})</h3>
+                {refs.length ? (
+                  <ul className="admin-procert-refs">
+                    {refs.map((f, i) => (
+                      <li key={i}>
+                        <strong>{f.name}</strong>
+                        {f.relation ? <span> · {f.relation}</span> : null}
+                        {f.phone && (
+                          <a href={`tel:${String(f.phone).replace(/[^\d+]/g, "")}`}>
+                            <FaPhone /> {f.phone}
+                          </a>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="dash-sub">Aucune référence.</p>
+                )}
+
+                {!revoked && (
+                  <>
+                    <h3 className="dash-h3">Checklist de vérification</h3>
+                    {proChecklistTpl(r).map((label) => (
+                      <label key={label} className="cert-check">
+                        <input
+                          type="checkbox"
+                          checked={!!proChecks[label]}
+                          onChange={(e) =>
+                            setProChecks({ ...proChecks, [label]: e.target.checked })
+                          }
+                        />{" "}
+                        {label}
+                      </label>
+                    ))}
+                    <Field label="Notes">
+                      <Textarea
+                        rows={2}
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                      />
+                    </Field>
+                    {price != null && price !== "" && (
+                      <p className="dash-sub">
+                        {issued ? "Le renouvellement" : "L'émission"} coûte{" "}
+                        {usd(price)} au technicien.
+                      </p>
+                    )}
+                  </>
+                )}
+
+                <div className="ui-modal-foot admin-procert-foot">
+                  <Button variant="ghost" onClick={() => setProView(null)}>
+                    Fermer
+                  </Button>
+                  {pdfUrl && (
+                    <Button
+                      variant="ghost"
+                      as="a"
+                      href={pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <FaPrint /> PDF
+                    </Button>
+                  )}
+                  {issued && (
+                    <Button
+                      variant="danger"
+                      onClick={() => {
+                        setProView(null);
+                        askRevokePro(r);
+                      }}
+                    >
+                      <FaBan /> Révoquer
+                    </Button>
+                  )}
+                  {!revoked && (
+                    <Button variant="primary" onClick={doProIssue} disabled={busy}>
+                      {issued ? <FaSyncAlt /> : <FaCertificate />}{" "}
+                      {busy
+                        ? "Enregistrement…"
+                        : issued
+                          ? "Renouveler"
+                          : "Délivrer le certificat"}
                     </Button>
                   )}
                 </div>
