@@ -10,6 +10,7 @@ import { imageUrl, cityLabel, shopTypeLabel } from '../lib/format'
 import { whatsappLink } from '../lib/chat'
 import { ListingGrid } from '../components/ListingCard'
 import BookingModal from '../components/BookingModal'
+import ShopSocials from '../components/ShopSocials'
 
 function ShopPage({ id }) {
   const navigate = useNavigate()
@@ -66,6 +67,8 @@ function ShopPage({ id }) {
           <FaWhatsapp className="platform-icon" /> <span>Commander via l’assistant</span>
         </a>
       </header>
+
+      <ShopSocials socials={s.socials} shopName={s.name} />
 
       <div className="mk-shop-tools">
         <div className="mk-seg">

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   FaShoppingCart, FaWhatsapp, FaTelegramPlane, FaTruck, FaStore, FaShieldAlt, FaCheckCircle,
-  FaHandshake, FaMoneyBillWave, FaComments, FaChevronDown,
+  FaHandshake, FaMoneyBillWave, FaComments, FaChevronDown, FaCommentDots,
 } from 'react-icons/fa'
 import { Button, EmptyState, Field, Input, Textarea } from '../../components/ui'
 import { useToast } from '../../components/useToast'
@@ -11,6 +11,7 @@ import mpesaLogo from '../../assets/MPESA.png'
 import airtelLogo from '../../assets/AIRTEL.png'
 import orangeLogo from '../../assets/ORANGE.png'
 import { useCart } from '../useCart'
+import { useChat } from '../chat/useChat'
 import { CartLine } from '../components/CartDrawer'
 import { buildOrderMessage, totalsByCurrency, whatsappLink, openTelegram } from '../lib/chat'
 
@@ -34,6 +35,7 @@ function loadPrefs() {
 
 export default function CartPage() {
   const { items, clear } = useCart()
+  const { openChat } = useChat()
   const { notify } = useToast()
   const taxonomy = useTaxonomy()
   const [prefs] = useState(loadPrefs)
@@ -76,6 +78,12 @@ export default function CartPage() {
     try { localStorage.setItem(PREF_KEY, JSON.stringify({ reception, city, address, payment, name })) } catch { /* mode privé */ }
     return true
   }
+  // Voie principale : la commande part dans le chat de l'agent, sur le site.
+  const sendChat = () => {
+    if (!validate()) return
+    openChat({ text: message, send: true })
+    setSent('chat')
+  }
   const sendWhatsApp = () => {
     if (!validate()) return
     window.open(whatsappLink(message), '_blank', 'noopener')
@@ -94,7 +102,8 @@ export default function CartPage() {
         <span className="mk-sent-icon"><FaCheckCircle /></span>
         <h1>Votre commande est dans la conversation</h1>
         <p className="mk-muted">
-          {sent === 'telegram' ? 'Collez le message copié dans Telegram et envoyez-le.' : 'Envoyez le message pré-rempli dans WhatsApp.'}
+          {sent === 'chat' ? 'Votre commande est envoyée à l’assistant, dans le chat ouvert sur cette page.'
+            : sent === 'telegram' ? 'Collez le message copié dans Telegram et envoyez-le.' : 'Envoyez le message pré-rempli dans WhatsApp.'}
           {' '}L’assistant Tindisa prend le relais :
         </p>
         <ol className="mk-steps">
@@ -189,12 +198,12 @@ export default function CartPage() {
           </div>
           <p className="mk-hint">Prix indicatifs : l’assistant confirme le prix final et la disponibilité. Rien n’est débité avant votre accord.</p>
 
-          <button type="button" className="platform-btn whatsapp mk-btn-block" onClick={sendWhatsApp}>
-            <FaWhatsapp className="platform-icon" /> <span>Envoyer ma commande sur WhatsApp</span>
-          </button>
-          <button type="button" className="platform-btn telegram mk-btn-block" onClick={sendTelegram}>
-            <FaTelegramPlane className="platform-icon" /> <span>Envoyer sur Telegram</span>
-          </button>
+          <Button onClick={sendChat} className="mk-btn-block mk-order-btn"><FaCommentDots /> Commander avec l’assistant</Button>
+          <div className="mk-alt-channels">
+            <span>ou continuer sur</span>
+            <button type="button" onClick={sendWhatsApp}><FaWhatsapp /> WhatsApp</button>
+            <button type="button" onClick={sendTelegram}><FaTelegramPlane /> Telegram</button>
+          </div>
 
           <button type="button" className="mk-link-btn" onClick={() => setPreview((v) => !v)} aria-expanded={preview}>
             <FaComments /> Aperçu du message <FaChevronDown className={preview ? 'mk-rot' : ''} />

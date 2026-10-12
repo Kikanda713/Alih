@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 import {
   FaPaperPlane, FaPaperclip, FaPlus, FaRegComments, FaTrash, FaTimes,
   FaChartBar, FaChevronDown, FaBoxOpen, FaHandshake, FaTags, FaImage, FaFileAlt,
-  FaConciergeBell, FaShoppingBag, FaCheckCircle, FaEye,
+  FaEye,
 } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useT } from '../../i18n'
 import { uploadImage, isCloudinaryConfigured } from '../../api/cloudinary'
 import { Spinner } from '../../components/ui.jsx'
+import ChatMarkdown from '../../components/ChatMarkdown.jsx'
+import ShopCompletionNudge from '../../components/ShopCompletionNudge.jsx'
 
 function money(v, c = 'CDF') {
   const n = Number(v)
@@ -49,82 +49,6 @@ function StatsFloat({ stats }) {
   )
 }
 
-/* ---------------- Carrousel de produits dans le chat ----------------
-   L'agent émet un bloc ```tindisa-products contenant un tableau JSON
-   [{id,name,price,currency,city,image,condition,type}] → rendu en cartes. */
-function ProductCarousel({ items }) {
-  if (!Array.isArray(items) || items.length === 0) return null
-  return (
-    <div className="chat-products">
-      {items.map((p, i) => (
-        <div className="chat-product-card" key={p.id || i}>
-          {p.image ? (
-            <img src={p.image} alt={p.name || ''} loading="lazy" />
-          ) : (
-            <div className="chat-product-noimg">{p.type === 'service' ? <FaConciergeBell /> : <FaShoppingBag />}</div>
-          )}
-          <div className="chat-product-body">
-            <div className="chat-product-name" title={p.name}>{p.name}</div>
-            {(p.certified || p.certificate) && (
-              <div className="chat-product-cert" title="Certifié par Tindisa (vérifiable sur la blockchain)"><FaCheckCircle /> Certifié</div>
-            )}
-            {p.price != null && p.price !== '' && (
-              <div className="chat-product-price">{p.price} {p.currency || '$'}</div>
-            )}
-            {(p.city || p.condition) && (
-              <div className="chat-product-meta">{[p.city, p.condition].filter(Boolean).join(' · ')}</div>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-/* ---------------- Rendu Markdown (assistant) ----------------
-   Tableaux GFM, liens (nouvel onglet), images responsives, et bloc produit. */
-
-// react-markdown passe `node` (AST) : à retirer avant de propager au DOM.
-function withoutNode(props) {
-  const rest = { ...props }
-  delete rest.node
-  return rest
-}
-
-const mdComponents = {
-  table: (props) => (
-    <div className="md-table-wrap"><table {...withoutNode(props)} /></div>
-  ),
-  a: (props) => (
-    <a {...withoutNode(props)} target="_blank" rel="noopener noreferrer" />
-  ),
-  img: (props) => <img {...withoutNode(props)} className="md-img" alt={props.alt || ''} />,
-  code: (allProps) => {
-    const { inline, className, children, ...props } = withoutNode(allProps)
-    const lang = /language-([\w-]+)/.exec(className || '')?.[1]
-    if (!inline && lang === 'tindisa-products') {
-      const raw = String(children || '').trim()
-      try {
-        return <ProductCarousel items={JSON.parse(raw)} />
-      } catch {
-        // JSON encore incomplet (streaming) → placeholder discret.
-        return <div className="chat-products-loading">Chargement des produits…</div>
-      }
-    }
-    return <code className={className} {...props}>{children}</code>
-  },
-}
-
-function MarkdownContent({ text }) {
-  return (
-    <div className="chat-md">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>
-        {text}
-      </ReactMarkdown>
-    </div>
-  )
-}
-
 /* ---------------- Bulle de message ---------------- */
 function Bubble({ m }) {
   return (
@@ -145,7 +69,7 @@ function Bubble({ m }) {
         {/* Assistant : markdown riche. Utilisateur : texte brut (sauts de ligne préservés). */}
         {m.content &&
           (m.role === 'assistant' ? (
-            <MarkdownContent text={m.content} />
+            <ChatMarkdown text={m.content} />
           ) : (
             <p className="chat-user-text">{m.content}</p>
           ))}
@@ -357,6 +281,7 @@ export default function ChatHome() {
   return (
     <div className={`chat-home${empty ? ' is-empty' : ''}`}>
       <StatsFloat stats={stats} />
+      <ShopCompletionNudge />
 
       {/* Barre d'outils conversation */}
       <div className="chat-bar">

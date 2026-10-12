@@ -16,6 +16,7 @@ import HubsPage from "./market/pages/HubsPage.jsx";
 import HubPage from "./market/pages/HubPage.jsx";
 import ConnectivityPage from "./market/pages/ConnectivityPage.jsx";
 import SellPage from "./market/pages/SellPage.jsx";
+import OnboardingPage from "./market/pages/OnboardingPage.jsx";
 const DashboardLayout = lazy(() => import("./pages/dashboard/DashboardLayout.jsx"));
 const ChatHome = lazy(() => import("./pages/dashboard/ChatHome.jsx"));
 const CataloguePage = lazy(() => import("./pages/dashboard/CataloguePage.jsx"));
@@ -53,6 +54,7 @@ export default function Root() {
         <Route path="/centres/:id" element={<HubPage />} />
         <Route path="/connectivite" element={<ConnectivityPage />} />
         <Route path="/vendre" element={<SellPage />} />
+        <Route path="/vendre/boutique" element={<OnboardingPage />} />
       </Route>
       <Route path="/auth/callback" element={<Callback />} />
       <Route path="/link" element={<LinkPage />} />

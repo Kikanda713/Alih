@@ -150,12 +150,6 @@ section[id] {
 /* CTA Buttons */
 
 /* Platform Buttons (WhatsApp / Telegram) */
-.platforms {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 52px;
-  flex-wrap: wrap;
-}
 
 .platform-btn {
   display: flex;
@@ -274,64 +268,7 @@ section[id] {
 
 /* Featured card */
 
-.pricing-btn {
-  display: block;
-  width: 100%;
-  text-align: center;
-  padding: 14px 24px;
-  border-radius: var(--radius-btn);
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background var(--duration) var(--ease), transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
-  cursor: pointer;
-  border: none;
-}
-
-.pricing-btn-primary {
-  background: var(--terracotta);
-  color: var(--white);
-  box-shadow: 0 4px 16px rgba(198, 93, 46, 0.3);
-}
-
-.pricing-btn-primary:hover {
-  background: var(--terracotta-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(198, 93, 46, 0.4);
-}
-
-.pricing-btn-secondary {
-  background: transparent;
-  color: var(--terracotta);
-  border: 1.5px solid var(--terracotta);
-}
-
-.pricing-btn-secondary:hover {
-  background: var(--terracotta);
-  color: var(--white);
-  transform: translateY(-1px);
-}
-
 /* Pricing note */
-.pricing-commission { max-width: 860px; margin: 0 auto; text-align: center; }
-.pricing-tiers { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; margin-bottom: 26px; }
-.pricing-tier { flex: 1 1 130px; max-width: 170px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 18px 12px; display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow-sm); }
-.pricing-tier .pt-rate { font-size: 1.7rem; font-weight: 800; color: var(--terracotta); }
-.pricing-tier .pt-range { font-size: .85rem; color: var(--gray); }
-.pricing-note {
-  text-align: center;
-  font-size: 13px;
-  color: var(--gray);
-  margin-top: 48px;
-  line-height: 1.7;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.pricing-note strong {
-  color: var(--ebony);
-}
 
 /* ===================== FINAL CTA ===================== */
 
@@ -340,13 +277,6 @@ section[id] {
 /* ===================== FOOTER ===================== */
 
 /* ===================== RESPONSIVE ===================== */
-
-@media (max-width: 900px) {
-
-  .platforms {
-    justify-content: center;
-  }
-}
 
 @media (max-width: 768px) {
 
@@ -506,4 +436,3 @@ section[id] {
 }
 
 /* Icône inline des notes de tarification (remplace l'ancien ◈). */
-.pricing-note-ic { color: var(--terracotta); vertical-align: -1px; margin-right: 2px; }

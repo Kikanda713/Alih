@@ -1,17 +1,20 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
-import { FaSearch } from 'react-icons/fa'
+import { FaSearch, FaCamera } from 'react-icons/fa'
+import { useChat } from '../chat/useChat'
 
 /*
  * Barre de recherche centrale (zone principale du marché). Le sélecteur de type
  * permet de viser directement produits ou services. Soumet vers /marche en
- * conservant les filtres utiles déjà posés (ville).
+ * conservant les filtres utiles déjà posés (ville). L'appareil photo ouvre le
+ * chat de l'agent pour une recherche par image.
  */
 export default function SearchBar({ size = 'md', autoFocus = false, placeholder }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [params] = useSearchParams()
   const onMarket = location.pathname === '/marche'
+  const { openChat } = useChat()
   const [q, setQ] = useState(onMarket ? params.get('q') || '' : '')
   // État initialisé depuis l'URL ; le parent remonte le composant (key) quand
   // q/type changent dans l'URL (navigation arrière, puce d'univers…).
@@ -43,6 +46,9 @@ export default function SearchBar({ size = 'md', autoFocus = false, placeholder 
         autoFocus={autoFocus}
         enterKeyHint="search"
       />
+      <button type="button" className="mk-search-photo" onClick={() => openChat({ photo: true })} title="Chercher avec une photo" aria-label="Chercher avec une photo">
+        <FaCamera />
+      </button>
       <button type="submit" className="mk-search-btn" aria-label="Rechercher">
         <FaSearch /> <span>Rechercher</span>
       </button>

@@ -5,6 +5,8 @@ import { useLoad } from '../../api/useLoad'
 import { uploadImage, isCloudinaryConfigured } from '../../api/cloudinary'
 import { useTaxonomy } from '../../api/taxonomy'
 import { Card, Field, Input, Textarea, Select, Button, Spinner } from '../../components/ui.jsx'
+import { useToast } from '../../components/useToast'
+import SocialLinksForm from '../../market/components/SocialLinksForm'
 
 const NO_LANDMARKS = []
 const LocationPicker = lazy(() => import('../../components/LocationPicker.jsx'))
@@ -256,6 +258,26 @@ export default function BoutiquePage() {
           </div>
         </form>
       </Card>
+      {shopId && <SocialsCard />}
     </div>
+  )
+}
+
+// Réseaux sociaux de la boutique : liens et fil de publications sur la vitrine publique.
+function SocialsCard() {
+  const api = useTindisaApi()
+  const { notify } = useToast()
+  const { data, loading } = useLoad(() => api.get('/v1/merchant/shop/socials').catch(() => ({})), [])
+  return (
+    <Card className="shop-socials-card">
+      <h2 className="dash-title" style={{ fontSize: '1.1rem' }}>Réseaux sociaux</h2>
+      <p className="dash-subtitle">TikTok, Facebook, Instagram, YouTube ou votre site : affichés sur votre vitrine, avec vos publications.</p>
+      {loading ? <Spinner /> : (
+        <SocialLinksForm
+          initial={data || {}}
+          onSave={async (values) => { await api.put('/v1/merchant/shop/socials', values); notify('Réseaux sociaux enregistrés', 'success') }}
+        />
+      )}
+    </Card>
   )
 }

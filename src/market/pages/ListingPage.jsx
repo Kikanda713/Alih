@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import {
   FaMapMarkerAlt, FaCertificate, FaWhatsapp, FaTelegramPlane, FaShareAlt, FaStore, FaShieldAlt,
   FaTruck, FaHandshake, FaCartPlus, FaCalendarAlt, FaComments, FaMinus, FaPlus, FaCheckCircle,
-  FaUserFriends, FaChevronRight, FaMoneyBillWave, FaWifi,
+  FaUserFriends, FaChevronRight, FaMoneyBillWave, FaWifi, FaCommentDots,
 } from 'react-icons/fa'
 import { WifiBadge } from '../components/WifiStatus'
 import { Button, Spinner, EmptyState, Badge } from '../../components/ui'
@@ -16,6 +16,7 @@ import {
 import { bookingMode } from '../lib/universes'
 import { buildItemMessage, whatsappLink, openTelegram } from '../lib/chat'
 import { useCart } from '../useCart'
+import { useChat } from '../chat/useChat'
 import BookingModal from '../components/BookingModal'
 import { ListingGrid, CertificateLine } from '../components/ListingCard'
 
@@ -51,6 +52,7 @@ function ListingPage({ id }) {
   const taxonomy = useTaxonomy()
   const { notify } = useToast()
   const { add, setOpen } = useCart()
+  const { openChat } = useChat()
   const [state, setState] = useState({ loading: true, item: null, error: null })
   const [qty, setQty] = useState(1)
   const [bookItem, setBookItem] = useState(null)
@@ -151,19 +153,20 @@ function ListingPage({ id }) {
             </div>
           )}
 
-          <div className="mk-chat-actions">
-            <a className="platform-btn whatsapp" href={whatsappLink(buildItemMessage(item, 'order'))} target="_blank" rel="noopener noreferrer">
-              <FaWhatsapp className="platform-icon" /> <span>Commander sur WhatsApp</span>
-            </a>
-            <button type="button" className="platform-btn telegram" onClick={() => { openTelegram(buildItemMessage(item, 'order')); notify('Message copié : collez-le dans Telegram', 'info', 4000) }}>
-              <FaTelegramPlane className="platform-icon" /> <span>Telegram</span>
-            </button>
+          {/* La commande se traite dans le chat Tindisa ; WhatsApp / Telegram au choix. */}
+          <Button className="mk-btn-block mk-order-btn" onClick={() => openChat({ text: buildItemMessage(item, 'order'), send: true })}>
+            <FaCommentDots /> Commander avec l’assistant
+          </Button>
+          <div className="mk-alt-channels">
+            <span>ou sur</span>
+            <a href={whatsappLink(buildItemMessage(item, 'order'))} target="_blank" rel="noopener noreferrer"><FaWhatsapp /> WhatsApp</a>
+            <button type="button" onClick={() => { openTelegram(buildItemMessage(item, 'order')); notify('Message copié : collez-le dans Telegram', 'info', 4000) }}><FaTelegramPlane /> Telegram</button>
           </div>
           <div className="mk-mini-actions">
             {item.negotiable && (
-              <a href={whatsappLink(buildItemMessage(item, 'negotiate'))} target="_blank" rel="noopener noreferrer"><FaHandshake /> Négocier le prix</a>
+              <button type="button" onClick={() => openChat({ text: buildItemMessage(item, 'negotiate'), send: true })}><FaHandshake /> Négocier le prix</button>
             )}
-            <a href={whatsappLink(buildItemMessage(item, 'question'))} target="_blank" rel="noopener noreferrer"><FaComments /> Poser une question</a>
+            <button type="button" onClick={() => openChat({ text: buildItemMessage(item, 'question') })}><FaComments /> Poser une question</button>
             <button type="button" onClick={share}><FaShareAlt /> Partager</button>
           </div>
 
