@@ -11,6 +11,7 @@ import { useAdminView } from './adminView'
 import { useTaxonomy } from '../../api/taxonomy'
 import { categoryLabel } from '../../market/lib/format'
 import { EnhancePanel, EnhanceThumb } from './PhotoEnhance.jsx'
+import ProactivePanel from './ProactivePanel.jsx'
 
 /*
  * Back-office du marché web : santé du catalogue public, ce que cherchent les
@@ -143,6 +144,7 @@ export default function AdminMarketplace() {
       </div>
 
       <EnhancePanel withParams={withParams} onProgress={loadList} />
+      <ProactivePanel />
 
       <div className="admin-toolbar admin-mk-toolbar">
         <div className="cat-tabs admin-tabs">

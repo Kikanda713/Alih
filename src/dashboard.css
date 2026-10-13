@@ -1041,3 +1041,12 @@
 .admin-other-trades ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 280px; overflow-y: auto; }
 .admin-other-trades li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; font-size: 0.88rem; overflow-wrap: anywhere; }
 .admin-other-trades-ex { color: var(--gray); font-size: 0.8rem; }
+
+/* ===== Suggestions automatiques (back-office Marché web) ===== */
+.admin-proactive { margin: 14px 0; padding: 12px 16px; border: 1px solid var(--border, rgba(18,18,18,0.1)); border-radius: 12px; background: var(--white, #fff); }
+.admin-proactive summary { cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.admin-proactive summary small { font-weight: 400; color: var(--gray, #6b6560); }
+.admin-proactive-list { list-style: none; display: grid; gap: 12px; margin-top: 10px; }
+.admin-proactive-list li { display: grid; gap: 4px; padding-bottom: 10px; border-bottom: 1px solid rgba(18, 18, 18, 0.06); }
+.admin-proactive-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.admin-proactive-msg { white-space: pre-wrap; font-size: 0.88rem; background: rgba(198, 93, 46, 0.05); border-radius: 8px; padding: 8px 10px; }
