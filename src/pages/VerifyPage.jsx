@@ -16,6 +16,7 @@ import {
   FaCertificate,
   FaTools,
   FaUserCheck,
+  FaStore,
 } from "react-icons/fa";
 import tindisaLogo from "../assets/tindisa-logo.png";
 import {
@@ -60,10 +61,11 @@ function verifyOutcome(payload) {
   }));
 }
 
-// Spécimen gratuit : 'asset' (certificat de valeur) ou 'pro' (aptitude professionnelle).
+// Spécimen gratuit : 'asset' (certificat de valeur), 'pro' (aptitude
+// professionnelle) ou 'shop' (établissement vérifié).
 async function fetchDemo(kind) {
-  if (kind !== "pro") return getDemoCertificate();
-  const res = await fetch(`${apiBaseUrl}/v1/certificates/demo?kind=pro`, {
+  if (kind !== "pro" && kind !== "shop") return getDemoCertificate();
+  const res = await fetch(`${apiBaseUrl}/v1/certificates/demo?kind=${kind}`, {
     method: "POST",
   });
   const text = await res.text();
@@ -76,6 +78,9 @@ async function fetchDemo(kind) {
 
 // Libellé lisible d'un métier ({ id, label } ou chaîne).
 const tradeName = (t) => (typeof t === "string" ? t : t?.label || t?.id || "");
+// Libellé d'un point vérifié (chaîne ou { label }) ; texte affichable sûr.
+const checkName = (c) => (typeof c === "string" ? c : c?.label || c?.key || "");
+const asText = (v) => (typeof v === "string" || typeof v === "number" ? String(v) : "");
 
 const PRO_STATE = {
   valid: { tone: "ok", label: "Valide", title: "Certificat valide" },
@@ -207,7 +212,14 @@ export default function VerifyPage() {
   // Alerte si un PDF importé ne correspond PAS à l'empreinte ancrée (document altéré).
   const tampered = cert && cert.hashMatch === false;
   // Certificat d'aptitude professionnelle (technicien / artisan).
-  const isPro = (cert?.kind || result?.kind) === "pro";
+  const certKind = cert?.kind || result?.kind;
+  const isPro = certKind === "pro";
+  // Certificat d'établissement vérifié (visite de l'équipe Tindisa).
+  const isShop = certKind === "shop";
+  const shopChecks = (Array.isArray(cert?.checks) ? cert.checks : [])
+    .map(checkName)
+    .filter((c) => typeof c === "string" && c);
+  const shopPlace = [asText(cert?.commune), asText(cert?.city)].filter(Boolean).join(", ");
   const proState =
     cert?.status === "revoked"
       ? PRO_STATE.revoked
@@ -237,8 +249,8 @@ export default function VerifyPage() {
           </div>
           <h1>Vérifier un certificat</h1>
           <p>
-            Confirmez l'authenticité d'un certificat Tindisa : actif de valeur
-            ou aptitude professionnelle d'un technicien. La vérification
+            Confirmez l'authenticité d'un certificat Tindisa : actif de valeur,
+            aptitude professionnelle d'un technicien ou établissement vérifié. La vérification
             s'appuie sur un
             <strong> registre infalsifiable (blockchain)</strong> : importez le
             certificat PDF, scannez le QR code, ou saisissez son numéro de
@@ -261,6 +273,14 @@ export default function VerifyPage() {
             >
               {busy ? <FaSpinner className="spin" /> : <FaTools />} Certificat
               d'aptitude professionnelle
+            </button>
+            <button
+              className="verify-example"
+              onClick={() => viewExample("shop")}
+              disabled={busy}
+            >
+              {busy ? <FaSpinner className="spin" /> : <FaStore />} Établissement
+              vérifié
             </button>
           </div>
         </div>
@@ -286,7 +306,7 @@ export default function VerifyPage() {
             {method === "hash" && (
               <input
                 className="verify-field"
-                placeholder="N° de série (TINDISA-CERT-… ou TINDISA-CAP-…) ou empreinte (0x…)"
+                placeholder="N° de série (TINDISA-CERT-…, TINDISA-CAP-…, TINDISA-ETS-…) ou empreinte (0x…)"
                 value={hash}
                 onChange={(e) => setHash(e.target.value)}
               />
@@ -496,7 +516,131 @@ export default function VerifyPage() {
           </div>
         )}
 
-        {cert && !isPro && (
+        {cert && isShop && (
+          <div className={`verify-cert tone-${proState.tone}`}>
+            <div className="verify-cert-head">
+              {proState.tone === "ok" ? (
+                <FaStore />
+              ) : proState.tone === "bad" ? (
+                <FaTimesCircle />
+              ) : (
+                <FaExclamationTriangle />
+              )}
+              <div>
+                <strong>Établissement vérifié par Tindisa</strong>
+                <span>
+                  <em className={`verify-pill tone-${proState.tone}`}>
+                    {proState.label}
+                  </em>
+                  {asText(cert.serial) ? ` ${asText(cert.serial)}` : ""}
+                </span>
+              </div>
+            </div>
+
+            {tampered && (
+              <div className="verify-tamper">
+                <FaExclamationTriangle /> Le document importé ne correspond pas
+                à l'empreinte enregistrée : il a pu être modifié.
+              </div>
+            )}
+
+            <dl className="verify-cert-grid">
+              <div className="wide">
+                <dt>Établissement</dt>
+                <dd>{asText(cert.shopName) || asText(cert.shop?.name) || "Non précisé"}</dd>
+              </div>
+              {asText(cert.typeLabel) && (
+                <div>
+                  <dt>Activité</dt>
+                  <dd>{asText(cert.typeLabel)}</dd>
+                </div>
+              )}
+              {shopPlace && (
+                <div>
+                  <dt>Localisation</dt>
+                  <dd>{shopPlace}</dd>
+                </div>
+              )}
+              {cert.visitedAt && (
+                <div>
+                  <dt>Visité le</dt>
+                  <dd>{fmtDate(cert.visitedAt)}</dd>
+                </div>
+              )}
+              {(cert.verifiedAt || cert.issuedAt) && (
+                <div>
+                  <dt>Certifié le</dt>
+                  <dd>{fmtDate(cert.verifiedAt || cert.issuedAt)}</dd>
+                </div>
+              )}
+              <div>
+                <dt>{proState === PRO_STATE.expired ? "A expiré le" : "Valable jusqu'au"}</dt>
+                <dd>{fmtDate(cert.validUntil)}</dd>
+              </div>
+              <div>
+                <dt>Émetteur</dt>
+                <dd>{asText(cert.issuer) || "Tindisa"}</dd>
+              </div>
+              {shopChecks.length > 0 && (
+                <div className="wide">
+                  <dt>Points vérifiés lors de la visite</dt>
+                  <dd>
+                    <ul className="verify-checks">
+                      {shopChecks.map((c, i) => (
+                        <li key={i}>
+                          <FaCheckCircle /> {c}
+                        </li>
+                      ))}
+                    </ul>
+                  </dd>
+                </div>
+              )}
+              {asText(cert.hash) && (
+                <div className="wide">
+                  <dt>Empreinte (SHA-256)</dt>
+                  <dd className="mono">{asText(cert.hash)}</dd>
+                </div>
+              )}
+            </dl>
+
+            {pdfSrc && (
+              <div className="verify-pdf-wrap">
+                <div className="verify-pdf-bar">
+                  <span>
+                    <FaFilePdf /> Certificat officiel
+                  </span>
+                  <a href={pdfSrc} target="_blank" rel="noopener noreferrer" download>
+                    <FaDownload /> Télécharger
+                  </a>
+                </div>
+                <iframe
+                  className="verify-pdf"
+                  src={pdfSrc}
+                  title="Certificat d'établissement vérifié Tindisa"
+                />
+              </div>
+            )}
+
+            <div className="verify-cert-links">
+              {cert.shop?.id && (
+                <Link to={`/boutique/${encodeURIComponent(cert.shop.id)}`}>
+                  <FaExternalLinkAlt /> Voir la page
+                  {asText(cert.shop.name) ? ` de ${asText(cert.shop.name)}` : " de l'établissement"}
+                </Link>
+              )}
+              {cert.explorerUrl && (
+                <a href={cert.explorerUrl} target="_blank" rel="noopener noreferrer">
+                  <FaExternalLinkAlt /> Voir la transaction blockchain
+                </a>
+              )}
+            </div>
+            <button className="verify-again" onClick={reset}>
+              Vérifier un autre certificat
+            </button>
+          </div>
+        )}
+
+        {cert && !isPro && !isShop && (
           <div className={`verify-cert tone-${statusTone}`}>
             <div className="verify-cert-head">
               {statusTone === "ok" ? (

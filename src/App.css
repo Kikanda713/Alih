@@ -449,3 +449,8 @@ section[id] {
 .verify-cert-head > div, .verify-cert-grid > div { min-width: 0; }
 .verify-cert-head span, .verify-cert-grid dd, .verify-cert-links a { overflow-wrap: anywhere; word-break: normal; white-space: normal; text-overflow: clip; }
 .verify-cert-grid dd.mono { word-break: break-all; }
+
+/* Vérification : points contrôlés lors de la visite (établissement vérifié) */
+.verify-checks { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; font-weight: 500; }
+.verify-checks li { display: flex; align-items: flex-start; gap: 8px; }
+.verify-checks svg { color: #1a9e54; flex-shrink: 0; margin-top: 3px; }

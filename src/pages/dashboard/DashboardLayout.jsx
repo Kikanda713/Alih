@@ -15,13 +15,14 @@ function MerchantShell() {
   const { t } = useT()
   const api = useTindisaApi()
   // Techniciens / artisans : entrée « Certificat pro » (certificat d'aptitude
-  // professionnelle). Vendeur bloqué par Tindisa : bandeau avec le motif.
+  // professionnelle) ; autres établissements : « Certification » (établissement vérifié). Vendeur bloqué par Tindisa : bandeau avec le motif.
   const { data: info } = useLoad(async () => {
     const shop = await api.get('/v1/merchant/shop').then((r) => r?.shop || null, () => null)
     const isPro = shop?.shopType ? isIndividualType(await loadTaxonomy(), shop.shopType) : false
-    return { isPro, blocked: shop?.status === 'blocked' }
+    return { isPro, hasShop: !!shop, blocked: shop?.status === 'blocked' }
   }, [])
   const isPro = !!info?.isPro
+  const isEstablishment = !!info?.hasShop && !isPro
   const nav = [
     { to: '/dashboard', end: true, icon: <FaHome />, label: t('dash.nav.home') },
     { to: '/dashboard/catalogue', icon: <FaBoxOpen />, label: t('dash.nav.catalogue') },
@@ -29,6 +30,7 @@ function MerchantShell() {
     { to: '/dashboard/wallet', icon: <FaWallet />, label: t('dash.nav.wallet') },
     { to: '/dashboard/abonnement', icon: <FaCreditCard />, label: 'Facturation' },
     ...(isPro ? [{ to: '/dashboard/certificat-pro', icon: <FaAward />, label: 'Certificat pro' }] : []),
+    ...(isEstablishment ? [{ to: '/dashboard/certificat-etablissement', icon: <FaAward />, label: 'Certification' }] : []),
   ]
   const notice = info?.blocked ? (
     <div className="dash-blocked-banner" role="alert">

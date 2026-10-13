@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { FaMapMarkerAlt, FaCertificate, FaCartPlus, FaCalendarAlt, FaComments, FaStore, FaUserFriends, FaWifi, FaExclamationTriangle, FaAward } from 'react-icons/fa'
+import { FaMapMarkerAlt, FaCertificate, FaCartPlus, FaCalendarAlt, FaComments, FaStore, FaUserFriends, FaWifi, FaExclamationTriangle, FaAward, FaCheckCircle } from 'react-icons/fa'
 import { formatPrice, unitSuffix, imageUrl, cityLabel } from '../lib/format'
 import { bookingMode } from '../lib/universes'
 import { useTaxonomy } from '../../api/taxonomy'
@@ -78,7 +78,14 @@ export function ListingCard({ item, onBook }) {
         </div>
         <div className="mk-card-meta">
           {item.city && <span><FaMapMarkerAlt /> {cityLabel(taxonomy, item.city)}</span>}
-          {item.shop?.name && !item.shop.isP2P && <span className="mk-card-shop">{item.shop.name}</span>}
+          {item.shop?.name && !item.shop.isP2P && (
+            <span className="mk-card-shop">
+              {item.shop.name}
+              {item.shop.verified === true && (
+                <FaCheckCircle className="mk-card-verified" title="Établissement vérifié par Tindisa" aria-label="Établissement vérifié par Tindisa" />
+              )}
+            </span>
+          )}
         </div>
         {item.hub && (
           <div className={`mk-card-hub${item.hub.wifiStatus === 'live' ? ' is-live' : ''}`} title={item.hub.wifiStatus === 'live' ? 'Centre connecté au Wi-Fi Tindisa' : 'Centre en cours de connexion'}>

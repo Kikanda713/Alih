@@ -14,6 +14,7 @@ import {
   FaFileAlt,
   FaPhone,
   FaSyncAlt,
+  FaStore,
 } from "react-icons/fa";
 import { useTaxonomy } from "../../api/taxonomy";
 import { useTindisaApi } from "../../api/client";
@@ -36,6 +37,8 @@ import { usePaged } from "../../components/usePaged";
 import { Pagination } from "../../components/Pagination.jsx";
 import { useAdminView } from "./adminView";
 import { certAssetUrl } from "../../api/certificates";
+import { ShopCertDetail, ShopCertTable } from "./AdminShopCerts.jsx";
+import { DEFAULT_SHOP_CHECKLIST } from "../dashboard/certCommon";
 
 const usd = (v) =>
   `${Number(v || 0).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} $`;
@@ -84,7 +87,9 @@ const PRO_FILTERS = [
 const KINDS = [
   { k: "asset", label: "Actifs de valeur" },
   { k: "pro", label: "Aptitude professionnelle" },
+  { k: "shop", label: "Établissements" },
 ];
+const KIND_ICON = { asset: <FaCertificate />, pro: <FaTools />, shop: <FaStore /> };
 
 // ---- Aptitude professionnelle (CAP) ----
 const DOC_LABEL = {
@@ -134,6 +139,7 @@ export default function AdminCertification() {
   const [kind, setKind] = useState("asset");
   const [filter, setFilter] = useState("");
   const [proView, setProView] = useState(null); // dossier pro affiché
+  const [shopView, setShopView] = useState(null); // établissement affiché
   const [proChecks, setProChecks] = useState({});
   const [cfgOpen, setCfgOpen] = useState(false);
   const [certify, setCertify] = useState(null); // asset en cours de certification
@@ -155,7 +161,7 @@ export default function AdminCertification() {
     reload,
   } = useLoad(() => {
     const qs = [
-      kind === "pro" ? "kind=pro" : "",
+      kind === "pro" || kind === "shop" ? "kind=" + kind : "",
       filter ? "filter=" + filter : "",
     ]
       .filter(Boolean)
@@ -163,7 +169,9 @@ export default function AdminCertification() {
     const path = "/v1/admin/certification/assets" + (qs ? "?" + qs : "");
     return api.get(withCity(path)).then(
       (r) => ({
-        assets: r?.assets || r?.items || r?.certificates || [],
+        assets: Array.isArray(r?.assets || r?.items || r?.certificates)
+          ? r.assets || r.items || r.certificates
+          : [],
         counts: r?.counts || {},
         settings: r?.settings || {},
       }),
@@ -216,6 +224,21 @@ export default function AdminCertification() {
           Array.isArray(proList) ? proList.map(itemLabel) : String(proList).split("\n")
         )
           .map((s) => s.trim())
+          .filter(Boolean);
+      }
+      // Établissements vérifiés.
+      const shopIssue = proCfg(cfg, "shopIssuePriceUsd", "shop_issue_price_usd");
+      const shopUpdate = proCfg(cfg, "shopUpdatePriceUsd", "shop_update_price_usd");
+      const shopMonths = proCfg(cfg, "shopValidityMonths", "shop_validity_months");
+      const shopList = proCfg(cfg, "shopChecklist", "shop_checklist");
+      if (shopIssue !== undefined && shopIssue !== "") body.shopIssuePriceUsd = Number(shopIssue);
+      if (shopUpdate !== undefined && shopUpdate !== "") body.shopUpdatePriceUsd = Number(shopUpdate);
+      if (shopMonths !== undefined && shopMonths !== "") body.shopValidityMonths = Number(shopMonths);
+      if (shopList !== undefined) {
+        body.shopChecklist = (
+          Array.isArray(shopList) ? shopList.map(itemLabel) : String(shopList).split("\n")
+        )
+          .map((x) => x.trim())
           .filter(Boolean);
       }
       const r = await api.put("/v1/admin/certification/config", body);
@@ -371,10 +394,21 @@ export default function AdminCertification() {
       busy: false,
     });
 
+  const askRevokeShop = (row) =>
+    setConfirm({
+      open: true,
+      asset: {
+        certId: row.certId || row.id,
+        name: row.subject?.shopName || row.shopName || row.serial,
+      },
+      busy: false,
+    });
+
   const s = data.settings || {};
   const c = data.counts || {};
   const isPro = kind === "pro";
-  const filters = isPro ? PRO_FILTERS : FILTERS;
+  const isShop = kind === "shop";
+  const filters = isPro || isShop ? PRO_FILTERS : FILTERS;
 
   return (
     <div className="dash-page">
@@ -384,7 +418,13 @@ export default function AdminCertification() {
             <FaCertificate style={{ marginRight: 8 }} />
             Certification
           </h1>
-          {isPro ? (
+          {isShop ? (
+            <p className="dash-sub">
+              Établissements vérifiés : visite sur place (produits, prix,
+              réactivité, documents légaux, hygiène), délivrance et
+              renouvellement chaque année.
+            </p>
+          ) : isPro ? (
             <p className="dash-sub">
               Certificats d'aptitude professionnelle des techniciens et
               artisans : vérification du dossier (identité, diplômes,
@@ -418,17 +458,17 @@ export default function AdminCertification() {
               setFilter("");
             }}
           >
-            {k.k === "pro" ? <FaTools /> : <FaCertificate />} {k.label}
+            {KIND_ICON[k.k]} {k.label}
           </button>
         ))}
       </div>
 
-      {isPro ? (
+      {isPro || isShop ? (
         <StatGrid>
           <StatCard
-            icon={<FaTools />}
+            icon={isShop ? <FaStore /> : <FaTools />}
             value={c.total ?? data.assets.length}
-            label="Dossiers"
+            label={isShop ? "Demandes" : "Dossiers"}
           />
           <StatCard
             icon={<FaCheckCircle />}
@@ -438,7 +478,7 @@ export default function AdminCertification() {
           <StatCard
             icon={<FaClock />}
             value={c.requested ?? 0}
-            label="À vérifier"
+            label={isShop ? "À visiter" : "À vérifier"}
           />
           <StatCard
             icon={<FaTimesCircle />}
@@ -488,7 +528,13 @@ export default function AdminCertification() {
       {loading ? (
         <Spinner label="Chargement…" />
       ) : data.assets.length === 0 ? (
-        isPro ? (
+        isShop ? (
+          <EmptyState
+            icon={<FaStore />}
+            title="Aucune demande"
+            text="Aucune demande de certificat d'établissement pour ce filtre ou cette ville."
+          />
+        ) : isPro ? (
           <EmptyState
             icon={<FaTools />}
             title="Aucun dossier"
@@ -501,6 +547,16 @@ export default function AdminCertification() {
             text="Aucun actif éligible pour ce filtre / cette ville."
           />
         )
+      ) : isShop ? (
+        <ShopCertTable
+          rows={pageItems}
+          page={page}
+          totalPages={totalPages}
+          count={count}
+          setPage={setPage}
+          onOpen={setShopView}
+          onRevoke={askRevokeShop}
+        />
       ) : isPro ? (
         <>
           <div className="cat-table-wrap">
@@ -796,6 +852,44 @@ export default function AdminCertification() {
                 onChange={(e) =>
                   setCfg({ ...cfg, proChecklist: e.target.value })
                 }
+              />
+            </Field>
+            <h3 className="dash-h3">Établissements vérifiés</h3>
+            <div className="form-row">
+              <Field label="Prix émission (USD)">
+                <Input
+                  type="number"
+                  min="0"
+                  value={proCfg(cfg, "shopIssuePriceUsd", "shop_issue_price_usd") ?? ""}
+                  placeholder="25"
+                  onChange={(e) => setCfg({ ...cfg, shopIssuePriceUsd: e.target.value })}
+                />
+              </Field>
+              <Field label="Prix renouvellement (USD)">
+                <Input
+                  type="number"
+                  min="0"
+                  value={proCfg(cfg, "shopUpdatePriceUsd", "shop_update_price_usd") ?? ""}
+                  placeholder="10"
+                  onChange={(e) => setCfg({ ...cfg, shopUpdatePriceUsd: e.target.value })}
+                />
+              </Field>
+            </div>
+            <Field label="Durée de validité (mois)">
+              <Input
+                type="number"
+                min="1"
+                value={proCfg(cfg, "shopValidityMonths", "shop_validity_months") ?? ""}
+                placeholder="12"
+                onChange={(e) => setCfg({ ...cfg, shopValidityMonths: e.target.value })}
+              />
+            </Field>
+            <Field label="Checklist de la visite (un point par ligne)">
+              <Textarea
+                rows={5}
+                value={toLines(proCfg(cfg, "shopChecklist", "shop_checklist"))}
+                placeholder={DEFAULT_SHOP_CHECKLIST.join("\n")}
+                onChange={(e) => setCfg({ ...cfg, shopChecklist: e.target.value })}
               />
             </Field>
             <div className="ui-modal-foot">
@@ -1209,6 +1303,42 @@ export default function AdminCertification() {
               </div>
             );
           })()}
+      </Modal>
+
+      {/* Établissement vérifié */}
+      <Modal
+        open={!!shopView}
+        title={
+          shopView
+            ? `Établissement · ${
+                typeof shopView.subject?.shopName === "string"
+                  ? shopView.subject.shopName
+                  : typeof shopView.shopName === "string"
+                    ? shopView.shopName
+                    : ""
+              }`
+            : ""
+        }
+        onClose={() => setShopView(null)}
+      >
+        {shopView && (
+          <ShopCertDetail
+            key={shopView.certId || shopView.id || shopView.serial}
+            row={shopView}
+            settings={s}
+            api={api}
+            notify={notify}
+            onClose={() => setShopView(null)}
+            onDone={() => {
+              setShopView(null);
+              reload();
+            }}
+            onRevoke={(row) => {
+              setShopView(null);
+              askRevokeShop(row);
+            }}
+          />
+        )}
       </Modal>
 
       <ConfirmModal

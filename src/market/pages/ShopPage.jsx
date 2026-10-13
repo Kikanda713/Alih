@@ -13,6 +13,22 @@ import BookingModal from '../components/BookingModal'
 import ShopSocials from '../components/ShopSocials'
 import { ProFacts, ProWorks } from '../components/ProShowcase'
 
+// Certificat d'établissement vérifié (visite Tindisa) : lien vers sa vérification publique.
+function VerifiedBadge({ serial, validUntil }) {
+  const d = validUntil ? new Date(validUntil) : null
+  const until = d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString('fr-FR', { dateStyle: 'long' }) : ''
+  const body = (
+    <>
+      <FaCheckCircle /> <span>Établissement vérifié par Tindisa{until && <small> · valable jusqu'au {until}</small>}</span>
+    </>
+  )
+  return typeof serial === 'string' && serial ? (
+    <p><Link to={`/verify?c=${encodeURIComponent(serial)}`} className="mk-ok mk-shop-verified" title="Vérifier le certificat">{body}</Link></p>
+  ) : (
+    <p className="mk-ok mk-shop-verified">{body}</p>
+  )
+}
+
 function ShopPage({ id }) {
   const navigate = useNavigate()
   const taxonomy = useTaxonomy()
@@ -62,7 +78,7 @@ function ShopPage({ id }) {
             {place && <> · <FaMapMarkerAlt /> {place}</>}
           </p>
           {s.landmark && <p className="mk-muted">Repère : {s.landmark}</p>}
-          {s.verified && <p className="mk-ok"><FaCheckCircle /> Vendeur vérifié par Tindisa</p>}
+          {s.verified && <VerifiedBadge serial={s.shopCertificateSerial} validUntil={s.shopCertificateValidUntil} />}
           {s.hub && (
             <p><Link to={`/centres/${s.hub.id}`} className="mk-hub-link"><FaWifi /> {s.hub.name}</Link> <WifiBadge status={s.hub.wifiStatus} compact /></p>
           )}

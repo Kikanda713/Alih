@@ -738,3 +738,9 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
   .mk-pros-filters { width: 100%; }
   .mk-pros-filters .mk-pros-filter { flex: 1 1 140px; }
 }
+
+/* Établissement vérifié par Tindisa (certificat de visite) */
+.mk-shop-verified { flex-wrap: wrap; text-decoration: none; overflow-wrap: anywhere; }
+a.mk-shop-verified:hover span { text-decoration: underline; }
+.mk-shop-verified small { font-weight: 500; color: var(--gray); }
+.mk-card-verified { color: var(--mk-green); flex-shrink: 0; font-size: 0.85em; }

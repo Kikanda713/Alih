@@ -1,6 +1,5 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
 import {
   FaCertificate,
   FaCheckCircle,
@@ -15,13 +14,10 @@ import {
   FaSyncAlt,
   FaTimes,
   FaTools,
-  FaUpload,
 } from "react-icons/fa";
 import { useTindisaApi } from "../../api/client";
 import { useLoad } from "../../api/useLoad";
-import { uploadImage } from "../../api/cloudinary";
 import { useTaxonomy } from "../../api/taxonomy";
-import { apiBaseUrl, auth0Config } from "../../auth/config";
 import { useToast } from "../../components/useToast";
 import {
   Badge,
@@ -30,9 +26,10 @@ import {
   EmptyState,
   Field,
   Input,
-  Select,
   Spinner,
 } from "../../components/ui.jsx";
+import { RENEW_WINDOW_DAYS, daysUntil, fmtDate, useCertActions } from "./certCommon";
+import { CertChecklist as Checklist, CertDocsEditor, CertSteps } from "./CertParts.jsx";
 
 /*
  * Certificat d'aptitude professionnelle (CAP) des techniciens / artisans.
@@ -41,8 +38,6 @@ import {
  */
 
 const ENDPOINT = "/v1/merchant/certificates/pro";
-const VERIFY_BASE = "https://tindisa.com/verify?c=";
-const RENEW_WINDOW_DAYS = 60;
 
 const DOC_TYPES = [
   { value: "identity", label: "Pièce d'identité" },
@@ -51,58 +46,18 @@ const DOC_TYPES = [
   { value: "license", label: "Agrément, inscription à l'ordre ou permis" },
   { value: "other", label: "Autre justificatif" },
 ];
-const docLabel = (t) =>
-  DOC_TYPES.find((d) => d.value === t)?.label || "Justificatif";
 
 const EMPTY_REF = { name: "", phone: "", relation: "" };
 
-function fmtDate(d) {
-  if (!d) return "";
-  try {
-    return new Date(d).toLocaleDateString("fr-FR", { dateStyle: "long" });
-  } catch {
-    return "";
-  }
-}
-function daysUntil(d) {
-  if (!d) return null;
-  const t = new Date(d).getTime();
-  if (Number.isNaN(t)) return null;
-  return Math.ceil((t - Date.now()) / 86400000);
-}
-const isImageUrl = (u) =>
-  !/\.pdf(\?|$)/i.test(u || "") &&
-  (/\.(png|jpe?g|webp|gif|avif)(\?|$)/i.test(u || "") ||
-    /\/image\/upload\//.test(u || ""));
-const checkDone = (i) =>
-  !!(i && (i.done ?? i.ok ?? i.checked ?? false));
-const checkLabel = (i) =>
-  typeof i === "string" ? i : i?.label || i?.key || "";
-
-// Télécharge le PDF authentifié : accepte une réponse application/pdf brute
-// comme la réponse JSON { base64 } des certificats d'actifs.
-async function fetchPdfBlob(token) {
-  const res = await fetch(`${apiBaseUrl}${ENDPOINT}/pdf`, {
-    headers: token ? { authorization: `Bearer ${token}` } : {},
-  });
-  if (!res.ok) throw new Error(`Téléchargement impossible (${res.status})`);
-  const type = res.headers.get("content-type") || "";
-  if (type.includes("application/json")) {
-    const data = await res.json();
-    if (data?.base64) {
-      const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
-      return new Blob([bytes], { type: "application/pdf" });
-    }
-    if (data?.url) return data.url;
-    throw new Error("Certificat PDF indisponible pour le moment.");
-  }
-  return res.blob();
-}
-
 export default function ProCertificatePage() {
   const api = useTindisaApi();
-  const { getAccessTokenSilently } = useAuth0();
   const { notify } = useToast();
+  const { busy, payLink, downloadPdf: dl, copyVerify: cp } = useCertActions({
+    endpoint: ENDPOINT,
+    api,
+    notify,
+    fileStem: "certificat-pro",
+  });
   const taxonomy = useTaxonomy();
 
   const { data, loading, error, setData } = useLoad(
@@ -111,7 +66,6 @@ export default function ProCertificatePage() {
   );
 
   const [editing, setEditing] = useState(false);
-  const [busy, setBusy] = useState("");
 
   if (loading) {
     return (
@@ -140,59 +94,8 @@ export default function ProCertificatePage() {
       : (taxonomy?.trades || []).find((t) => t.id === id)?.label || id;
   const requiresLicense = !!(data.requiresLicense ?? cert?.requiresLicense);
 
-  const payLink = async () => {
-    setBusy("pay");
-    try {
-      const r = await api.post(`${ENDPOINT}/pay-link`, {});
-      if (r?.url) window.open(r.url, "_blank", "noopener,noreferrer");
-      else notify("Lien de paiement indisponible", "error");
-    } catch (e) {
-      notify(e?.message || "Erreur", "error");
-    } finally {
-      setBusy("");
-    }
-  };
-
-  const downloadPdf = async () => {
-    setBusy("pdf");
-    try {
-      let token = null;
-      try {
-        token = await getAccessTokenSilently(
-          auth0Config.audience
-            ? { authorizationParams: { audience: auth0Config.audience } }
-            : undefined,
-        );
-      } catch {
-        /* sans token : le backend répondra 401 */
-      }
-      const out = await fetchPdfBlob(token);
-      const href = typeof out === "string" ? out : URL.createObjectURL(out);
-      const a = document.createElement("a");
-      a.href = href;
-      a.download = `${cert?.serial || "certificat-pro"}.pdf`;
-      a.target = "_blank";
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      if (typeof out !== "string") setTimeout(() => URL.revokeObjectURL(href), 60000);
-    } catch (e) {
-      notify(e?.message || "Erreur", "error");
-    } finally {
-      setBusy("");
-    }
-  };
-
-  const copyVerify = async () => {
-    const link = VERIFY_BASE + encodeURIComponent(cert?.serial || "");
-    try {
-      await navigator.clipboard.writeText(link);
-      notify("Lien de vérification copié", "success");
-    } catch {
-      notify(link, "info");
-    }
-  };
+  const downloadPdf = () => dl(cert?.serial);
+  const copyVerify = () => cp(cert?.serial);
 
   const status = cert?.status || "none";
   const expired = !!cert?.expired;
@@ -253,19 +156,7 @@ export default function ProCertificatePage() {
         </ul>
       </Card>
 
-      <ol className="procert-steps" aria-label="Avancement">
-        {steps.map((s, i) => (
-          <li
-            key={i}
-            className={`procert-step${i < step ? " done" : ""}${i === step ? " current" : ""}${
-              i === 3 && expired ? " warn" : ""
-            }`}
-          >
-            <span className="procert-step-dot">{s.icon}</span>
-            <span className="procert-step-label">{s.label}</span>
-          </li>
-        ))}
-      </ol>
+      <CertSteps steps={steps} step={step} lastWarn={expired} />
 
       {!data.eligible && (
         <Card className="procert-notice">
@@ -401,20 +292,6 @@ export default function ProCertificatePage() {
   );
 }
 
-function Checklist({ items }) {
-  const list = Array.isArray(items) ? items : [];
-  if (!list.length) return null;
-  return (
-    <div className="cert-doc-checks procert-checks">
-      {list.map((i, idx) => (
-        <span key={idx} className={`cert-check-badge${checkDone(i) ? " ok" : ""}`}>
-          {checkDone(i) ? <FaCheckCircle /> : <FaClock />} {checkLabel(i)}
-        </span>
-      ))}
-    </div>
-  );
-}
-
 function DossierForm({ api, notify, initial, requiresLicense, renewal, onCancel, onSaved }) {
   const [holderName, setHolderName] = useState(initial?.holderName || "");
   const [docs, setDocs] = useState(() =>
@@ -425,31 +302,8 @@ function DossierForm({ api, notify, initial, requiresLicense, renewal, onCancel,
     while (r.length < 2) r.push({ ...EMPTY_REF });
     return r;
   });
-  const [docType, setDocType] = useState("identity");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const fileRef = useRef(null);
-
-  const onFile = async (e) => {
-    const files = Array.from(e.target.files || []);
-    e.target.value = "";
-    if (!files.length) return;
-    if (docs.length + files.length > 6) {
-      notify("6 documents au maximum", "error");
-      return;
-    }
-    setUploading(true);
-    try {
-      for (const f of files) {
-        const url = await uploadImage(f);
-        setDocs((d) => [...d, { type: docType, url, note: "" }]);
-      }
-    } catch (err) {
-      notify(err?.message || "Échec du téléversement", "error");
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const hasIdentity = docs.some((d) => d.type === "identity");
   const hasProof = docs.some((d) => d.type === "diploma" || d.type === "attestation");
@@ -535,60 +389,14 @@ function DossierForm({ api, notify, initial, requiresLicense, renewal, onCancel,
             d'exercer, vous pouvez aussi le joindre (facultatif).
           </p>
         )}
-        <div className="procert-docs">
-          {docs.map((d, i) => (
-            <div key={d.url + i} className="procert-doc">
-              <a href={d.url} target="_blank" rel="noopener noreferrer" className="procert-doc-thumb">
-                {isImageUrl(d.url) ? <img src={d.url} alt={docLabel(d.type)} /> : <FaFileAlt />}
-              </a>
-              <div className="procert-doc-body">
-                <Select
-                  value={d.type}
-                  options={DOC_TYPES}
-                  onChange={(e) =>
-                    setDocs((all) => all.map((x, j) => (j === i ? { ...x, type: e.target.value } : x)))
-                  }
-                  aria-label="Type de document"
-                />
-                <Input
-                  value={d.note}
-                  placeholder="Précision (facultatif)"
-                  onChange={(e) =>
-                    setDocs((all) => all.map((x, j) => (j === i ? { ...x, note: e.target.value } : x)))
-                  }
-                />
-              </div>
-              <button
-                type="button"
-                className="cat-icon-btn danger procert-doc-remove"
-                title="Retirer"
-                aria-label="Retirer ce document"
-                onClick={() => setDocs((all) => all.filter((_, j) => j !== i))}
-              >
-                <FaTimes />
-              </button>
-            </div>
-          ))}
-        </div>
-        {docs.length < 6 && (
-          <div className="procert-upload">
-            <Select
-              value={docType}
-              options={DOC_TYPES}
-              onChange={(e) => setDocType(e.target.value)}
-              aria-label="Type du document à ajouter"
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => fileRef.current?.click()}
-              disabled={uploading}
-            >
-              <FaUpload /> {uploading ? "Téléversement…" : "Ajouter un document"}
-            </Button>
-            <input ref={fileRef} type="file" accept="image/*,application/pdf" multiple hidden onChange={onFile} />
-          </div>
-        )}
+        <CertDocsEditor
+          docs={docs}
+          setDocs={setDocs}
+          docTypes={DOC_TYPES}
+          defaultType="identity"
+          notify={notify}
+          onUploadingChange={setUploading}
+        />
 
         <h3 className="dash-h3">Références (2 à 3)</h3>
         <p className="procert-hint">

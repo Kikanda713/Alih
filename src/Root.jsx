@@ -25,6 +25,7 @@ const VentesPage = lazy(() => import("./pages/dashboard/VentesPage.jsx"));
 const WalletPage = lazy(() => import("./pages/dashboard/WalletPage.jsx"));
 const SubscriptionPage = lazy(() => import("./pages/dashboard/SubscriptionPage.jsx"));
 const ProCertificatePage = lazy(() => import("./pages/dashboard/ProCertificatePage.jsx"));
+const ShopCertificatePage = lazy(() => import("./pages/dashboard/ShopCertificatePage.jsx"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout.jsx"));
 const AdminHome = lazy(() => import("./pages/admin/AdminHome.jsx"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers.jsx"));
@@ -73,6 +74,7 @@ export default function Root() {
         <Route path="wallet" element={<WalletPage />} />
         <Route path="abonnement" element={<SubscriptionPage />} />
         <Route path="certificat-pro" element={<ProCertificatePage />} />
+        <Route path="certificat-etablissement" element={<ShopCertificatePage />} />
       </Route>
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminHome />} />
