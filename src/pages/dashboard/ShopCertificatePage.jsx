@@ -4,7 +4,6 @@ import {
   FaBoxes,
   FaCalendarCheck,
   FaCertificate,
-  FaCheckCircle,
   FaClipboardCheck,
   FaClock,
   FaCopy,
@@ -15,7 +14,6 @@ import {
   FaSearchLocation,
   FaStore,
   FaSyncAlt,
-  FaTimes,
   FaTools,
 } from "react-icons/fa";
 import { useTindisaApi } from "../../api/client";
@@ -23,8 +21,17 @@ import { useLoad } from "../../api/useLoad";
 import { businessNoun, isIndividualType, useTaxonomy } from "../../api/taxonomy";
 import { useToast } from "../../components/useToast";
 import { Badge, Button, Card, EmptyState, Field, Input, Spinner } from "../../components/ui.jsx";
-import { RENEW_WINDOW_DAYS, daysUntil, fmtDate, priceSymbol, useCertActions } from "./certCommon";
-import { CertChecklist, CertDocsEditor, CertSteps } from "./CertParts.jsx";
+import {
+  RENEW_WINDOW_DAYS,
+  daysUntil,
+  fmtDate,
+  priceSymbol,
+  renewalSentOf,
+  textOf,
+  useCertActions,
+  verifyLinkOf,
+} from "./certCommon";
+import { CertChecklist, CertDecisionCard, CertDocsEditor, CertFlow, CertPaidCard } from "./CertParts.jsx";
 
 /*
  * Certificat d'établissement vérifié (boutiques, ateliers, garages, hôtels…).
@@ -90,23 +97,14 @@ export default function ShopCertificatePage() {
   const status = cert?.status || "none";
   const expired = !!cert?.expired;
   const left = daysUntil(cert?.validUntil);
-  const renewable = status === "issued" && (expired || (left != null && left <= RENEW_WINDOW_DAYS));
-  const showForm = !!data.eligible && (editing || !cert || status === "revoked");
+  const issued = status === "issued";
+  const renewable = issued && (expired || (left != null && left <= RENEW_WINDOW_DAYS));
+  const renewalSent = issued && renewalSentOf(cert);
+  const renewalPaid = renewalSent && !!(cert?.renewalPaid || cert?.updatePaid);
+  const decided = status === "info_requested" || status === "rejected" || status === "revoked";
+  const showForm = !!data.eligible && (!cert || editing);
   const visitedAt = cert?.inspection?.visitedAt;
-
-  // Étape courante : 0 demande, 1 visite, 2 délivré, 3 expiration.
-  const step = !cert || status === "revoked" ? 0 : status === "requested" ? 1 : expired ? 3 : 2;
-  const steps = [
-    { label: "Demande", icon: <FaStore /> },
-    { label: "Visite de vérification", icon: <FaSearchLocation /> },
-    { label: "Délivré", icon: <FaCheckCircle /> },
-    {
-      label: cert?.validUntil
-        ? `${expired ? "Expiré le" : "Expire le"} ${fmtDate(cert.validUntil)}`
-        : "Valable 1 an",
-      icon: <FaSyncAlt />,
-    },
-  ];
+  const shopName = textOf(shop?.name);
 
   return (
     <div className="dash-page">
@@ -144,7 +142,7 @@ export default function ShopCertificatePage() {
         </ul>
       </Card>
 
-      <CertSteps steps={steps} step={step} lastWarn={expired} />
+      <CertFlow cert={cert} reviewLabel="Visite de vérification" reviewIcon={<FaSearchLocation />} />
 
       {!data.eligible && (
         <Card className="procert-notice">
@@ -171,26 +169,20 @@ export default function ShopCertificatePage() {
         </Card>
       )}
 
-      {cert && status === "requested" && (
+      {cert && status === "requested" && !cert.paid && (
         <Card className="procert-status">
           <div className="procert-status-head">
-            <Badge tone="warn">{visitedAt ? "Visite effectuée" : "Visite à planifier"}</Badge>
-            {cert.paid ? <Badge tone="success">Payé</Badge> : <Badge tone="neutral">Paiement en attente</Badge>}
+            <Badge tone="warn">En attente de paiement</Badge>
           </div>
           <p className="dash-sub">
-            {visitedAt
-              ? `Notre équipe est passée le ${fmtDate(visitedAt)}. Le certificat sera délivré après validation du rapport de visite.`
-              : `Votre demande pour ${shop?.name ? `« ${shop.name} »` : noun.this} est enregistrée. Notre équipe vous appellera pour convenir d'une visite.`}
-            {!cert.paid && " La visite est programmée une fois le paiement reçu."}
+            Votre demande pour {shopName ? `« ${shopName} »` : noun.this} est
+            enregistrée. La visite de vérification est programmée une fois le
+            paiement reçu.
           </p>
-          <CertChecklist items={cert.checklist} />
           <div className="procert-actions">
-            {!cert.paid && (
-              <Button variant="primary" onClick={payLink} disabled={busy === "pay"}>
-                <FaCreditCard />{" "}
-                {busy === "pay" ? "Ouverture…" : `Payer ${cert.serial ? price.update : price.issue} ${sym}`}
-              </Button>
-            )}
+            <Button variant="primary" onClick={payLink} disabled={busy === "pay"}>
+              <FaCreditCard /> {busy === "pay" ? "Ouverture…" : `Payer ${price.issue} ${sym}`}
+            </Button>
             {!editing && (
               <Button variant="ghost" onClick={() => setEditing(true)}>
                 Modifier ma demande
@@ -200,18 +192,51 @@ export default function ShopCertificatePage() {
         </Card>
       )}
 
-      {cert && status === "issued" && (
+      {cert && (status === "paid" || (status === "requested" && cert.paid)) && (
+        <CertPaidCard
+          cert={cert}
+          text={
+            visitedAt
+              ? `Paiement reçu. Notre équipe est passée le ${fmtDate(visitedAt)} : le certificat sera délivré après validation du rapport de visite. Vous serez prévenu par message.`
+              : "Paiement reçu. L'équipe Tindisa vous appellera pour convenir de la visite, puis délivrera le certificat. Vous serez prévenu par message."
+          }
+        >
+          {!editing && (
+            <div className="procert-actions">
+              <Button variant="ghost" onClick={() => setEditing(true)}>
+                Modifier ma demande
+              </Button>
+            </div>
+          )}
+        </CertPaidCard>
+      )}
+
+      {cert && decided && (
+        <CertDecisionCard
+          cert={cert}
+          onResubmit={data.eligible && !editing ? () => setEditing(true) : null}
+          resubmitLabel={
+            status === "revoked"
+              ? "Faire une nouvelle demande"
+              : status === "rejected"
+                ? "Corriger et renvoyer ma demande"
+                : "Compléter et renvoyer ma demande"
+          }
+        />
+      )}
+
+      {cert && issued && (
         <Card className="procert-status">
           <div className="procert-status-head">
-            {expired ? <Badge tone="danger">Expiré</Badge> : <Badge tone="success">Valide</Badge>}
-            {cert.serial && <span className="procert-serial">{cert.serial}</span>}
+            {expired ? <Badge tone="danger">Expiré</Badge> : <Badge tone="success">Certifié</Badge>}
+            {textOf(cert.serial) && <span className="procert-serial">{textOf(cert.serial)}</span>}
           </div>
           <dl className="procert-grid">
             <div className="wide">
               <dt>Établissement</dt>
               <dd>
-                {shop?.name || "Non précisé"}
-                {shop?.city ? ` (${shop.city})` : ""}
+                {shopName || "Non précisé"}
+                {textOf(shop?.city) ? ` (${textOf(shop.city)})` : ""}
               </dd>
             </div>
             {visitedAt && (
@@ -226,7 +251,16 @@ export default function ShopCertificatePage() {
             </div>
           </dl>
           <CertChecklist items={cert.checklist} />
-          {renewable && (
+          {renewalSent ? (
+            <div className="procert-renew">
+              <FaSyncAlt />
+              <span>
+                {renewalPaid
+                  ? "Renouvellement payé : l'équipe Tindisa programme la nouvelle visite puis prolonge votre certificat. Vous serez prévenu par message."
+                  : "Votre demande de renouvellement est enregistrée. Payez le renouvellement pour que l'équipe Tindisa programme la visite."}
+              </span>
+            </div>
+          ) : renewable ? (
             <div className="procert-renew">
               <FaExclamationTriangle />
               <span>
@@ -235,34 +269,27 @@ export default function ShopCertificatePage() {
                   : `Votre certificat expire dans ${left} jour${left > 1 ? "s" : ""}. Pensez à le renouveler.`}
               </span>
             </div>
-          )}
+          ) : null}
           <div className="procert-actions">
             <Button variant="primary" onClick={() => downloadPdf(cert.serial)} disabled={busy === "pdf"}>
               <FaDownload /> {busy === "pdf" ? "Préparation…" : "Télécharger mon certificat"}
             </Button>
-            {cert.serial && (
-              <Button variant="ghost" onClick={() => copyVerify(cert.serial)}>
-                <FaCopy /> Lien de vérification
+            {verifyLinkOf(cert) && (
+              <Button variant="ghost" onClick={() => copyVerify(cert.serial, verifyLinkOf(cert))}>
+                <FaCopy /> Copier le lien de vérification
               </Button>
             )}
-            {renewable && !editing && (
+            {(renewalSent || renewable) && !renewalPaid && (
+              <Button variant="primary" onClick={payLink} disabled={busy === "pay"}>
+                <FaCreditCard />{" "}
+                {busy === "pay" ? "Ouverture…" : `Payer le renouvellement (${price.update} ${sym})`}
+              </Button>
+            )}
+            {(renewable || renewalSent) && !editing && (
               <Button variant="ghost" onClick={() => setEditing(true)}>
-                <FaSyncAlt /> Renouveler ({price.update} {sym})
+                <FaSyncAlt /> {renewalSent ? "Modifier ma demande de renouvellement" : "Demander le renouvellement"}
               </Button>
             )}
-          </div>
-        </Card>
-      )}
-
-      {cert && status === "revoked" && (
-        <Card className="procert-notice">
-          <FaTimes />
-          <div>
-            <strong>Certificat révoqué</strong>
-            <p>
-              Votre précédent certificat a été révoqué. Vous pouvez faire une
-              nouvelle demande de visite ci-dessous.
-            </p>
           </div>
         </Card>
       )}
@@ -273,9 +300,9 @@ export default function ShopCertificatePage() {
           api={api}
           notify={notify}
           initial={cert}
-          renewal={renewable}
+          renewal={issued}
           noun={noun}
-          onCancel={cert && status !== "revoked" ? () => setEditing(false) : null}
+          onCancel={cert ? () => setEditing(false) : null}
           onSaved={(next) => {
             if (next && typeof next === "object") setData(next);
             setEditing(false);

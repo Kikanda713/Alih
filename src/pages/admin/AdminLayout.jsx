@@ -1,6 +1,6 @@
 import { useAuth0 } from '@auth0/auth0-react'
 import { Link, Navigate } from 'react-router-dom'
-import { FaChartPie, FaUsers, FaMotorcycle, FaMapMarkedAlt, FaPercent, FaCertificate, FaHandshake, FaGlobeAfrica, FaWifi, FaRobot, FaStore } from 'react-icons/fa'
+import { FaChartPie, FaUsers, FaMotorcycle, FaMapMarkedAlt, FaPercent, FaCertificate, FaHandshake, FaGlobeAfrica, FaWifi, FaRobot, FaStore, FaExchangeAlt } from 'react-icons/fa'
 import { isAuth0Configured } from '../../auth/config'
 import { useT } from '../../i18n'
 import { Spinner } from '../../components/ui.jsx'
@@ -23,6 +23,7 @@ function AdminShell() {
     { to: '/admin/centres', icon: <FaWifi />, label: 'Wifi Zone' },
     { to: '/admin/ia', icon: <FaRobot />, label: 'Réglages IA' },
     { to: '/admin/p2p', icon: <FaHandshake />, label: 'Marché P2P' },
+    { to: '/admin/bata', icon: <FaExchangeAlt />, label: 'BATA' },
     { to: '/admin/drivers', icon: <FaMotorcycle />, label: 'Livreurs' },
     { to: '/admin/map', icon: <FaMapMarkedAlt />, label: 'Carte' },
   ]

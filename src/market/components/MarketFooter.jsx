@@ -31,6 +31,7 @@ export default function MarketFooter() {
             <Link to="/centres">Wifi Zone</Link>
             <Link to="/vendre">Vendre</Link>
             <Link to="/verify">Vérifier un certificat</Link>
+            <Link to="/bata">BATA (échange)</Link>
             <Link to="/panier">Mon panier</Link>
           </p>
         </nav>

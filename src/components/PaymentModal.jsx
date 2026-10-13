@@ -28,6 +28,7 @@ export default function PaymentModal({
   variant = "subscription",
   productId,
   onCopyLink,
+  certKind = "issue",
 }) {
   const api = useTindisaApi();
   const { notify } = useToast();
@@ -48,9 +49,22 @@ export default function PaymentModal({
           const c = (Array.isArray(list) ? list : []).find(
             (x) => x.productId === productId,
           );
-          if (c?.status === "issued") {
-            notify("Certificat émis avec succès", "success");
+          // Le paiement ne délivre plus le certificat : l'équipe Tindisa
+          // inspecte puis délivre. On s'arrête dès que le paiement est reçu.
+          const received =
+            certKind === "update"
+              ? c?.updatePaid === true || c?.updateRequested === false
+              : c?.paid === true ||
+                c?.status === "paid" ||
+                c?.status === "issued";
+          if (received) {
+            notify(
+              "Paiement reçu : l'équipe Tindisa vérifie puis délivre le certificat. Vous serez prévenu par message.",
+              "success",
+            );
             onDone?.();
+            setStep("form");
+            setBusy(false);
             onClose?.();
             return;
           }
@@ -59,6 +73,8 @@ export default function PaymentModal({
           if (Number(c?.owedUsd || 0) === 0) {
             notify(t("pay.success"), "success");
             onDone?.();
+            setStep("form");
+            setBusy(false);
             onClose?.();
             return;
           }
@@ -68,6 +84,8 @@ export default function PaymentModal({
           if (st === "active" || st === "trialing") {
             notify(t("pay.success"), "success");
             onDone?.();
+            setStep("form");
+            setBusy(false);
             onClose?.();
             return;
           }
@@ -84,6 +102,8 @@ export default function PaymentModal({
     }
     notify(t("pay.timeout"), "info");
     onDone?.();
+    setStep("form");
+    setBusy(false);
     onClose?.();
   };
 
@@ -94,6 +114,7 @@ export default function PaymentModal({
       const r = isCert
         ? await api.post("/v1/merchant/certificates/pay", {
             productId,
+            ...(certKind === "update" ? { kind: "update" } : {}),
             phone: phone.trim(),
             telecom,
           })

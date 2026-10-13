@@ -2,13 +2,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   FaCertificate,
-  FaCheckCircle,
   FaClock,
   FaCopy,
   FaCreditCard,
   FaDownload,
   FaExclamationTriangle,
-  FaFileAlt,
   FaIdCard,
   FaPlus,
   FaSyncAlt,
@@ -28,8 +26,17 @@ import {
   Input,
   Spinner,
 } from "../../components/ui.jsx";
-import { RENEW_WINDOW_DAYS, daysUntil, fmtDate, useCertActions } from "./certCommon";
-import { CertChecklist as Checklist, CertDocsEditor, CertSteps } from "./CertParts.jsx";
+import {
+  RENEW_WINDOW_DAYS,
+  daysUntil,
+  fmtDate,
+  priceSymbol,
+  renewalSentOf,
+  textOf,
+  useCertActions,
+  verifyLinkOf,
+} from "./certCommon";
+import { CertDecisionCard, CertDocsEditor, CertFlow, CertPaidCard } from "./CertParts.jsx";
 
 /*
  * Certificat d'aptitude professionnelle (CAP) des techniciens / artisans.
@@ -88,6 +95,7 @@ export default function ProCertificatePage() {
 
   const cert = data.certificate || null;
   const price = cert?.price || data.price || { issue: 25, update: 10, currency: "USD" };
+  const sym = priceSymbol(price);
   const tradeLabel = (id) =>
     id === "autre" && data.profile?.otherTrade
       ? data.profile.otherTrade
@@ -95,32 +103,21 @@ export default function ProCertificatePage() {
   const requiresLicense = !!(data.requiresLicense ?? cert?.requiresLicense);
 
   const downloadPdf = () => dl(cert?.serial);
-  const copyVerify = () => cp(cert?.serial);
+  const copyVerify = () => cp(cert?.serial, verifyLinkOf(cert));
 
   const status = cert?.status || "none";
   const expired = !!cert?.expired;
   const left = daysUntil(cert?.validUntil);
+  const issued = status === "issued";
   const renewable =
-    status === "issued" &&
-    (expired || (left != null && left <= RENEW_WINDOW_DAYS));
-  const showForm =
-    data.eligible &&
-    (editing || !cert || status === "revoked");
-
-  // Étape courante de la frise : 0 dossier, 1 vérification, 2 délivré, 3 expiration.
-  const step =
-    !cert || status === "revoked" ? 0 : status === "requested" ? 1 : expired ? 3 : 2;
-  const steps = [
-    { label: "Dossier à déposer", icon: <FaFileAlt /> },
-    { label: "En vérification", icon: <FaClock /> },
-    { label: "Délivré", icon: <FaCheckCircle /> },
-    {
-      label: cert?.validUntil
-        ? `${expired ? "Expiré le" : "Expire le"} ${fmtDate(cert.validUntil)}`
-        : "Valable 2 ans",
-      icon: <FaSyncAlt />,
-    },
-  ];
+    issued && (expired || (left != null && left <= RENEW_WINDOW_DAYS));
+  const renewalSent = issued && renewalSentOf(cert);
+  const renewalPaid = renewalSent && !!(cert?.renewalPaid || cert?.updatePaid);
+  const decided =
+    status === "info_requested" || status === "rejected" || status === "revoked";
+  // Formulaire : premier dépôt, ou ouvert à la demande (modifier, compléter,
+  // renvoyer après refus, renouveler).
+  const showForm = data.eligible && (!cert || editing);
 
   return (
     <div className="dash-page">
@@ -156,7 +153,7 @@ export default function ProCertificatePage() {
         </ul>
       </Card>
 
-      <CertSteps steps={steps} step={step} lastWarn={expired} />
+      <CertFlow cert={cert} />
 
       {!data.eligible && (
         <Card className="procert-notice">
@@ -164,7 +161,7 @@ export default function ProCertificatePage() {
           <div>
             <strong>Profil professionnel incomplet</strong>
             <p>
-              {data.reason ||
+              {textOf(data.reason) ||
                 "Ce certificat est réservé aux techniciens et artisans. Complétez votre profil pro (métiers, zones d'intervention, expérience) pour déposer votre dossier."}
             </p>
             <Button as={Link} to="/dashboard/boutique" variant="primary">
@@ -174,54 +171,75 @@ export default function ProCertificatePage() {
         </Card>
       )}
 
-      {cert && status === "requested" && (
+      {cert && status === "requested" && !cert.paid && (
         <Card className="procert-status">
           <div className="procert-status-head">
-            <Badge tone="warn">En vérification</Badge>
-            {cert.paid ? (
-              <Badge tone="success">Payé</Badge>
-            ) : (
-              <Badge tone="neutral">Paiement en attente</Badge>
-            )}
+            <Badge tone="warn">En attente de paiement</Badge>
           </div>
           <p className="dash-sub">
-            Votre dossier au nom de <strong>{cert.holderName}</strong> est en
-            cours de vérification. Nous contacterons vos références avant de
-            délivrer le certificat.
+            Votre dossier au nom de <strong>{textOf(cert.holderName)}</strong> est
+            enregistré. Réglez les frais pour que l'équipe Tindisa commence la
+            vérification (identité, documents, références).
           </p>
-          <Checklist items={cert.checklist} />
           <div className="procert-actions">
-            {!cert.paid && (
-              <Button variant="primary" onClick={payLink} disabled={busy === "pay"}>
-                <FaCreditCard />{" "}
-                {busy === "pay"
-                  ? "Ouverture…"
-                  : `Payer ${cert.serial ? price.update : price.issue} $`}
-              </Button>
-            )}
+            <Button variant="primary" onClick={payLink} disabled={busy === "pay"}>
+              <FaCreditCard />{" "}
+              {busy === "pay" ? "Ouverture…" : `Payer ${price.issue} ${sym}`}
+            </Button>
             {!editing && (
               <Button variant="ghost" onClick={() => setEditing(true)}>
-                Compléter mon dossier
+                Modifier mon dossier
               </Button>
             )}
           </div>
         </Card>
       )}
 
-      {cert && status === "issued" && (
+      {cert && (status === "paid" || (status === "requested" && cert.paid)) && (
+        <CertPaidCard
+          cert={cert}
+          text={`Paiement reçu. L'équipe Tindisa vérifie le dossier de ${
+            textOf(cert.holderName) || "son titulaire"
+          } et contacte vos références, puis délivre le certificat. Vous serez prévenu par message.`}
+        >
+          {!editing && (
+            <div className="procert-actions">
+              <Button variant="ghost" onClick={() => setEditing(true)}>
+                Compléter mon dossier
+              </Button>
+            </div>
+          )}
+        </CertPaidCard>
+      )}
+
+      {cert && decided && (
+        <CertDecisionCard
+          cert={cert}
+          onResubmit={data.eligible && !editing ? () => setEditing(true) : null}
+          resubmitLabel={
+            status === "revoked"
+              ? "Déposer un nouveau dossier"
+              : status === "rejected"
+                ? "Corriger et renvoyer mon dossier"
+                : "Compléter et renvoyer mon dossier"
+          }
+        />
+      )}
+
+      {cert && issued && (
         <Card className="procert-status">
           <div className="procert-status-head">
             {expired ? (
               <Badge tone="danger">Expiré</Badge>
             ) : (
-              <Badge tone="success">Valide</Badge>
+              <Badge tone="success">Certifié</Badge>
             )}
-            <span className="procert-serial">{cert.serial}</span>
+            {textOf(cert.serial) && <span className="procert-serial">{textOf(cert.serial)}</span>}
           </div>
           <dl className="procert-grid">
             <div>
               <dt>Titulaire</dt>
-              <dd>{cert.holderName}</dd>
+              <dd>{textOf(cert.holderName) || "Non précisé"}</dd>
             </div>
             <div>
               <dt>{expired ? "A expiré le" : "Valable jusqu'au"}</dt>
@@ -230,11 +248,20 @@ export default function ProCertificatePage() {
             {data.profile?.trades?.length > 0 && (
               <div className="wide">
                 <dt>Métiers</dt>
-                <dd>{data.profile.trades.map(tradeLabel).join(", ")}</dd>
+                <dd>{data.profile.trades.map(tradeLabel).filter((x) => typeof x === "string").join(", ")}</dd>
               </div>
             )}
           </dl>
-          {renewable && (
+          {renewalSent ? (
+            <div className="procert-renew">
+              <FaSyncAlt />
+              <span>
+                {renewalPaid
+                  ? "Renouvellement payé : l'équipe Tindisa vérifie votre dossier puis prolonge votre certificat. Vous serez prévenu par message."
+                  : "Votre dossier de renouvellement est enregistré. Payez le renouvellement pour que l'équipe Tindisa le traite."}
+              </span>
+            </div>
+          ) : renewable ? (
             <div className="procert-renew">
               <FaExclamationTriangle />
               <span>
@@ -243,32 +270,25 @@ export default function ProCertificatePage() {
                   : `Votre certificat expire dans ${left} jour${left > 1 ? "s" : ""}. Pensez à le renouveler.`}
               </span>
             </div>
-          )}
+          ) : null}
           <div className="procert-actions">
             <Button variant="primary" onClick={downloadPdf} disabled={busy === "pdf"}>
               <FaDownload /> {busy === "pdf" ? "Préparation…" : "Télécharger mon certificat"}
             </Button>
             <Button variant="ghost" onClick={copyVerify}>
-              <FaCopy /> Lien de vérification
+              <FaCopy /> Copier le lien de vérification
             </Button>
-            {renewable && !editing && (
-              <Button variant="ghost" onClick={() => setEditing(true)}>
-                <FaSyncAlt /> Renouveler ({price.update} $)
+            {(renewalSent || renewable) && !renewalPaid && (
+              <Button variant="primary" onClick={payLink} disabled={busy === "pay"}>
+                <FaCreditCard />{" "}
+                {busy === "pay" ? "Ouverture…" : `Payer le renouvellement (${price.update} ${sym})`}
               </Button>
             )}
-          </div>
-        </Card>
-      )}
-
-      {cert && status === "revoked" && (
-        <Card className="procert-notice">
-          <FaTimes />
-          <div>
-            <strong>Certificat révoqué</strong>
-            <p>
-              Votre précédent certificat a été révoqué. Vous pouvez déposer un
-              nouveau dossier ci-dessous.
-            </p>
+            {(renewable || renewalSent) && !editing && (
+              <Button variant="ghost" onClick={() => setEditing(true)}>
+                <FaSyncAlt /> {renewalSent ? "Modifier mon dossier de renouvellement" : "Envoyer mon dossier de renouvellement"}
+              </Button>
+            )}
           </div>
         </Card>
       )}
@@ -280,8 +300,8 @@ export default function ProCertificatePage() {
           notify={notify}
           initial={cert}
           requiresLicense={requiresLicense}
-          renewal={renewable}
-          onCancel={cert && status !== "revoked" ? () => setEditing(false) : null}
+          renewal={issued}
+          onCancel={cert ? () => setEditing(false) : null}
           onSaved={(next) => {
             setData(next);
             setEditing(false);

@@ -15,7 +15,7 @@ import { categoryLabel, cityLabel, subcategoryLabel } from '../lib/format'
 import ChannelLinks from '../components/ChannelLinks'
 import { useChat } from '../chat/useChat'
 
-const FILTER_KEYS = ['q', 'type', 'category', 'subcategory', 'city', 'condition', 'priceMin', 'priceMax', 'currency', 'certified', 'sort']
+const FILTER_KEYS = ['q', 'type', 'category', 'subcategory', 'city', 'condition', 'priceMin', 'priceMax', 'currency', 'certified', 'bata', 'sort']
 const SORTS = [
   { id: '', label: 'Pertinence / récents' },
   { id: 'recent', label: 'Plus récents' },
@@ -68,6 +68,7 @@ export default function ExplorePage() {
     chips.push({ k: 'price', label: `${params.get('priceMin') || 0} à ${params.get('priceMax') || '∞'} ${cur}` })
   }
   if (params.get('certified')) chips.push({ k: 'certified', label: 'Certifiés' })
+  if (params.get('bata')) chips.push({ k: 'bata', label: 'BATA possible' })
 
   const removeChip = (chip) => {
     if (chip.k === 'price') return setParam({ priceMin: '', priceMax: '', currency: '' })

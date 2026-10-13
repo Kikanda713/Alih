@@ -21,4 +21,6 @@ export const marketApi = {
   pros: (params) => apiFetch(`/v1/market/pros${qs(params)}`),
   hubs: (params) => apiFetch(`/v1/market/hubs${qs(params)}`),
   hub: (id) => apiFetch(`/v1/market/hubs/${encodeURIComponent(id)}`),
+  // BATA (échange de biens certifiés) : ?family=vehicule|appareil&city=&minValue=&maxValue=&q=&limit=&offset=
+  bata: (params) => apiFetch(`/v1/market/bata${qs(params)}`),
 }

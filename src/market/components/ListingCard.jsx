@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { FaMapMarkerAlt, FaCertificate, FaCartPlus, FaCalendarAlt, FaComments, FaStore, FaUserFriends, FaWifi, FaExclamationTriangle, FaAward, FaCheckCircle } from 'react-icons/fa'
+import { FaMapMarkerAlt, FaCertificate, FaCartPlus, FaCalendarAlt, FaComments, FaStore, FaUserFriends, FaWifi, FaExclamationTriangle, FaAward, FaCheckCircle, FaExchangeAlt } from 'react-icons/fa'
 import { formatPrice, unitSuffix, imageUrl, cityLabel } from '../lib/format'
 import { bookingMode } from '../lib/universes'
 import { useTaxonomy } from '../../api/taxonomy'
@@ -66,6 +66,7 @@ export function ListingCard({ item, onBook }) {
         <div className="mk-card-tags">
           {mode && <span className="mk-tag mk-tag-service">{MODE_TAG[mode]}</span>}
           {item.certified && <span className="mk-tag mk-tag-cert"><FaCertificate /> Certifié</span>}
+          {item.bata === true && <span className="mk-tag mk-tag-bata" title="Échange possible (BATA)"><FaExchangeAlt /> BATA</span>}
           {item.shop?.isP2P && <span className="mk-tag"><FaUserFriends /> Particulier</span>}
           {item.proCertified && <span className="mk-tag mk-tag-pro" title="Aptitude professionnelle certifiée par Tindisa"><FaAward /> Pro certifié</span>}
         </div>

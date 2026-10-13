@@ -19,6 +19,7 @@ import { useCart } from '../useCart'
 import { useChat } from '../chat/useChat'
 import BookingModal from '../components/BookingModal'
 import { ListingGrid, CertificateLine } from '../components/ListingCard'
+import BataBlock from '../components/BataBlock'
 
 // La 1re photo peut être la version AMÉLIORÉE (netteté) ; les originales suivent.
 function Gallery({ images, videos, name, enhancedFirst }) {
@@ -183,6 +184,8 @@ function ListingPage({ id }) {
               <li className="mk-warn"><FaCertificate /> <span><b>Sans certificat d’authentification.</b> Article de valeur : demandez la fiche de contrôle à l’assistant avant d’acheter.</span></li>
             )}
           </ul>
+
+          {item.bata && <BataBlock item={item} />}
         </div>
       </div>
 

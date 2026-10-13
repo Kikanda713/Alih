@@ -113,6 +113,7 @@ export function useTindisaApi() {
     get: (path) => call(path),
     post: (path, body) => call(path, { method: 'POST', body }),
     put: (path, body) => call(path, { method: 'PUT', body }),
+    patch: (path, body) => call(path, { method: 'PATCH', body }),
     del: (path) => call(path, { method: 'DELETE' }),
     streamChat,
   }

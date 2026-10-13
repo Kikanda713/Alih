@@ -300,6 +300,7 @@ export const mockApi = {
   get: (path) => delay(route('GET', path)),
   post: (path, body) => delay(route('POST', path, body || {})),
   put: (path, body) => delay(route('PUT', path, body || {})),
+  patch: (path, body) => delay(route('PATCH', path, body || {})),
   del: (path) => delay(route('DELETE', path)),
   // Simule le streaming en démo : récupère la réponse mock puis l'émet par mots.
   streamChat: async (body, onToken) => {

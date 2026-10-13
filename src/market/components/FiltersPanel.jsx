@@ -141,6 +141,10 @@ export default function FiltersPanel({ params, setParam, facets, sheet = false, 
           <input type="checkbox" checked={params.get('certified') === '1'} onChange={(e) => setParam({ certified: e.target.checked ? '1' : '' })} />
           <span>Uniquement les articles certifiés</span>
         </label>
+        <label className="mk-check">
+          <input type="checkbox" checked={params.get('bata') === '1'} onChange={(e) => setParam({ bata: e.target.checked ? '1' : '' })} />
+          <span>BATA possible (échange)</span>
+        </label>
       </section>
 
       {sheet && (

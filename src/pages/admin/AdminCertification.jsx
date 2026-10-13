@@ -30,7 +30,6 @@ import {
   Select,
   Textarea,
   Modal,
-  ConfirmModal,
 } from "../../components/ui.jsx";
 import { StatGrid, StatCard } from "../../components/StatCard.jsx";
 import { usePaged } from "../../components/usePaged";
@@ -39,16 +38,39 @@ import { useAdminView } from "./adminView";
 import { certAssetUrl } from "../../api/certificates";
 import { ShopCertDetail, ShopCertTable } from "./AdminShopCerts.jsx";
 import { DEFAULT_SHOP_CHECKLIST } from "../dashboard/certCommon";
+import {
+  CertFlags,
+  CertReason,
+  RejectModal,
+  RevokeModal,
+  WaivePayment,
+} from "./AdminCertParts.jsx";
+import {
+  EMPTY_WAIVE,
+  PAYMENT_REQUIRED_MSG,
+  certRowStatus,
+  isPaymentRequired,
+  needsPayment,
+  txt,
+  waiveBody,
+  waiveOk,
+} from "./certAdmin";
 
 const usd = (v) =>
   `${Number(v || 0).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} $`;
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 const STATUS = {
   issued: { tone: "success", label: "Certifié", icon: <FaCheckCircle /> },
-  requested: { tone: "warn", label: "Demandé", icon: <FaClock /> },
+  requested: { tone: "neutral", label: "En attente de paiement", icon: <FaClock /> },
+  paid: { tone: "warn", label: "À vérifier", icon: <FaClock /> },
+  info_requested: { tone: "warn", label: "Complément demandé", icon: <FaClock /> },
+  rejected: { tone: "danger", label: "Refusé", icon: <FaTimesCircle /> },
   revoked: { tone: "danger", label: "Révoqué", icon: <FaBan /> },
   none: { tone: "neutral", label: "Non certifié", icon: <FaTimesCircle /> },
 };
+// Demande en cours : refus ou complément possibles.
+const REVIEWABLE = new Set(["requested", "paid", "info_requested"]);
+const assetStatus = (a) => certRowStatus(a, "none");
 const BC = {
   anchored: { tone: "success", label: "Ancré on-chain" },
   mock: { tone: "success", label: "Ancré (test)" },
@@ -73,15 +95,22 @@ const CHECKLIST_TPL = {
   ],
 };
 const EMPTY_CERT = { assets: [], counts: {}, settings: {} };
+// Filtres envoyés tels quels au backend (?filter=).
 const FILTERS = [
   { k: "", label: "Tous" },
+  { k: "paid", label: "À vérifier" },
+  { k: "requested", label: "Non payés" },
+  { k: "info_requested", label: "Complément demandé" },
+  { k: "rejected", label: "Refusés" },
   { k: "certified", label: "Certifiés" },
   { k: "uncertified", label: "Non certifiés" },
-  { k: "requested", label: "Demandés" },
 ];
 const PRO_FILTERS = [
   { k: "", label: "Tous" },
-  { k: "requested", label: "À vérifier" },
+  { k: "paid", label: "À vérifier" },
+  { k: "requested", label: "Non payés" },
+  { k: "info_requested", label: "Complément demandé" },
+  { k: "rejected", label: "Refusés" },
   { k: "certified", label: "Délivrés" },
 ];
 const KINDS = [
@@ -119,7 +148,7 @@ const isImg = (u) =>
 const itemLabel = (i) =>
   typeof i === "string" ? i : i?.label || i?.key || "";
 const itemDone = (i) => !!(i && (i.done ?? i.ok ?? i.checked ?? false));
-const proStatus = (r) => r?.certStatus || r?.status || "requested";
+const proStatus = (r) => certRowStatus(r, "requested");
 const proExpired = (r) =>
   !!r?.expired ||
   (proStatus(r) === "issued" &&
@@ -148,11 +177,27 @@ export default function AdminCertification() {
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [doc, setDoc] = useState(null); // certificat affiché
-  const [confirm, setConfirm] = useState({
-    open: false,
-    asset: null,
-    busy: false,
-  });
+  const [revokeTarget, setRevokeTarget] = useState(null); // { certId, name }
+  const [rejectTarget, setRejectTarget] = useState(null); // { certId, name }
+  // Dispense de paiement (modale ouverte : certifier, mettre à jour, dossier pro).
+  const [waive, setWaive] = useState(EMPTY_WAIVE);
+  const [forcePay, setForcePay] = useState(false); // 409 payment_required reçu
+  const resetWaive = () => {
+    setWaive(EMPTY_WAIVE);
+    setForcePay(false);
+  };
+  // Mise à jour d'un actif : paiement exigé si le propriétaire l'a demandée sans
+  // payer (ou si le backend a répondu 409) ; émission : tant que non payé.
+  const certifyUnpaid = (c) =>
+    c?.mode === "update"
+      ? forcePay || (!!c.updateRequested && c.paid !== true)
+      : needsPayment(c, forcePay);
+  const onIssueError = (e) => {
+    if (isPaymentRequired(e)) {
+      setForcePay(true);
+      notify(PAYMENT_REQUIRED_MSG, "error");
+    } else notify(e?.message || "Erreur", "error");
+  };
 
   // Rechargé à chaque changement de ville ou de filtre ; erreur → liste vide.
   const {
@@ -253,13 +298,52 @@ export default function AdminCertification() {
     }
   };
 
+  // Certifier (émission) ou mettre à jour (actif déjà certifié) : même fiche
+  // checklist + propriétaire + notes. `certify.mode` = 'issue' | 'update'.
   const openCertify = (a) => {
-    setCertify(a);
+    resetWaive();
+    setCertify({ ...a, mode: "issue" });
     setChecks({});
     setOwner({ name: "", contact: "" });
     setNotes("");
   };
+  // « Mettre à jour » un certificat délivré : champs certifiés pré-remplis
+  // depuis la fiche, puis PUT /cert/:id (nouvelle version du PDF).
+  const openUpdate = async (a) => {
+    resetWaive();
+    try {
+      const d = await api.get(
+        `/v1/admin/certification/doc/${encodeURIComponent(a.certId || a.productId)}`,
+      );
+      const init = {};
+      const cl = d && typeof d.checklist === "object" ? d.checklist : {};
+      (Array.isArray(cl.legal) ? cl.legal : []).forEach((i) => {
+        if (i?.checked && i.key) init["l_" + i.key] = true;
+      });
+      (Array.isArray(cl.technical) ? cl.technical : []).forEach((i) => {
+        if (i?.checked && i.key) init["t_" + i.key] = true;
+      });
+      const cur = d?.ownership?.current;
+      setChecks(init);
+      setOwner({ name: txt(cur?.name), contact: txt(cur?.contact) });
+      setNotes(txt(d?.notes));
+      setCertify({
+        ...a,
+        mode: "update",
+        prevOwnership:
+          d?.ownership && typeof d.ownership === "object" ? d.ownership : null,
+      });
+    } catch (e) {
+      notify(e?.message || "Erreur", "error");
+    }
+  };
   const doCertify = async () => {
+    const isUpdate = certify.mode === "update";
+    const unpaid = certifyUnpaid(certify);
+    if (!waiveOk(unpaid, waive)) {
+      notify(PAYMENT_REQUIRED_MSG, "error");
+      return;
+    }
     setBusy(true);
     try {
       const checklist = {
@@ -272,27 +356,43 @@ export default function AdminCertification() {
           checked: !!checks["t_" + i.key],
         })),
       };
+      const today = new Date().toISOString().slice(0, 10);
+      const prev = certify.prevOwnership || {};
+      const prevCur = prev.current && typeof prev.current === "object" ? prev.current : null;
+      const history = Array.isArray(prev.history) ? prev.history : [];
+      const changed = !!prevCur && txt(prevCur.name) !== owner.name.trim();
       const ownership = {
-        current: owner.name
+        current: owner.name.trim()
           ? {
-              name: owner.name,
-              contact: owner.contact,
-              since: new Date().toISOString().slice(0, 10),
+              name: owner.name.trim(),
+              contact: owner.contact.trim(),
+              since: changed || !prevCur ? today : prevCur.since || today,
             }
           : null,
-        history: [],
+        // Changement de propriétaire : l'ancien passe dans l'historique.
+        history: changed ? [...history, { ...prevCur, until: today }] : history,
       };
-      await api.post("/v1/admin/certification/issue", {
-        productId: certify.productId,
-        checklist,
-        ownership,
-        notes,
-      });
-      notify("Certificat émis ✅", "success");
+      const extra = waiveBody(unpaid, waive);
+      if (isUpdate) {
+        await api.put(
+          `/v1/admin/certification/cert/${encodeURIComponent(certify.certId)}`,
+          { checklist, ownership, notes, ...extra },
+        );
+      } else {
+        await api.post("/v1/admin/certification/issue", {
+          productId: certify.productId,
+          ...(certify.certId ? { certId: certify.certId } : {}),
+          checklist,
+          ownership,
+          notes,
+          ...extra,
+        });
+      }
+      notify(isUpdate ? "Certificat mis à jour" : "Certificat délivré", "success");
       setCertify(null);
       reload();
     } catch (e) {
-      notify(e?.message || "Erreur", "error");
+      onIssueError(e);
     } finally {
       setBusy(false);
     }
@@ -306,21 +406,6 @@ export default function AdminCertification() {
       setDoc(d);
     } catch (e) {
       notify(e?.message || "Erreur", "error");
-    }
-  };
-  const doRevoke = async () => {
-    setConfirm((c) => ({ ...c, busy: true }));
-    try {
-      await api.post(
-        `/v1/admin/certification/cert/${confirm.asset.certId}/revoke`,
-        {},
-      );
-      notify("Certificat révoqué", "success");
-      setConfirm({ open: false, asset: null, busy: false });
-      reload();
-    } catch (e) {
-      notify(e?.message || "Erreur", "error");
-      setConfirm((c) => ({ ...c, busy: false }));
     }
   };
 
@@ -347,6 +432,7 @@ export default function AdminCertification() {
     (Array.isArray(row.checklist) ? row.checklist : []).forEach((i) => {
       if (itemDone(i)) init[itemLabel(i)] = true;
     });
+    resetWaive();
     setProChecks(init);
     setNotes("");
     setProView(row);
@@ -355,6 +441,11 @@ export default function AdminCertification() {
   const doProIssue = async () => {
     const row = proView;
     const renew = proStatus(row) === "issued";
+    const unpaid = needsPayment(row, forcePay);
+    if (!waiveOk(unpaid, waive)) {
+      notify(PAYMENT_REQUIRED_MSG, "error");
+      return;
+    }
     setBusy(true);
     try {
       const checklist = proChecklistTpl(row).map((label) => ({
@@ -362,10 +453,11 @@ export default function AdminCertification() {
         checked: !!proChecks[label],
         done: !!proChecks[label],
       }));
+      const extra = waiveBody(unpaid, waive);
       if (renew) {
         await api.put(
           `/v1/admin/certification/cert/${encodeURIComponent(proId(row))}`,
-          { kind: "pro", checklist, notes },
+          { kind: "pro", checklist, notes, ...extra },
         );
       } else {
         await api.post("/v1/admin/certification/issue", {
@@ -373,36 +465,30 @@ export default function AdminCertification() {
           certId: proId(row),
           checklist,
           notes,
+          ...extra,
         });
       }
       notify(renew ? "Certificat renouvelé" : "Certificat délivré", "success");
       setProView(null);
       reload();
     } catch (e) {
-      notify(e?.message || "Erreur", "error");
+      onIssueError(e);
     } finally {
       setBusy(false);
     }
   };
+  const proName = (row) =>
+    txt(row?.subject?.holderName) || txt(row?.holderName) || txt(row?.serial);
+  const shopName = (row) =>
+    txt(row?.subject?.shopName) || txt(row?.shopName) || txt(row?.serial);
   const askRevokePro = (row) =>
-    setConfirm({
-      open: true,
-      asset: {
-        certId: proId(row),
-        name: row.subject?.holderName || row.holderName || row.serial,
-      },
-      busy: false,
-    });
-
+    setRevokeTarget({ certId: proId(row), name: proName(row) });
   const askRevokeShop = (row) =>
-    setConfirm({
-      open: true,
-      asset: {
-        certId: row.certId || row.id,
-        name: row.subject?.shopName || row.shopName || row.serial,
-      },
-      busy: false,
-    });
+    setRevokeTarget({ certId: row.certId || row.id, name: shopName(row) });
+  const askRejectPro = (row) =>
+    setRejectTarget({ certId: proId(row), name: proName(row) });
+  const askRejectShop = (row) =>
+    setRejectTarget({ certId: row.certId || row.id, name: shopName(row) });
 
   const s = data.settings || {};
   const c = data.counts || {};
@@ -477,7 +563,7 @@ export default function AdminCertification() {
           />
           <StatCard
             icon={<FaClock />}
-            value={c.requested ?? 0}
+            value={c.paid ?? c.requested ?? 0}
             label={isShop ? "À visiter" : "À vérifier"}
           />
           <StatCard
@@ -500,8 +586,8 @@ export default function AdminCertification() {
         />
         <StatCard
           icon={<FaClock />}
-          value={c.requested ?? 0}
-          label="Demandes"
+          value={c.paid ?? c.requested ?? 0}
+          label="À vérifier (payés)"
         />
         <StatCard
           icon={<FaTimesCircle />}
@@ -556,6 +642,7 @@ export default function AdminCertification() {
           setPage={setPage}
           onOpen={setShopView}
           onRevoke={askRevokeShop}
+          onReject={askRejectShop}
         />
       ) : isPro ? (
         <>
@@ -608,12 +695,8 @@ export default function AdminCertification() {
                             {stKey === "issued" ? "Délivré" : st.label}
                           </Badge>
                         )}
-                        {stKey === "requested" && r.paid === false && (
-                          <>
-                            {" "}
-                            <Badge tone="neutral">Non payé</Badge>
-                          </>
-                        )}
+                        <CertFlags row={r} />
+                        <CertReason row={r} />
                       </td>
                       <td className="cat-col-actions">
                         <button
@@ -623,6 +706,15 @@ export default function AdminCertification() {
                         >
                           <FaEye />
                         </button>
+                        {REVIEWABLE.has(stKey) && (
+                          <button
+                            className="cat-icon-btn"
+                            title="Refuser / Demander un complément"
+                            onClick={() => askRejectPro(r)}
+                          >
+                            <FaTimesCircle />
+                          </button>
+                        )}
                         {stKey === "issued" && (
                           <button
                             className="cat-icon-btn danger"
@@ -663,27 +755,38 @@ export default function AdminCertification() {
               </thead>
               <tbody>
                 {pageItems.map((a) => {
-                  const st = STATUS[a.certStatus] || STATUS.none;
+                  const stKey = assetStatus(a);
+                  const st = STATUS[stKey] || STATUS.none;
                   const bc = BC[a.blockchainStatus] || BC.none;
+                  const unpaid = a.paid !== true;
                   return (
-                    <tr key={a.productId}>
+                    <tr key={a.certId || a.productId}>
                       <td>
-                        <span className="cat-pname">{a.name}</span>
-                        {a.serial && (
-                          <span className="cat-sku"> · {a.serial}</span>
+                        <span className="cat-pname">{txt(a.name) || "-"}</span>
+                        {txt(a.serial) && (
+                          <span className="cat-sku"> · {txt(a.serial)}</span>
                         )}
                       </td>
-                      <td>{a.category || "·"}</td>
+                      <td>{txt(a.category) || "·"}</td>
                       <td>{usd(a.valueUsd)}</td>
                       <td>
-                        {a.shopName || "·"}
-                        {a.city ? ` · ${cap(a.city)}` : ""}
+                        {a.p2p ? (
+                          <Badge tone="neutral">
+                            Particulier
+                            {txt(a.sellerMasked) ? ` · ${txt(a.sellerMasked)}` : ""}
+                          </Badge>
+                        ) : (
+                          txt(a.shopName) || "·"
+                        )}
+                        {txt(a.city) ? ` · ${cap(txt(a.city))}` : ""}
                       </td>
                       <td>
                         <Badge tone={st.tone}>{st.label}</Badge>
+                        {stKey !== "none" && <CertFlags row={{ ...a, p2p: false }} />}
+                        <CertReason row={a} />
                       </td>
                       <td>
-                        {a.certStatus === "issued" ? (
+                        {stKey === "issued" ? (
                           <Badge tone={bc.tone}>
                             <FaLink /> {bc.label}
                           </Badge>
@@ -692,7 +795,7 @@ export default function AdminCertification() {
                         )}
                       </td>
                       <td className="cat-col-actions">
-                        {a.certStatus === "issued" ? (
+                        {stKey === "issued" ? (
                           <>
                             <button
                               className="cat-icon-btn"
@@ -703,8 +806,12 @@ export default function AdminCertification() {
                             </button>
                             <button
                               className="cat-icon-btn"
-                              title="Mettre à jour"
-                              onClick={() => viewDoc(a)}
+                              title={
+                                a.updateRequested
+                                  ? "Mettre à jour (demandée par le propriétaire)"
+                                  : "Mettre à jour"
+                              }
+                              onClick={() => openUpdate(a)}
                             >
                               <FaEdit />
                             </button>
@@ -712,23 +819,45 @@ export default function AdminCertification() {
                               className="cat-icon-btn danger"
                               title="Révoquer"
                               onClick={() =>
-                                setConfirm({
-                                  open: true,
-                                  asset: a,
-                                  busy: false,
+                                setRevokeTarget({
+                                  certId: a.certId,
+                                  name: txt(a.name) || txt(a.serial),
                                 })
                               }
                             >
                               <FaBan />
                             </button>
                           </>
+                        ) : stKey === "revoked" ? (
+                          "·"
                         ) : (
-                          <Button
-                            variant="primary"
-                            onClick={() => openCertify(a)}
-                          >
-                            <FaCertificate /> Certifier
-                          </Button>
+                          <>
+                            {a.certId && REVIEWABLE.has(stKey) && (
+                              <button
+                                className="cat-icon-btn"
+                                title="Refuser / Demander un complément"
+                                onClick={() =>
+                                  setRejectTarget({
+                                    certId: a.certId,
+                                    name: txt(a.name) || txt(a.serial),
+                                  })
+                                }
+                              >
+                                <FaTimesCircle />
+                              </button>
+                            )}
+                            <Button
+                              variant={unpaid ? "ghost" : "primary"}
+                              title={
+                                unpaid
+                                  ? "Paiement non reçu : délivrance possible uniquement avec une dispense motivée"
+                                  : undefined
+                              }
+                              onClick={() => openCertify(a)}
+                            >
+                              <FaCertificate /> Délivrer
+                            </Button>
+                          </>
                         )}
                       </td>
                     </tr>
@@ -907,15 +1036,29 @@ export default function AdminCertification() {
       {/* Certifier (checklist) */}
       <Modal
         open={!!certify}
-        title={certify ? `Certifier · ${certify.name}` : ""}
-        onClose={() => setCertify(null)}
+        title={
+          certify
+            ? `${certify.mode === "update" ? "Mettre à jour" : "Délivrer"} · ${txt(certify.name)}`
+            : ""
+        }
+        onClose={busy ? undefined : () => setCertify(null)}
       >
         {certify && (
           <div className="product-form">
             <p className="dash-sub">
-              Valeur {usd(certify.valueUsd)} · {certify.shopName || "·"}.
-              L'émission coûte {usd(s.issuePriceUsd)} au commerçant (cumul).
+              Valeur {usd(certify.valueUsd)} ·{" "}
+              {certify.p2p
+                ? `Particulier${txt(certify.sellerMasked) ? ` ${txt(certify.sellerMasked)}` : ""}`
+                : txt(certify.shopName) || "·"}
+              .{" "}
+              {certify.mode === "update"
+                ? `Nouvelle version du certificat ${txt(certify.serial)} (mise à jour ${usd(s.updatePriceUsd)}).`
+                : `L'émission coûte ${usd(s.issuePriceUsd)} au demandeur.`}
             </p>
+            <div className="admin-procert-badges">
+              <CertFlags row={certify} />
+            </div>
+            <CertReason row={certify} block />
             <h3 className="dash-h3">Checklist légale</h3>
             {CHECKLIST_TPL.legal.map((i) => (
               <label key={i.key} className="cert-check">
@@ -965,12 +1108,49 @@ export default function AdminCertification() {
                 onChange={(e) => setNotes(e.target.value)}
               />
             </Field>
-            <div className="ui-modal-foot">
-              <Button variant="ghost" onClick={() => setCertify(null)}>
+            <WaivePayment
+              unpaid={certifyUnpaid(certify)}
+              value={waive}
+              onChange={setWaive}
+              label={
+                certify.mode === "update"
+                  ? "Mettre à jour sans paiement"
+                  : "Délivrer sans paiement"
+              }
+            />
+            <div className="ui-modal-foot procert-foot">
+              <Button
+                variant="ghost"
+                onClick={() => setCertify(null)}
+                disabled={busy}
+              >
                 Annuler
               </Button>
-              <Button variant="primary" onClick={doCertify} disabled={busy}>
-                {busy ? "Émission…" : "Émettre le certificat"}
+              {certify.certId && REVIEWABLE.has(assetStatus(certify)) && (
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setCertify(null);
+                    setRejectTarget({
+                      certId: certify.certId,
+                      name: txt(certify.name) || txt(certify.serial),
+                    });
+                  }}
+                  disabled={busy}
+                >
+                  <FaTimesCircle /> Refuser / Demander un complément
+                </Button>
+              )}
+              <Button
+                variant="primary"
+                onClick={doCertify}
+                disabled={busy || !waiveOk(certifyUnpaid(certify), waive)}
+              >
+                {busy
+                  ? "Enregistrement…"
+                  : certify.mode === "update"
+                    ? "Enregistrer la mise à jour"
+                    : "Délivrer le certificat"}
               </Button>
             </div>
           </div>
@@ -1155,9 +1335,9 @@ export default function AdminCertification() {
                           {issued ? "Délivré" : (STATUS[stKey] || STATUS.none).label}
                         </Badge>
                       )}
-                      {r.paid === true && <Badge tone="success">Payé</Badge>}
-                      {r.paid === false && <Badge tone="neutral">Non payé</Badge>}
+                      <CertFlags row={r} />
                     </div>
+                    <CertReason row={r} block />
                   </div>
                 </div>
 
@@ -1260,6 +1440,12 @@ export default function AdminCertification() {
                         {usd(price)} au technicien.
                       </p>
                     )}
+                    <WaivePayment
+                      unpaid={needsPayment(r, forcePay)}
+                      value={waive}
+                      onChange={setWaive}
+                      label={issued ? "Renouveler sans paiement" : "Délivrer sans paiement"}
+                    />
                   </>
                 )}
 
@@ -1289,8 +1475,23 @@ export default function AdminCertification() {
                       <FaBan /> Révoquer
                     </Button>
                   )}
+                  {REVIEWABLE.has(stKey) && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setProView(null);
+                        askRejectPro(r);
+                      }}
+                    >
+                      <FaTimesCircle /> Refuser / Demander un complément
+                    </Button>
+                  )}
                   {!revoked && (
-                    <Button variant="primary" onClick={doProIssue} disabled={busy}>
+                    <Button
+                      variant="primary"
+                      onClick={doProIssue}
+                      disabled={busy || !waiveOk(needsPayment(r, forcePay), waive)}
+                    >
                       {issued ? <FaSyncAlt /> : <FaCertificate />}{" "}
                       {busy
                         ? "Enregistrement…"
@@ -1337,24 +1538,36 @@ export default function AdminCertification() {
               setShopView(null);
               askRevokeShop(row);
             }}
+            onReject={(row) => {
+              setShopView(null);
+              askRejectShop(row);
+            }}
           />
         )}
       </Modal>
 
-      <ConfirmModal
-        open={confirm.open}
-        danger
-        busy={confirm.busy}
-        title="Révoquer le certificat"
-        message={
-          confirm.asset
-            ? `Révoquer le certificat de « ${confirm.asset.name} » ?`
-            : ""
-        }
-        confirmLabel="Révoquer"
-        cancelLabel="Annuler"
-        onConfirm={doRevoke}
-        onClose={() => setConfirm({ open: false, asset: null, busy: false })}
+      <RevokeModal
+        key={revokeTarget ? `rv-${revokeTarget.certId}` : "rv"}
+        target={revokeTarget}
+        api={api}
+        notify={notify}
+        onClose={() => setRevokeTarget(null)}
+        onDone={() => {
+          setRevokeTarget(null);
+          reload();
+        }}
+      />
+
+      <RejectModal
+        key={rejectTarget ? `rj-${rejectTarget.certId}` : "rj"}
+        target={rejectTarget}
+        api={api}
+        notify={notify}
+        onClose={() => setRejectTarget(null)}
+        onDone={() => {
+          setRejectTarget(null);
+          reload();
+        }}
       />
     </div>
   );

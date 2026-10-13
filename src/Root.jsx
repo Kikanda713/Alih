@@ -17,6 +17,7 @@ import HubsPage from "./market/pages/HubsPage.jsx";
 import HubPage from "./market/pages/HubPage.jsx";
 import SellPage from "./market/pages/SellPage.jsx";
 import OnboardingPage from "./market/pages/OnboardingPage.jsx";
+import BataPage from "./market/pages/BataPage.jsx";
 const DashboardLayout = lazy(() => import("./pages/dashboard/DashboardLayout.jsx"));
 const ChatHome = lazy(() => import("./pages/dashboard/ChatHome.jsx"));
 const CataloguePage = lazy(() => import("./pages/dashboard/CataloguePage.jsx"));
@@ -26,6 +27,7 @@ const WalletPage = lazy(() => import("./pages/dashboard/WalletPage.jsx"));
 const SubscriptionPage = lazy(() => import("./pages/dashboard/SubscriptionPage.jsx"));
 const ProCertificatePage = lazy(() => import("./pages/dashboard/ProCertificatePage.jsx"));
 const ShopCertificatePage = lazy(() => import("./pages/dashboard/ShopCertificatePage.jsx"));
+const DashBataPage = lazy(() => import("./pages/dashboard/BataDashPage.jsx"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout.jsx"));
 const AdminHome = lazy(() => import("./pages/admin/AdminHome.jsx"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers.jsx"));
@@ -39,6 +41,7 @@ const AdminSellers = lazy(() => import("./pages/admin/AdminSellers.jsx"));
 const AdminAI = lazy(() => import("./pages/admin/AdminAI.jsx"));
 const AdminDrivers = lazy(() => import("./pages/admin/AdminDrivers.jsx"));
 const AdminMap = lazy(() => import("./pages/admin/AdminMap.jsx"));
+const AdminBata = lazy(() => import("./pages/admin/AdminBata.jsx"));
 
 export default function Root() {
   return (
@@ -60,6 +63,7 @@ export default function Root() {
         <Route path="/vendre" element={<SellPage />} />
         <Route path="/vendre/boutique" element={<OnboardingPage key="business" />} />
         <Route path="/vendre/pro" element={<OnboardingPage key="pro" pro />} />
+        <Route path="/bata" element={<BataPage />} />
       </Route>
       <Route path="/auth/callback" element={<Callback />} />
       <Route path="/link" element={<LinkPage />} />
@@ -75,6 +79,7 @@ export default function Root() {
         <Route path="abonnement" element={<SubscriptionPage />} />
         <Route path="certificat-pro" element={<ProCertificatePage />} />
         <Route path="certificat-etablissement" element={<ShopCertificatePage />} />
+        <Route path="bata" element={<DashBataPage />} />
       </Route>
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminHome />} />
@@ -87,6 +92,7 @@ export default function Root() {
         <Route path="centres" element={<AdminHubs />} />
         <Route path="ia" element={<AdminAI />} />
         <Route path="p2p" element={<AdminP2P />} />
+        <Route path="bata" element={<AdminBata />} />
         <Route path="drivers" element={<AdminDrivers />} />
         <Route path="map" element={<AdminMap />} />
       </Route>

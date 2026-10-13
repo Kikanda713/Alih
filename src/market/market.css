@@ -744,3 +744,23 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 a.mk-shop-verified:hover span { text-decoration: underline; }
 .mk-shop-verified small { font-weight: 500; color: var(--gray); }
 .mk-card-verified { color: var(--mk-green); flex-shrink: 0; font-size: 0.85em; }
+
+/* ---------- BATA (échange de biens certifiés) ---------- */
+.mk-tag-bata { background: var(--terracotta); color: #fff; }
+.mk-bata-block { margin-top: 16px; padding: 16px; border-radius: 14px; border: 1px solid rgba(198, 93, 46, 0.35); display: grid; gap: 12px; }
+.mk-bata-block h2 { display: flex; align-items: center; gap: 8px; font-size: 1.02rem; margin: 0; color: var(--terracotta); }
+.mk-bata-facts { display: grid; gap: 6px; margin: 0; }
+.mk-bata-facts > div { display: flex; justify-content: space-between; gap: 12px; font-size: 0.88rem; }
+.mk-bata-facts dt { color: var(--gray); flex-shrink: 0; }
+.mk-bata-facts dd { margin: 0; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+.mk-bata-block .mk-alt-channels { justify-content: center; }
+.mk-bata-block .mk-hint { margin: 0; }
+.mk-bata-block .mk-hint a { color: var(--terracotta); font-weight: 600; }
+.mk-bata-rules { list-style: none; display: grid; gap: 8px; padding: 14px 16px; margin: 0 0 16px; border-radius: 14px; background: rgba(198, 93, 46, 0.06); }
+.mk-bata-rules li { display: flex; gap: 10px; font-size: 0.88rem; line-height: 1.45; }
+.mk-bata-rules svg { color: var(--terracotta); flex-shrink: 0; margin-top: 3px; }
+.mk-bata-toggle { margin-bottom: 16px; }
+.mk-bata-card .mk-bata-summary { font-size: 0.82rem; color: var(--gray); margin: 4px 0 0; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.mk-bata-card .mk-bata-wants { font-size: 0.82rem; margin: 6px 0 0; overflow-wrap: anywhere; }
+.mk-bata-cta { display: grid; justify-items: center; gap: 8px; }
+.mk-bata-shop-link, .mk-assist a.mk-bata-shop-link { font-size: 0.82rem; color: var(--gray); font-weight: 500; text-decoration: underline; }

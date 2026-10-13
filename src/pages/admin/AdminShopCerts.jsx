@@ -13,6 +13,16 @@ import { Badge, Button, Field, Input, Textarea } from "../../components/ui.jsx";
 import { Pagination } from "../../components/Pagination.jsx";
 import { certAssetUrl } from "../../api/certificates";
 import { DEFAULT_SHOP_CHECKLIST, checkDone, checkLabel, isImageUrl } from "../dashboard/certCommon";
+import { CertFlags, CertReason, CertStateBadge, WaivePayment } from "./AdminCertParts.jsx";
+import {
+  EMPTY_WAIVE,
+  PAYMENT_REQUIRED_MSG,
+  certRowStatus,
+  isPaymentRequired,
+  needsPayment,
+  waiveBody,
+  waiveOk,
+} from "./certAdmin";
 
 /*
  * Back-office : certificats d'établissement vérifié (kind 'shop').
@@ -54,7 +64,7 @@ const slug = (s) =>
     .slice(0, 40);
 
 const shopId = (r) => r?.certId || r?.id;
-const shopStatus = (r) => r?.certStatus || r?.status || "requested";
+const shopStatus = (r) => certRowStatus(r, "requested");
 const shopExpired = (r) =>
   !!r?.expired ||
   (shopStatus(r) === "issued" && !!r?.validUntil && new Date(r.validUntil).getTime() < Date.now());
@@ -72,18 +82,18 @@ const listingsCount = (v) => {
 function StatusBadge({ row }) {
   const st = shopStatus(row);
   if (shopExpired(row)) return <Badge tone="danger">Expiré</Badge>;
-  if (st === "issued") return <Badge tone="success">Délivré</Badge>;
-  if (st === "revoked") return <Badge tone="danger">Révoqué</Badge>;
-  return <Badge tone="warn">À visiter</Badge>;
+  // « paid » = payé, visite à faire.
+  if (st === "paid") return <Badge tone="warn">À visiter</Badge>;
+  return <CertStateBadge status={st} fallback={<Badge tone="warn">À visiter</Badge>} />;
 }
 
-function PaidBadge({ paid }) {
-  if (paid === true) return <Badge tone="success">Payé</Badge>;
-  if (paid === false) return <Badge tone="neutral">Non payé</Badge>;
-  return "-";
-}
+// Demande en cours de traitement : refus / complément possibles.
+const reviewable = (r) => {
+  const st = shopStatus(r);
+  return st === "requested" || st === "paid" || st === "info_requested";
+};
 
-export function ShopCertTable({ rows, page, totalPages, count, setPage, onOpen, onRevoke }) {
+export function ShopCertTable({ rows, page, totalPages, count, setPage, onOpen, onRevoke, onReject }) {
   return (
     <>
       <div className="cat-table-wrap">
@@ -117,16 +127,26 @@ export function ShopCertTable({ rows, page, totalPages, count, setPage, onOpen, 
                   </td>
                   <td>
                     <StatusBadge row={r} />
+                    <CertReason row={r} />
                   </td>
                   <td>{insp?.visitedAt ? fmtDate(insp.visitedAt) : "-"}</td>
                   <td>{fmtDate(r.validUntil)}</td>
                   <td>
-                    <PaidBadge paid={r.paid} />
+                    <CertFlags row={r} />
                   </td>
                   <td className="cat-col-actions">
                     <button className="cat-icon-btn" title="Voir la fiche" onClick={() => onOpen(r)}>
                       <FaEye />
                     </button>
+                    {onReject && reviewable(r) && (
+                      <button
+                        className="cat-icon-btn"
+                        title="Refuser / Demander un complément"
+                        onClick={() => onReject(r)}
+                      >
+                        <FaTimesCircle />
+                      </button>
+                    )}
                     {shopStatus(r) === "issued" && (
                       <button className="cat-icon-btn danger" title="Révoquer" onClick={() => onRevoke(r)}>
                         <FaBan />
@@ -172,7 +192,7 @@ function checklistTemplate(row, settings) {
  * Fiche d'une demande. Monter avec `key={shopId(row)}` pour réinitialiser
  * l'état à chaque ouverture.
  */
-export function ShopCertDetail({ row, settings, api, notify, onClose, onDone, onRevoke }) {
+export function ShopCertDetail({ row, settings, api, notify, onClose, onDone, onRevoke, onReject }) {
   const subj = subjectOf(row);
   const insp = inspectionOf(row);
   const stKey = shopStatus(row);
@@ -193,6 +213,10 @@ export function ShopCertDetail({ row, settings, api, notify, onClose, onDone, on
   const [inspector, setInspector] = useState(() => (!issued ? txt(insp?.inspector) : ""));
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const [waive, setWaive] = useState(EMPTY_WAIVE);
+  const [forcePay, setForcePay] = useState(false); // 409 payment_required reçu
+  const unpaid = needsPayment(row, forcePay);
+  const canSubmit = waiveOk(unpaid, waive);
 
   const docs = (Array.isArray(row.documents) ? row.documents : []).filter(
     (d) => d && typeof d.url === "string",
@@ -231,14 +255,24 @@ export function ShopCertDetail({ row, settings, api, notify, onClose, onDone, on
         inspection: { visitedAt, inspector: inspector.trim() },
       };
       if (issued) {
-        await api.put(`/v1/admin/certification/cert/${encodeURIComponent(shopId(row))}`, body);
+        await api.put(`/v1/admin/certification/cert/${encodeURIComponent(shopId(row))}`, {
+          ...body,
+          ...waiveBody(unpaid, waive),
+        });
       } else {
-        await api.post("/v1/admin/certification/issue", { ...body, certId: shopId(row) });
+        await api.post("/v1/admin/certification/issue", {
+          ...body,
+          certId: shopId(row),
+          ...waiveBody(unpaid, waive),
+        });
       }
       notify(issued ? "Certificat renouvelé" : "Certificat délivré", "success");
       onDone();
     } catch (e) {
-      notify(e?.message || "Erreur", "error");
+      if (isPaymentRequired(e)) {
+        setForcePay(true);
+        notify(PAYMENT_REQUIRED_MSG, "error");
+      } else notify(e?.message || "Erreur", "error");
     } finally {
       setBusy(false);
     }
@@ -255,11 +289,11 @@ export function ShopCertDetail({ row, settings, api, notify, onClose, onDone, on
           </div>
           <div className="admin-procert-badges">
             <StatusBadge row={row} />
-            {row.paid === true && <Badge tone="success">Payé</Badge>}
-            {row.paid === false && <Badge tone="neutral">Non payé</Badge>}
+            <CertFlags row={row} />
           </div>
         </div>
       </div>
+      <CertReason row={row} block />
 
       <div className="cert-doc-grid">
         <div>
@@ -378,6 +412,12 @@ export function ShopCertDetail({ row, settings, api, notify, onClose, onDone, on
               {Number(price).toLocaleString("fr-FR")} $ à l'établissement.
             </p>
           )}
+          <WaivePayment
+            unpaid={unpaid}
+            value={waive}
+            onChange={setWaive}
+            label={issued ? "Renouveler sans paiement" : "Délivrer sans paiement"}
+          />
         </>
       )}
 
@@ -395,8 +435,18 @@ export function ShopCertDetail({ row, settings, api, notify, onClose, onDone, on
             <FaBan /> Révoquer
           </Button>
         )}
+        {onReject && reviewable(row) && (
+          <Button variant="ghost" onClick={() => onReject(row)}>
+            <FaTimesCircle /> Refuser / Demander un complément
+          </Button>
+        )}
         {!revoked && (
-          <Button variant="primary" onClick={submit} disabled={busy}>
+          <Button
+            variant="primary"
+            onClick={submit}
+            disabled={busy || !canSubmit}
+            title={!canSubmit ? "Paiement non reçu : cochez la dispense et indiquez un motif" : undefined}
+          >
             {issued ? <FaSyncAlt /> : <FaCertificate />}{" "}
             {busy ? "Enregistrement…" : issued ? "Renouveler" : "Délivrer le certificat"}
           </Button>

@@ -454,3 +454,7 @@ section[id] {
 .verify-checks { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; font-weight: 500; }
 .verify-checks li { display: flex; align-items: flex-start; gap: 8px; }
 .verify-checks svg { color: #1a9e54; flex-shrink: 0; margin-top: 3px; }
+.pay-done-ic.pay-fail-ic { color: #c0392b; }
+.pay-done-ic.pay-wait-ic { color: #b5671c; }
+.pay-done .verify-submit { max-width: 280px; margin: 0 auto; }
+.verify-tamper.verify-revoked { background: rgba(192,57,43,0.08); border-color: #c0392b; color: #a93226; }

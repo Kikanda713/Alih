@@ -96,6 +96,25 @@ export async function executePayLink(token, { phone, telecom }) {
   return data;
 }
 
+/**
+ * État d'un paiement de certificat lancé depuis un lien (public).
+ * → { status:'pending'|'paid'|'failed', kind, certStatus, serial|null, verifyUrl|null }
+ */
+export async function getPayStatus(ref, paymentId) {
+  const qs = new URLSearchParams({ ref });
+  if (paymentId) qs.set("paymentId", paymentId);
+  const res = await fetch(
+    `${apiBaseUrl}/v1/certificates/pay-status?${qs.toString()}`,
+  );
+  if (!res.ok) {
+    const err = new Error(`Statut indisponible (${res.status})`);
+    err.status = res.status;
+    throw err;
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
 /** Génère/obtient le certificat SPÉCIMEN de démonstration (gratuit). Renvoie { serial }. */
 export async function getDemoCertificate() {
   const res = await fetch(`${apiBaseUrl}/v1/certificates/demo`, {

@@ -27,6 +27,7 @@ import {
   getDemoCertificate,
 } from "../api/certificates";
 import { apiBaseUrl } from "../auth/config";
+import { useLoad } from "../api/useLoad";
 import "../App.css";
 
 const METHODS = [
@@ -59,6 +60,25 @@ function verifyOutcome(payload) {
       e?.message ||
       "Service de vérification indisponible. Réessayez plus tard.",
   }));
+}
+
+// PDF public : 410 = certificat révoqué ({ revoked, reason }). Ne rejette jamais.
+async function checkPdfGone(url) {
+  try {
+    const head = await fetch(url, { method: "HEAD" });
+    if (head.status !== 410) return null;
+    let reason = "";
+    try {
+      const r = await fetch(url);
+      const d = await r.json();
+      reason = asText(d?.reason);
+    } catch {
+      /* motif indisponible */
+    }
+    return { gone: true, reason };
+  } catch {
+    return null;
+  }
 }
 
 // Spécimen gratuit : 'asset' (certificat de valeur), 'pro' (aptitude
@@ -203,12 +223,45 @@ export default function VerifyPage() {
   };
 
   const cert = result?.found ? result.certificate : null;
+  const rawPdf = cert?.pdfUrl ? certAssetUrl(cert.pdfUrl) : null;
+  // Le PDF d'un certificat révoqué répond 410 { revoked, reason } : on le
+  // détecte avant d'afficher l'aperçu (sinon l'iframe montrerait l'erreur).
+  const { data: pdfGone } = useLoad(
+    () =>
+      rawPdf && cert?.status !== "revoked"
+        ? checkPdfGone(rawPdf)
+        : Promise.resolve(null),
+    [rawPdf, cert?.status || ""],
+  );
+  const revoked = cert?.status === "revoked" || !!pdfGone?.gone;
+  const revokedReason =
+    asText(cert?.revokedReason) ||
+    asText(cert?.revocationReason) ||
+    asText(cert?.decisionReason) ||
+    asText(cert?.reason) ||
+    asText(pdfGone?.reason);
+  const statusKey = revoked ? "revoked" : cert?.status;
   const statusTone =
     { authentic: "ok", revoked: "bad", expired: "warn", unknown: "warn" }[
-      cert?.status
+      statusKey
     ] || "warn";
   const value = fmtValue(cert?.value);
-  const pdfSrc = cert?.pdfUrl ? certAssetUrl(cert.pdfUrl) : null;
+  const pdfSrc = revoked ? null : rawPdf;
+  const revokedNote = revoked ? (
+    <div className="verify-tamper verify-revoked">
+      <FaTimesCircle />
+      <span>
+        Ce certificat a été révoqué par Tindisa et n'est plus valable.
+        {revokedReason ? (
+          <>
+            {" "}
+            Motif : <strong>{revokedReason}</strong>
+          </>
+        ) : null}{" "}
+        Le document officiel n'est plus disponible.
+      </span>
+    </div>
+  ) : null;
   // Alerte si un PDF importé ne correspond PAS à l'empreinte ancrée (document altéré).
   const tampered = cert && cert.hashMatch === false;
   // Certificat d'aptitude professionnelle (technicien / artisan).
@@ -221,7 +274,7 @@ export default function VerifyPage() {
     .filter((c) => typeof c === "string" && c);
   const shopPlace = [asText(cert?.commune), asText(cert?.city)].filter(Boolean).join(", ");
   const proState =
-    cert?.status === "revoked"
+    revoked
       ? PRO_STATE.revoked
       : cert?.expired || cert?.status === "expired"
         ? PRO_STATE.expired
@@ -416,6 +469,7 @@ export default function VerifyPage() {
               </div>
             </div>
 
+            {revokedNote}
             {tampered && (
               <div className="verify-tamper">
                 <FaExclamationTriangle /> Le document importé ne correspond pas
@@ -537,6 +591,7 @@ export default function VerifyPage() {
               </div>
             </div>
 
+            {revokedNote}
             {tampered && (
               <div className="verify-tamper">
                 <FaExclamationTriangle /> Le document importé ne correspond pas
@@ -652,7 +707,7 @@ export default function VerifyPage() {
               )}
               <div>
                 <strong>
-                  {STATUS_LABEL[cert.status] || STATUS_LABEL.unknown}
+                  {STATUS_LABEL[statusKey] || STATUS_LABEL.unknown}
                 </strong>
                 <span>
                   {cert.serial ? `${cert.serial} · ` : ""}Vérifié sur la
@@ -661,6 +716,7 @@ export default function VerifyPage() {
               </div>
             </div>
 
+            {revokedNote}
             {tampered && (
               <div className="verify-tamper">
                 <FaExclamationTriangle /> Le document importé ne correspond pas

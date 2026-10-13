@@ -20,6 +20,36 @@ export const DEFAULT_SHOP_CHECKLIST = [
   "Hygiène et propreté des lieux",
 ];
 
+// Texte affichable sûr (jamais d'objet rendu comme enfant React).
+export const textOf = (v) =>
+  typeof v === "string" || typeof v === "number" ? String(v) : "";
+
+// Motif d'une décision Tindisa (refus, complément demandé, révocation).
+export const decisionReasonOf = (c) =>
+  textOf(c?.decisionReason) ||
+  textOf(c?.revokedReason) ||
+  textOf(c?.revocationReason);
+
+// Un dossier de renouvellement / une mise à jour a été envoyé pour un certificat délivré.
+export const renewalSentOf = (c) =>
+  !!(c?.updateRequested || c?.renewalRequested || c?.renewalPending);
+
+// Lien public de vérification (celui du backend en priorité).
+export const verifyLinkOf = (c) =>
+  textOf(c?.verifyUrl) ||
+  (textOf(c?.serial) ? VERIFY_BASE + encodeURIComponent(c.serial) : "");
+
+/**
+ * Étape de la frise Demande → Paiement → Vérification → Délivré.
+ * 'requested' = en attente de paiement ; 'paid' / 'info_requested' / 'rejected'
+ * = vérification par l'équipe ; 'issued' = délivré.
+ */
+export function certStepOf(status, paid) {
+  if (status === "issued") return 3;
+  if (status === "paid" || status === "info_requested" || status === "rejected") return 2;
+  if (status === "requested") return paid ? 2 : 1;
+  return 0;
+}
 
 export function fmtDate(d) {
   if (!d) return "";
@@ -123,8 +153,8 @@ export function useCertActions({ endpoint, api, notify, fileStem }) {
     }
   };
 
-  const copyVerify = async (serial) => {
-    const link = VERIFY_BASE + encodeURIComponent(serial || "");
+  const copyVerify = async (serial, url) => {
+    const link = textOf(url) || VERIFY_BASE + encodeURIComponent(serial || "");
     try {
       await navigator.clipboard.writeText(link);
       notify("Lien de vérification copié", "success");
@@ -134,4 +164,11 @@ export function useCertActions({ endpoint, api, notify, fileStem }) {
   };
 
   return { busy, payLink, downloadPdf, copyVerify };
+}
+
+/** Statut effectif d'un certificat d'actif (un « requested » déjà payé = en vérification). */
+export function assetCertState(cert) {
+  const st = cert?.status || "none";
+  if (st === "requested" && cert?.paid === true) return "paid";
+  return st;
 }
