@@ -2,6 +2,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Link } from 'react-router-dom'
 import { FaConciergeBell, FaShoppingBag, FaCheckCircle } from 'react-icons/fa'
+import { formatPrice } from '../market/lib/format.js'
 
 /*
  * Rendu des réponses de l'agent Tindisa (chat du dashboard et chat du site) :
@@ -9,6 +10,18 @@ import { FaConciergeBell, FaShoppingBag, FaCheckCircle } from 'react-icons/fa'
  * JSON [{id,name,price,currency,city,image,condition,type,certified}]) affiché
  * en cartes cliquables vers la fiche de l'annonce.
  */
+
+// Prix d'une carte : libellé prêt (priceLabel) sinon montant + devise de l'outil
+// (« 65 000 $ », « 15 000 FC »). Sans devise connue : le montant seul, jamais une devise devinée.
+function cardPrice(p) {
+  if (p.priceLabel) return p.priceLabel
+  const cur = String(p.currency || '').trim().toUpperCase()
+  const known = cur === 'USD' || cur === '$' ? 'USD' : cur === 'CDF' || cur === 'FC' ? 'CDF' : null
+  const n = Number(p.price)
+  if (!Number.isFinite(n)) return String(p.price)
+  if (!known) return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(n)
+  return formatPrice(n, known)
+}
 
 function ProductCarousel({ items }) {
   if (!Array.isArray(items) || items.length === 0) return null
@@ -28,7 +41,7 @@ function ProductCarousel({ items }) {
                 <div className="chat-product-cert" title="Certifié par Tindisa (vérifiable sur la blockchain)"><FaCheckCircle /> Certifié</div>
               )}
               {p.price != null && p.price !== '' && (
-                <div className="chat-product-price">{p.price} {p.currency || '$'}</div>
+                <div className="chat-product-price">{cardPrice(p)}</div>
               )}
               {(p.city || p.condition) && (
                 <div className="chat-product-meta">{[p.city, p.condition].filter(Boolean).join(' · ')}</div>

@@ -1107,3 +1107,27 @@ button.cat-cert-badge { cursor: pointer; }
 .admin-radio-group { display: grid; gap: 8px; margin-bottom: 10px; }
 .admin-waive { display: grid; gap: 8px; padding: 10px 12px; border-radius: 10px; background: rgba(211, 155, 90, 0.12); margin: 6px 0; }
 .admin-waive .cert-check { margin: 0; }
+
+/* ===== Tarifs de certification par ville (paramètres admin) ===== */
+.cert-city-prices { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--border); }
+.cert-city-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.cert-city-head .dash-h3 { margin: 0; }
+.cert-city-editor { margin: 10px 0 14px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-card); display: flex; flex-direction: column; gap: 10px; }
+.cert-city-list { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.cert-city-card { border: 1px solid var(--border); border-radius: var(--radius-card); padding: 10px 12px; min-width: 0; }
+.cert-city-card-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cert-city-name { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; margin: 0; }
+.cert-city-actions { margin-left: auto; display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.cert-city-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 8px 0 0; }
+.cert-city-grid dt { font-size: 0.78rem; color: var(--gray); }
+.cert-city-grid dd { margin: 2px 0 0; font-size: 0.92rem; }
+.cert-city-grid .is-own { font-weight: 700; color: var(--terracotta); }
+.cert-city-grid .is-national { color: var(--gray); }
+.cert-city-confirm { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 8px; }
+.cert-city-confirm p { margin: 0; font-size: 0.9rem; }
+.cert-config-locked { margin: 0 0 12px; padding: 10px 12px; border-radius: var(--radius-card); background: rgba(18, 18, 18, 0.04); font-size: 0.9rem; }
+@media (max-width: 560px) {
+  .cert-city-grid { grid-template-columns: 1fr; }
+  .cert-city-actions { margin-left: 0; width: 100%; }
+}
+.cert-config-fields { display: contents; border: 0; padding: 0; margin: 0; min-width: 0; }

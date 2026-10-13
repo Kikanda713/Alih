@@ -37,6 +37,7 @@ import { Pagination } from "../../components/Pagination.jsx";
 import { useAdminView } from "./adminView";
 import { certAssetUrl } from "../../api/certificates";
 import { ShopCertDetail, ShopCertTable } from "./AdminShopCerts.jsx";
+import CertCityPrices from "./CertCityPrices.jsx";
 import { DEFAULT_SHOP_CHECKLIST } from "../dashboard/certCommon";
 import {
   CertFlags,
@@ -163,7 +164,7 @@ const toLines = (v) =>
 export default function AdminCertification() {
   const api = useTindisaApi();
   const { notify } = useToast();
-  const { city, withCity } = useAdminView();
+  const { city, withCity, global } = useAdminView();
   const taxonomy = useTaxonomy();
   const [kind, setKind] = useState("asset");
   const [filter, setFilter] = useState("");
@@ -227,6 +228,12 @@ export default function AdminCertification() {
   // qu'aucun chargement n'a abouti), puis modifiés localement.
   const [cfgEdit, setCfg] = useState(null);
   const cfg = cfgEdit ?? (data !== EMPTY_CERT ? data.settings : null);
+  // Seul l'admin global modifie la config et les tarifs (le backend renvoie canEdit).
+  const { data: cfgMeta } = useLoad(
+    () => api.get("/v1/admin/certification/config").catch(() => null),
+    [],
+  );
+  const canEditCfg = Boolean(cfgMeta?.canEdit ?? global);
 
   const { pageItems, page, setPage, totalPages, count } = usePaged(
     data.assets,
@@ -234,6 +241,7 @@ export default function AdminCertification() {
   );
 
   const saveConfig = async () => {
+    if (!canEditCfg) return;
     setBusy(true);
     try {
       const body = {
@@ -292,7 +300,12 @@ export default function AdminCertification() {
       setCfgOpen(false);
       reload();
     } catch (e) {
-      notify(e?.message || "Erreur", "error");
+      notify(
+        e?.status === 403
+          ? "Seul l'administrateur national peut modifier ces paramètres."
+          : e?.message || "Erreur",
+        "error",
+      );
     } finally {
       setBusy(false);
     }
@@ -883,6 +896,13 @@ export default function AdminCertification() {
       >
         {cfg && (
           <div className="product-form">
+            {!canEditCfg && (
+              <p className="cert-config-locked">
+                Lecture seule : seul l'administrateur national modifie le seuil et les tarifs.
+              </p>
+            )}
+            <fieldset className="cert-config-fields" disabled={!canEditCfg}>
+            <h3 className="dash-h3">Tarifs nationaux et seuil</h3>
             <div className="form-row">
               <Field label="Seuil (valeur minimale)">
                 <Input
@@ -1021,14 +1041,18 @@ export default function AdminCertification() {
                 onChange={(e) => setCfg({ ...cfg, shopChecklist: e.target.value })}
               />
             </Field>
+            </fieldset>
             <div className="ui-modal-foot">
               <Button variant="ghost" onClick={() => setCfgOpen(false)}>
-                Annuler
+                {canEditCfg ? "Annuler" : "Fermer"}
               </Button>
-              <Button variant="primary" onClick={saveConfig} disabled={busy}>
-                {busy ? "Enregistrement…" : "Enregistrer"}
-              </Button>
+              {canEditCfg && (
+                <Button variant="primary" onClick={saveConfig} disabled={busy}>
+                  {busy ? "Enregistrement…" : "Enregistrer"}
+                </Button>
+              )}
             </div>
+            <CertCityPrices />
           </div>
         )}
       </Modal>
@@ -1052,8 +1076,8 @@ export default function AdminCertification() {
                 : txt(certify.shopName) || "·"}
               .{" "}
               {certify.mode === "update"
-                ? `Nouvelle version du certificat ${txt(certify.serial)} (mise à jour ${usd(s.updatePriceUsd)}).`
-                : `L'émission coûte ${usd(s.issuePriceUsd)} au demandeur.`}
+                ? `Nouvelle version du certificat ${txt(certify.serial)} (mise à jour ${usd(certify.price?.update ?? s.updatePriceUsd)}).`
+                : `L'émission coûte ${usd(certify.price?.issue ?? s.issuePriceUsd)} au demandeur.`}
             </p>
             <div className="admin-procert-badges">
               <CertFlags row={certify} />
@@ -1311,9 +1335,10 @@ export default function AdminCertification() {
                     `/v1/certificates/${encodeURIComponent(r.serial)}/pdf`,
                   )
                 : null;
+            // Tarif de la ville du technicien (repli : tarif national).
             const price = issued
-              ? proCfg(s, "proUpdatePriceUsd", "pro_update_price_usd")
-              : proCfg(s, "proIssuePriceUsd", "pro_issue_price_usd");
+              ? r.price?.update ?? proCfg(s, "proUpdatePriceUsd", "pro_update_price_usd")
+              : r.price?.issue ?? proCfg(s, "proIssuePriceUsd", "pro_issue_price_usd");
             return (
               <div className="cert-view admin-procert">
                 <div className="admin-procert-head">

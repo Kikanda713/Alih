@@ -30,6 +30,19 @@ import {
 } from "../../api/taxonomy";
 import { useT } from "../../i18n";
 
+// Biens dont le prix se dit en général en DOLLARS (même règle que le serveur) et
+// prix minimal vraisemblable en francs : en dessous, c'est sûrement des dollars.
+const VEHICLE_PARTS = ["pieces", "pneus", "accessoires-auto"];
+function usdMinCdf(category, subcategory) {
+  const c = String(category || "").toLowerCase();
+  const s = String(subcategory || "").toLowerCase();
+  if (c.includes("immobilier")) return s.startsWith("loc-") ? 30000 : 1000000;
+  if (c === "location-vehicules") return 20000;
+  if (c === "automobile" && !VEHICLE_PARTS.includes(s)) return 500000;
+  if (s === "smartphones" || s === "ordinateurs") return 20000;
+  return 0;
+}
+
 const empty = {
   type: "product",
   name: "",
@@ -85,6 +98,7 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [currencyTouched, setCurrencyTouched] = useState(false);
   const fileRef = useRef(null);
   const videoRef = useRef(null);
 
@@ -101,6 +115,7 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
     setSaving(false);
     setUploading(false);
     setUploadingVideo(false);
+    setCurrencyTouched(false);
   } else if (!open && wasOpen) {
     setWasOpen(false);
   }
@@ -176,13 +191,33 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
       condition: "",
       billingUnit: "",
     }));
+  // Nouvel article : tant que la devise n'a pas été choisie à la main, elle suit la
+  // catégorie (immobilier, véhicules, téléphones/ordinateurs → dollars).
+  const autoCurrency = (f) =>
+    !product?.id && !currencyTouched
+      ? { currency: usdMinCdf(f.category, f.subcategory) ? "USD" : "CDF" }
+      : {};
   const setCategory = (e) =>
-    setForm((f) => ({
-      ...f,
-      category: e.target.value,
-      subcategory: "",
-      attributes: {},
-    }));
+    setForm((f) => {
+      const next = { ...f, category: e.target.value, subcategory: "", attributes: {} };
+      return { ...next, ...autoCurrency(next) };
+    });
+  const setSubcategory = (e) =>
+    setForm((f) => {
+      const next = { ...f, subcategory: e.target.value };
+      return { ...next, ...autoCurrency(next) };
+    });
+  const setCurrency = (e) => {
+    setCurrencyTouched(true);
+    setForm((f) => ({ ...f, currency: e.target.value }));
+  };
+  // Prix en francs invraisemblable pour ce type de bien (parcelle à 65 000 FC).
+  const priceValue = num(form.displayPrice);
+  const minCdf = usdMinCdf(form.category, form.subcategory);
+  const currencyWarning =
+    form.currency === "CDF" && minCdf && priceValue > 0 && priceValue < minCdf
+      ? `${priceValue.toLocaleString("fr-FR")} FC semble très bas pour ce bien : est-ce en dollars ($) ?`
+      : "";
 
   const onPickImage = async (e) => {
     const file = e.target.files?.[0];
@@ -433,7 +468,7 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
           <Field label="Sous-catégorie">
             <Select
               value={form.subcategory}
-              onChange={set("subcategory")}
+              onChange={setSubcategory}
               options={subcats}
               placeholder={
                 subcats.length ? "Choisir…" : "Choisir une catégorie d’abord"
@@ -481,10 +516,10 @@ export default function ProductFormModal({ open, product, onClose, onSave }) {
           />
         </Field>
 
-        <Field label="Devise" hint="Franc congolais (FC) ou Dollar US ($)">
+        <Field label="Devise" hint={currencyWarning || "Franc congolais (FC) ou Dollar US ($)"}>
           <Select
             value={form.currency}
-            onChange={set("currency")}
+            onChange={setCurrency}
             options={
               taxonomy?.currencies || [
                 { id: "CDF", label: "Franc congolais (FC)" },

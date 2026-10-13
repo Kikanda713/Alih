@@ -228,9 +228,10 @@ export function ShopCertDetail({ row, settings, api, notify, onClose, onDone, on
     issued && txt(row.serial)
       ? certAssetUrl(`/v1/certificates/${encodeURIComponent(row.serial)}/pdf`)
       : null;
+  // Tarif de la ville de l'établissement (repli : tarif national).
   const price = issued
-    ? settings?.shopUpdatePriceUsd ?? settings?.shop_update_price_usd
-    : settings?.shopIssuePriceUsd ?? settings?.shop_issue_price_usd;
+    ? row.price?.update ?? settings?.shopUpdatePriceUsd ?? settings?.shop_update_price_usd
+    : row.price?.issue ?? settings?.shopIssuePriceUsd ?? settings?.shop_issue_price_usd;
   const today = todayIso();
 
   const submit = async () => {

@@ -595,14 +595,17 @@ export default function CataloguePage() {
   const startCertify = (p) => setPay({ open: true, product: p, kind: "issue" });
   const [certState, setCertState] = useState(null); // { product, cert }
   const [updateFor, setUpdateFor] = useState(null); // certificat à mettre à jour
-  const issueAmount =
-    certSummary?.pricing?.issueUsd != null
-      ? `${certSummary.pricing.issueUsd} $`
-      : "";
-  const updateAmount =
-    certSummary?.pricing?.updateUsd != null
-      ? `${certSummary.pricing.updateUsd} $`
-      : "";
+  // Tarif applicable (ville de la boutique, sinon national) : d'abord celui du
+  // certificat existant, puis celui de la boutique de l'article, puis le défaut.
+  const amountFor = (p, kind = "issue") => {
+    const c = p ? certByProduct[p.id || p.productId] : null;
+    const fromCert = kind === "update" ? c?.price?.update : c?.price?.issue;
+    const shopPricing =
+      certSummary?.pricingByShop?.[p?.shopId ?? p?.shop?.id] || certSummary?.pricing;
+    const v =
+      fromCert ?? (kind === "update" ? shopPricing?.updateUsd : shopPricing?.issueUsd);
+    return v != null ? `${v} $` : "";
+  };
 
   // Renvoi d'une demande (complément, refus, révocation) : même action que la
   // demande initiale. Déjà payée → retour en vérification, sinon paiement.
@@ -1084,7 +1087,7 @@ export default function CataloguePage() {
 
       <AssetCertStateModal
         state={certState}
-        amount={issueAmount}
+        amount={amountFor(certState?.product, "issue")}
         onClose={() => setCertState(null)}
         onPay={(p) => {
           setCertState(null);
@@ -1101,7 +1104,11 @@ export default function CataloguePage() {
       <UpdateRequestModal
         key={updateFor ? updateFor.certId || updateFor.productId : "none"}
         cert={updateFor}
-        amount={updateAmount}
+        amount={
+          updateFor
+            ? amountFor({ id: updateFor.productId, shopId: updateFor.shopId }, "update")
+            : amountFor(null, "update")
+        }
         onClose={() => setUpdateFor(null)}
         onSubmit={submitUpdate}
       />
@@ -1128,7 +1135,7 @@ export default function CataloguePage() {
         variant="certificate"
         certKind={pay.kind === "update" ? "update" : "issue"}
         productId={pay.product?.id}
-        amount={pay.kind === "update" ? updateAmount : issueAmount}
+        amount={amountFor(pay.product, pay.kind === "update" ? "update" : "issue")}
         onCopyLink={
           pay.product
             ? () => copyPayLink(pay.product.id, pay.kind === "update" ? "update" : "issue")

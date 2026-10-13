@@ -1,4 +1,5 @@
 import { FaHandshake } from 'react-icons/fa'
+import { formatPrice } from '../../market/lib/format.js'
 import { useTindisaApi } from '../../api/client'
 import { useLoad } from '../../api/useLoad'
 import { useT } from '../../i18n'
@@ -18,7 +19,7 @@ const DELIVERY_TONE = { CONFIRMED: 'success', BOOKED: 'warn', CANCELLED: 'danger
 function fmtPrice(v, currency = 'CDF') {
   if (v == null) return '·'
   const n = Number(v)
-  return Number.isNaN(n) ? '·' : `${n.toLocaleString('fr-FR')} ${currency}`
+  return Number.isNaN(n) ? '·' : formatPrice(n, currency)
 }
 
 function fmtDate(d) {

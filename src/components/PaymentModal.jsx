@@ -37,6 +37,7 @@ export default function PaymentModal({
   const [phone, setPhone] = useState("");
   const [step, setStep] = useState("form");
   const [busy, setBusy] = useState(false);
+  const [charged, setCharged] = useState(null);
   const isFees = variant === "fees";
   const isCert = variant === "certificate";
 
@@ -133,6 +134,8 @@ export default function PaymentModal({
         setBusy(false);
         return;
       }
+      // Montant réellement demandé par le backend (tarif de la ville, figé au lancement).
+      setCharged(r?.amountUsd != null ? `${Number(r.amountUsd).toLocaleString("fr-FR")} $` : null);
       setStep("pending");
       poll();
     } catch (e) {
@@ -194,6 +197,7 @@ export default function PaymentModal({
       ) : (
         <div className="pay-pending">
           <Spinner label={t("pay.pending")} />
+          {isCert && charged && <p className="pay-amount">{t("pay.amount", { amount: charged })}</p>}
           <p className="pay-pending-hint">{t("pay.pendingHint")}</p>
         </div>
       )}
