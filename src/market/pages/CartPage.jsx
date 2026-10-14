@@ -14,6 +14,7 @@ import { useCart } from '../useCart'
 import { useChat } from '../chat/useChat'
 import { CartLine } from '../components/CartDrawer'
 import { buildOrderMessage, totalsByCurrency, whatsappLink, openTelegram } from '../lib/chat'
+import PromoCodeField from '../../components/PromoCodeField.jsx'
 
 /*
  * Panier + finalisation. Le visiteur précise réception et paiement souhaités ;
@@ -48,6 +49,8 @@ export default function CartPage() {
   const [note, setNote] = useState('')
   const [sent, setSent] = useState(null)
   const [preview, setPreview] = useState(false)
+  // Code promo d'influenceur (facultatif), transmis avec la commande.
+  const [promo, setPromo] = useState(null)
 
   useEffect(() => { document.title = 'Mon panier · Tindisa' }, [])
 
@@ -56,8 +59,8 @@ export default function CartPage() {
   const message = useMemo(() => buildOrderMessage(items, {
     reception: hasProducts ? reception : null,
     city: cityName, address: reception === 'delivery' ? address.trim() : '',
-    payment, negotiate, name: name.trim(), note: note.trim(),
-  }), [items, hasProducts, reception, cityName, address, payment, negotiate, name, note])
+    payment, negotiate, name: name.trim(), note: note.trim(), promoCode: promo?.code || '',
+  }), [items, hasProducts, reception, cityName, address, payment, negotiate, name, note, promo])
 
   // Regroupement par vendeur (une commande peut viser plusieurs boutiques).
   const groups = useMemo(() => {
@@ -191,6 +194,8 @@ export default function CartPage() {
           <Field label="Note (facultatif)">
             <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} maxLength={240} placeholder="Horaire de livraison, précision…" />
           </Field>
+
+          <PromoCodeField kind="sale" applied={promo} onApply={setPromo} />
 
           <div className="mk-drawer-total">
             <span>Total estimé</span>

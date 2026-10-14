@@ -13,6 +13,8 @@ import mpesa from "../assets/MPESA.png";
 import airtel from "../assets/AIRTEL.png";
 import orange from "../assets/ORANGE.png";
 import { resolvePayLink, executePayLink, getPayStatus } from "../api/certificates";
+import PromoCodeField from "../components/PromoCodeField.jsx";
+import { isInvalidPromoError, promoReasonLabel, promoTotal } from "../api/promo";
 import "../App.css";
 
 const OPERATORS = [
@@ -44,6 +46,8 @@ export default function PayPage() {
   const [paymentId, setPaymentId] = useState("");
   // Résultat du suivi : null (en cours) | { status:'paid'|'failed'|'timeout', … }
   const [outcome, setOutcome] = useState(null);
+  // Code promo d'influenceur : remise sur le certificat.
+  const [promo, setPromo] = useState(null);
 
   // Suivi du paiement une fois lancé : arrêt sur payé / échoué ou après ~2 min.
   useEffect(() => {
@@ -104,7 +108,11 @@ export default function PayPage() {
     setMsg("");
     setOutcome(null);
     try {
-      const r = await executePayLink(token, { phone: phone.trim(), telecom });
+      const r = await executePayLink(token, {
+        phone: phone.trim(),
+        telecom,
+        promoCode: promo?.code || "",
+      });
       if (r?.ok === false || r?.status === "failed") {
         setStep("error");
         setMsg(txt(r?.reason) || txt(r?.message) || "Le paiement n’a pas pu démarrer.");
@@ -113,14 +121,28 @@ export default function PayPage() {
       setPaymentId(txt(r?.paymentId));
       setStep("done");
     } catch (e) {
+      if (isInvalidPromoError(e)) {
+        setPromo(null);
+        setStep("form");
+        setMsg(`${promoReasonLabel(e?.data?.reason)} Retirez-le ou corrigez-le pour payer.`);
+        return;
+      }
       setStep("error");
       setMsg(e?.message || "Service de paiement indisponible.");
     }
   };
 
+  // Tarif de base (avant remise) : un lien créé avec un code porte déjà la remise.
+  const baseUsd =
+    link?.originalAmountUsd != null
+      ? Number(link.originalAmountUsd)
+      : link?.amountUsd != null
+        ? Number(link.amountUsd)
+        : null;
+  const finalUsd = promoTotal(baseUsd, promo) ?? baseUsd;
   const amount =
-    link?.amountUsd != null
-      ? `${Number(link.amountUsd).toLocaleString("fr-FR")} $`
+    finalUsd != null && Number.isFinite(finalUsd)
+      ? `${finalUsd.toLocaleString("fr-FR")} $`
       : "";
   const certKind = link?.certKind;
   const kindLabel =
@@ -255,6 +277,14 @@ export default function PayPage() {
                 </div>
                 <div className="pay-summary-amount">{amount}</div>
               </div>
+
+              <PromoCodeField
+                kind="cert"
+                amountUsd={baseUsd}
+                applied={promo}
+                onApply={setPromo}
+                initialCode={txt(link.promoCode)}
+              />
 
               <span className="ui-field-label">Opérateur Mobile Money</span>
               <div className="pay-operators">

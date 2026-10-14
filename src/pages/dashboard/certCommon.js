@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { apiBaseUrl, auth0Config } from "../../auth/config";
+import { isInvalidPromoError, promoReasonLabel } from "../../api/promo";
 
 /*
  * Outils communs aux pages de certificats du tableau de bord
@@ -109,14 +110,25 @@ export function useCertActions({ endpoint, api, notify, fileStem }) {
   const { getAccessTokenSilently } = useAuth0();
   const [busy, setBusy] = useState("");
 
-  const payLink = async () => {
+  // `promoCode` facultatif (code d'influenceur) : transmis au lien et à la page
+  // de paiement (?promo=) qui affiche la remise.
+  const payLink = async (promoCode) => {
+    const code = typeof promoCode === "string" ? promoCode : "";
     setBusy("pay");
     try {
-      const r = await api.post(`${endpoint}/pay-link`, {});
-      if (r?.url) window.open(r.url, "_blank", "noopener,noreferrer");
-      else notify("Lien de paiement indisponible", "error");
+      const r = await api.post(`${endpoint}/pay-link`, code ? { promoCode: code } : {});
+      if (r?.url) {
+        const url =
+          code && !/[?&]promo=/.test(r.url)
+            ? `${r.url}${r.url.includes("?") ? "&" : "?"}promo=${encodeURIComponent(code)}`
+            : r.url;
+        window.open(url, "_blank", "noopener,noreferrer");
+      } else notify("Lien de paiement indisponible", "error");
     } catch (e) {
-      notify(e?.message || "Erreur", "error");
+      notify(
+        isInvalidPromoError(e) ? promoReasonLabel(e?.data?.reason) : e?.message || "Erreur",
+        "error",
+      );
     } finally {
       setBusy("");
     }

@@ -28,6 +28,7 @@ const SubscriptionPage = lazy(() => import("./pages/dashboard/SubscriptionPage.j
 const ProCertificatePage = lazy(() => import("./pages/dashboard/ProCertificatePage.jsx"));
 const ShopCertificatePage = lazy(() => import("./pages/dashboard/ShopCertificatePage.jsx"));
 const DashBataPage = lazy(() => import("./pages/dashboard/BataDashPage.jsx"));
+const InfluencerPage = lazy(() => import("./pages/dashboard/InfluencerPage.jsx"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout.jsx"));
 const AdminHome = lazy(() => import("./pages/admin/AdminHome.jsx"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers.jsx"));
@@ -42,6 +43,7 @@ const AdminAI = lazy(() => import("./pages/admin/AdminAI.jsx"));
 const AdminDrivers = lazy(() => import("./pages/admin/AdminDrivers.jsx"));
 const AdminMap = lazy(() => import("./pages/admin/AdminMap.jsx"));
 const AdminBata = lazy(() => import("./pages/admin/AdminBata.jsx"));
+const AdminInfluencers = lazy(() => import("./pages/admin/AdminInfluencers.jsx"));
 
 export default function Root() {
   return (
@@ -80,6 +82,7 @@ export default function Root() {
         <Route path="certificat-pro" element={<ProCertificatePage />} />
         <Route path="certificat-etablissement" element={<ShopCertificatePage />} />
         <Route path="bata" element={<DashBataPage />} />
+        <Route path="influenceur" element={<InfluencerPage />} />
       </Route>
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminHome />} />
@@ -93,6 +96,7 @@ export default function Root() {
         <Route path="ia" element={<AdminAI />} />
         <Route path="p2p" element={<AdminP2P />} />
         <Route path="bata" element={<AdminBata />} />
+        <Route path="influenceurs" element={<AdminInfluencers />} />
         <Route path="drivers" element={<AdminDrivers />} />
         <Route path="map" element={<AdminMap />} />
       </Route>

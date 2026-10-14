@@ -8,6 +8,10 @@ import Auth0ProviderWithConfig from './auth/Auth0ProviderWithConfig.jsx'
 import { LanguageProvider } from './i18n'
 import { ToastProvider } from './components/Toast.jsx'
 import { CartProvider } from './market/CartContext.jsx'
+import { capturePromoFromUrl } from './api/promo.js'
+
+// Lien d'influenceur (?promo=CODE) : code mémorisé pour la session.
+capturePromoFromUrl()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

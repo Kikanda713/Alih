@@ -87,7 +87,7 @@ export function EmptyState({ icon, title, text, action }) {
   )
 }
 
-export function Modal({ open, title, onClose, children, footer }) {
+export function Modal({ open, title, onClose, children, footer, wide = false }) {
   useEffect(() => {
     if (!open) return
     const onKey = (e) => e.key === 'Escape' && onClose?.()
@@ -102,7 +102,7 @@ export function Modal({ open, title, onClose, children, footer }) {
   if (!open) return null
   return (
     <div className="ui-modal-overlay" onMouseDown={onClose}>
-      <div className="ui-modal" role="dialog" aria-modal="true" onMouseDown={(e) => e.stopPropagation()}>
+      <div className={`ui-modal${wide ? " ui-modal-wide" : ""}`} role="dialog" aria-modal="true" onMouseDown={(e) => e.stopPropagation()}>
         <div className="ui-modal-head">
           <h2 className="ui-modal-title">{title}</h2>
           <button className="ui-modal-close" onClick={onClose} aria-label="Fermer">

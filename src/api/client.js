@@ -17,6 +17,9 @@ export async function apiFetch(path, { token, method = 'GET', body } = {}) {
   if (!res.ok) {
     const err = new Error(data?.message || `Request failed (${res.status})`)
     err.status = res.status
+    // Code d'erreur métier (ex. 'invalid_promo') et corps complet pour l'appelant.
+    err.code = typeof data?.error === 'string' ? data.error : undefined
+    err.data = data
     throw err
   }
   return data

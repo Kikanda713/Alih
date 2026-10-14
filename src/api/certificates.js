@@ -75,13 +75,13 @@ export async function resolvePayLink(token) {
 }
 
 /** Exécute un paiement de certificat depuis un lien (public). */
-export async function executePayLink(token, { phone, telecom }) {
+export async function executePayLink(token, { phone, telecom, promoCode }) {
   const res = await fetch(
     `${apiBaseUrl}/v1/certificates/pay-link/${encodeURIComponent(token)}`,
     {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ phone, telecom }),
+      body: JSON.stringify({ phone, telecom, ...(promoCode ? { promoCode } : {}) }),
     },
   );
   const text = await res.text();
@@ -91,6 +91,8 @@ export async function executePayLink(token, { phone, telecom }) {
       data?.message || `Paiement indisponible (${res.status})`,
     );
     err.status = res.status;
+    err.code = typeof data?.error === "string" ? data.error : undefined;
+    err.data = data;
     throw err;
   }
   return data;

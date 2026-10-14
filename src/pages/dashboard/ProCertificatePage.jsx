@@ -36,6 +36,8 @@ import {
   useCertActions,
   verifyLinkOf,
 } from "./certCommon";
+import PromoCodeField from "../../components/PromoCodeField.jsx";
+import { promoTotal } from "../../api/promo";
 import { CertDecisionCard, CertDocsEditor, CertFlow, CertPaidCard } from "./CertParts.jsx";
 
 /*
@@ -73,6 +75,8 @@ export default function ProCertificatePage() {
   );
 
   const [editing, setEditing] = useState(false);
+  // Code promo d'influenceur : remise sur le certificat (émission ou renouvellement).
+  const [promo, setPromo] = useState(null);
 
   if (loading) {
     return (
@@ -96,6 +100,7 @@ export default function ProCertificatePage() {
   const cert = data.certificate || null;
   const price = cert?.price || data.price || { issue: 25, update: 10, currency: "USD" };
   const sym = priceSymbol(price);
+  const payAmount = (v) => promoTotal(Number(v), promo)?.toLocaleString("fr-FR") ?? v;
   const tradeLabel = (id) =>
     id === "autre" && data.profile?.otherTrade
       ? data.profile.otherTrade
@@ -181,10 +186,11 @@ export default function ProCertificatePage() {
             enregistré. Réglez les frais pour que l'équipe Tindisa commence la
             vérification (identité, documents, références).
           </p>
+          <PromoCodeField kind="cert" amountUsd={Number(price.issue)} applied={promo} onApply={setPromo} disabled={busy === "pay"} />
           <div className="procert-actions">
-            <Button variant="primary" onClick={payLink} disabled={busy === "pay"}>
+            <Button variant="primary" onClick={() => payLink(promo?.code)} disabled={busy === "pay"}>
               <FaCreditCard />{" "}
-              {busy === "pay" ? "Ouverture…" : `Payer ${price.issue} ${sym}`}
+              {busy === "pay" ? "Ouverture…" : `Payer ${payAmount(price.issue)} ${sym}`}
             </Button>
             {!editing && (
               <Button variant="ghost" onClick={() => setEditing(true)}>
@@ -271,6 +277,7 @@ export default function ProCertificatePage() {
               </span>
             </div>
           ) : null}
+          {(renewalSent || renewable) && !renewalPaid && (            <PromoCodeField kind="cert" amountUsd={Number(price.update)} applied={promo} onApply={setPromo} disabled={busy === "pay"} />          )}
           <div className="procert-actions">
             <Button variant="primary" onClick={downloadPdf} disabled={busy === "pdf"}>
               <FaDownload /> {busy === "pdf" ? "Préparation…" : "Télécharger mon certificat"}
@@ -279,9 +286,9 @@ export default function ProCertificatePage() {
               <FaCopy /> Copier le lien de vérification
             </Button>
             {(renewalSent || renewable) && !renewalPaid && (
-              <Button variant="primary" onClick={payLink} disabled={busy === "pay"}>
+              <Button variant="primary" onClick={() => payLink(promo?.code)} disabled={busy === "pay"}>
                 <FaCreditCard />{" "}
-                {busy === "pay" ? "Ouverture…" : `Payer le renouvellement (${price.update} ${sym})`}
+                {busy === "pay" ? "Ouverture…" : `Payer le renouvellement (${payAmount(price.update)} ${sym})`}
               </Button>
             )}
             {(renewable || renewalSent) && !editing && (

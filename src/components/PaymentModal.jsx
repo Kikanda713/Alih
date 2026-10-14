@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Modal, Button, Field, Input, Spinner } from "./ui.jsx";
+import PromoCodeField from "./PromoCodeField.jsx";
+import { amountOf, promoTotal, isInvalidPromoError, promoReasonLabel } from "../api/promo";
 import { useTindisaApi } from "../api/client";
 import { useToast } from "./useToast";
 import { useT } from "../i18n";
@@ -38,6 +40,12 @@ export default function PaymentModal({
   const [step, setStep] = useState("form");
   const [busy, setBusy] = useState(false);
   const [charged, setCharged] = useState(null);
+  // Code promo d'influenceur (certificats) : remise appliquée au montant.
+  const [promo, setPromo] = useState(null);
+  const close = () => {
+    setPromo(null);
+    onClose?.();
+  };
   const isFees = variant === "fees";
   const isCert = variant === "certificate";
 
@@ -66,7 +74,7 @@ export default function PaymentModal({
             onDone?.();
             setStep("form");
             setBusy(false);
-            onClose?.();
+            close();
             return;
           }
         } else if (isFees) {
@@ -76,7 +84,7 @@ export default function PaymentModal({
             onDone?.();
             setStep("form");
             setBusy(false);
-            onClose?.();
+            close();
             return;
           }
         } else {
@@ -87,7 +95,7 @@ export default function PaymentModal({
             onDone?.();
             setStep("form");
             setBusy(false);
-            onClose?.();
+            close();
             return;
           }
           if (st === "payment_failed") {
@@ -105,7 +113,7 @@ export default function PaymentModal({
     onDone?.();
     setStep("form");
     setBusy(false);
-    onClose?.();
+    close();
   };
 
   const pay = async () => {
@@ -116,6 +124,7 @@ export default function PaymentModal({
         ? await api.post("/v1/merchant/certificates/pay", {
             productId,
             ...(certKind === "update" ? { kind: "update" } : {}),
+            ...(promo?.code ? { promoCode: promo.code } : {}),
             phone: phone.trim(),
             telecom,
           })
@@ -135,10 +144,21 @@ export default function PaymentModal({
         return;
       }
       // Montant réellement demandé par le backend (tarif de la ville, figé au lancement).
-      setCharged(r?.amountUsd != null ? `${Number(r.amountUsd).toLocaleString("fr-FR")} $` : null);
+      const disc = Number(r?.discountUsd);
+      setCharged(
+        r?.amountUsd != null
+          ? `${Number(r.amountUsd).toLocaleString("fr-FR")} $${disc > 0 ? ` (remise de ${disc.toLocaleString("fr-FR")} $)` : ""}`
+          : null,
+      );
       setStep("pending");
       poll();
     } catch (e) {
+      if (isCert && isInvalidPromoError(e)) {
+        setPromo(null);
+        notify(promoReasonLabel(e?.data?.reason), "error");
+        setBusy(false);
+        return;
+      }
       notify(e?.message || t("merchant.error"), "error");
       setBusy(false);
     }
@@ -147,12 +167,23 @@ export default function PaymentModal({
   return (
     <Modal
       open={open}
-      title={t("pay.title")}
-      onClose={busy ? undefined : onClose}
+      title={isCert ? "Payer le certificat" : t("pay.title")}
+      onClose={busy ? undefined : close}
     >
       {step === "form" ? (
         <div className="pay-form">
-          <p className="pay-amount">{t("pay.amount", { amount })}</p>
+          <p className="pay-amount">
+            {isCert ? `Montant : ${amount}` : t("pay.amount", { amount })}
+          </p>
+          {isCert && (
+            <PromoCodeField
+              kind="cert"
+              amountUsd={amountOf(amount)}
+              applied={promo}
+              onApply={setPromo}
+              disabled={busy}
+            />
+          )}
           <span className="ui-field-label">{t("pay.operator")}</span>
           <div className="pay-operators">
             {OPERATORS.map((o) => (
@@ -179,25 +210,27 @@ export default function PaymentModal({
             <button
               type="button"
               className="pay-copy-link"
-              onClick={onCopyLink}
+              onClick={() => onCopyLink(promo?.code || "")}
               disabled={busy}
             >
               Ou envoyer un lien de paiement (messagerie ou SMS)
             </button>
           )}
           <div className="ui-modal-foot">
-            <Button variant="ghost" onClick={onClose} disabled={busy}>
+            <Button variant="ghost" onClick={close} disabled={busy}>
               {t("form.cancel")}
             </Button>
             <Button variant="primary" onClick={pay} disabled={busy}>
-              {t("pay.pay")}
+              {isCert && promoTotal(amountOf(amount), promo) != null
+                ? `${t("pay.pay")} ${promoTotal(amountOf(amount), promo).toLocaleString("fr-FR")} $`
+                : t("pay.pay")}
             </Button>
           </div>
         </div>
       ) : (
         <div className="pay-pending">
           <Spinner label={t("pay.pending")} />
-          {isCert && charged && <p className="pay-amount">{t("pay.amount", { amount: charged })}</p>}
+          {isCert && charged && <p className="pay-amount">Montant : {charged}</p>}
           <p className="pay-pending-hint">{t("pay.pendingHint")}</p>
         </div>
       )}

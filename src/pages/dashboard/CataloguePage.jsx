@@ -39,6 +39,7 @@ import { useTaxonomy, categoriesByType } from "../../api/taxonomy";
 import ProductFormModal from "./ProductFormModal.jsx";
 import AnalyticsModal from "../../components/AnalyticsModal.jsx";
 import PaymentModal from "../../components/PaymentModal.jsx";
+import { isInvalidPromoError, promoReasonLabel } from "../../api/promo";
 import BataOfferModal from "./BataOfferModal.jsx";
 import {
   AssetCertStateModal,
@@ -656,11 +657,12 @@ export default function CataloguePage() {
   };
 
   // Copier un lien de paiement (à envoyer via WhatsApp/SMS).
-  const copyPayLink = async (productId, kind = "issue") => {
+  const copyPayLink = async (productId, kind = "issue", promoCode = "") => {
     try {
       const r = await api.post("/v1/merchant/certificates/pay-link", {
         productId,
         ...(kind === "update" ? { kind: "update" } : {}),
+        ...(promoCode ? { promoCode } : {}),
       });
       if (r?.url && navigator.clipboard) {
         await navigator.clipboard.writeText(r.url);
@@ -672,7 +674,7 @@ export default function CataloguePage() {
         notify(r.url, "info");
       }
     } catch (e) {
-      notify(e?.message || t("merchant.error"), "error");
+      notify(isInvalidPromoError(e) ? promoReasonLabel(e?.data?.reason) : e?.message || t("merchant.error"), "error");
     }
   };
 
@@ -1138,7 +1140,7 @@ export default function CataloguePage() {
         amount={amountFor(pay.product, pay.kind === "update" ? "update" : "issue")}
         onCopyLink={
           pay.product
-            ? () => copyPayLink(pay.product.id, pay.kind === "update" ? "update" : "issue")
+            ? (promoCode) => copyPayLink(pay.product.id, pay.kind === "update" ? "update" : "issue", promoCode)
             : undefined
         }
         onClose={() => setPay({ open: false, product: null, kind: "issue" })}

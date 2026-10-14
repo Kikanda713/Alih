@@ -83,6 +83,8 @@ export function buildOrderMessage(items, info = {}) {
   if (info.negotiate) lines.push('Je souhaite négocier les prix.')
   if (info.name) lines.push(`Nom : ${info.name}`)
   if (info.note) lines.push(`Note : ${info.note}`)
+  // Code d'influenceur : l'assistant le transmet à la conclusion de la vente.
+  if (info.promoCode) lines.push(`Code promo : ${info.promoCode}`)
   lines.push('', 'Merci de confirmer la disponibilité pour que je puisse commander.')
   return lines.join('\n')
 }

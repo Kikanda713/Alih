@@ -1,6 +1,6 @@
 import { useAuth0 } from '@auth0/auth0-react'
 import { Link, Navigate } from 'react-router-dom'
-import { FaHome, FaBoxOpen, FaHandshake, FaWallet, FaCreditCard, FaAward, FaBan, FaExchangeAlt } from 'react-icons/fa'
+import { FaHome, FaBoxOpen, FaHandshake, FaWallet, FaCreditCard, FaAward, FaBan, FaExchangeAlt, FaBullhorn } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useLoad } from '../../api/useLoad'
 import { loadTaxonomy, isIndividualType } from '../../api/taxonomy'
@@ -30,6 +30,7 @@ function MerchantShell() {
     { to: '/dashboard/bata', icon: <FaExchangeAlt />, label: 'BATA' },
     { to: '/dashboard/wallet', icon: <FaWallet />, label: t('dash.nav.wallet') },
     { to: '/dashboard/abonnement', icon: <FaCreditCard />, label: 'Facturation' },
+    { to: '/dashboard/influenceur', icon: <FaBullhorn />, label: 'Influenceur' },
     ...(isPro ? [{ to: '/dashboard/certificat-pro', icon: <FaAward />, label: 'Certificat pro' }] : []),
     ...(isEstablishment ? [{ to: '/dashboard/certificat-etablissement', icon: <FaAward />, label: 'Certification' }] : []),
   ]
