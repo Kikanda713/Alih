@@ -23,4 +23,7 @@ export const marketApi = {
   hub: (id) => apiFetch(`/v1/market/hubs/${encodeURIComponent(id)}`),
   // BATA (échange de biens certifiés) : ?family=vehicule|appareil&city=&minValue=&maxValue=&q=&limit=&offset=
   bata: (params) => apiFetch(`/v1/market/bata${qs(params)}`),
+  // Sélection éphémère d'un influenceur (410 si expirée) + clic compté pour ses statistiques.
+  collection: (slug) => apiFetch(`/v1/market/collections/${encodeURIComponent(slug)}`),
+  collectionClick: (slug) => apiFetch(`/v1/market/collections/${encodeURIComponent(slug)}/click`, { method: 'POST', body: {} }),
 }

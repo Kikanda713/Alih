@@ -37,6 +37,14 @@ export default function ExplorePage() {
   const universe = activeUniverse(params)
   const q = params.get('q')
 
+  // Repli doux : une recherche filtrée (ville, catégorie…) sans résultat montre la même
+  // recherche SANS filtre plutôt qu'une page vide (lien partagé, ville sans offre).
+  const filtered = Object.keys(filters).some((k) => k !== 'q' && k !== 'sort')
+  const needFallback = !overview && !!q && filtered && !loading && !error && items.length === 0
+  const fallback = useListings({ q, ...(params.get('sort') ? { sort: params.get('sort') } : {}) }, { enabled: needFallback })
+  const showFallback = needFallback && (fallback.loading || fallback.items.length > 0)
+  const cityName = params.get('city') ? cityLabel(taxonomy, params.get('city')) : ''
+
   useEffect(() => {
     document.title = q ? `${q} · Marché Tindisa` : `${universe?.title || 'Le marché'} · Tindisa`
   }, [q, universe])
@@ -148,6 +156,33 @@ export default function ExplorePage() {
           {error ? (
             <EmptyState icon={<FaSearch />} title="Le marché ne répond pas" text="Vérifiez votre connexion puis réessayez."
               action={<Button onClick={retry}>Réessayer</Button>} />
+          ) : showFallback ? (
+            <>
+              <div className="mk-fallback-note" role="status">
+                <FaSearch />
+                <span>
+                  {cityName
+                    ? <>Aucun résultat à {cityName}, voici les résultats dans les autres villes.</>
+                    : <>Aucun résultat avec ces filtres, voici tous les résultats pour « {q} ».</>}
+                </span>
+                <button type="button" className="mk-link-btn" onClick={() => setParams(new URLSearchParams({ q }))}>
+                  Voir sans filtre
+                </button>
+              </div>
+              <ListingGrid items={fallback.items} loading={fallback.loading} onBook={setBooking} />
+              {fallback.hasMore && (
+                <div className="mk-more">
+                  <Button variant="secondary" onClick={fallback.loadMore} disabled={fallback.loading}>
+                    {fallback.loading ? 'Chargement…' : 'Voir plus d’annonces'}
+                  </Button>
+                </div>
+              )}
+              <div className="mk-assist">
+                <span>Vous préférez une offre près de chez vous ?</span>
+                <button type="button" className="mk-assist-btn" onClick={ask}><FaCommentDots /> L’assistant cherche pour vous</button>
+                <ChannelLinks text={askText} />
+              </div>
+            </>
           ) : !loading && items.length === 0 ? (
             <EmptyState
               icon={<FaSearch />}

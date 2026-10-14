@@ -61,7 +61,7 @@ export function ListingCard({ item, onBook }) {
 
   return (
     <Link to={`/annonce/${item.id}`} className="mk-card">
-      <div className="mk-card-media">
+      <div className={`mk-card-media${item.coverEnhanced ? " mk-card-media-studio" : ""}`}>
         {img ? <img src={img} alt="" loading="lazy" /> : <span className="mk-card-noimg"><FaStore /></span>}
         <div className="mk-card-tags">
           {mode && <span className="mk-tag mk-tag-service">{MODE_TAG[mode]}</span>}

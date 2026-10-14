@@ -30,7 +30,7 @@ function Gallery({ images, videos, name, enhancedFirst }) {
   return (
     <div className="mk-gallery">
       <div className="mk-gallery-main">
-        {enhancedFirst && idx === 0 && <span className="mk-gallery-note">Photo retouchée (netteté), originales ci-dessous</span>}
+        {enhancedFirst && idx === 0 && <span className="mk-gallery-note">Photo mise en valeur pour la vente, originales ci-dessous</span>}
         {cur.kind === 'img'
           ? <img src={imageUrl(cur.src, 1000)} alt={name} />
           : <video src={cur.src} controls playsInline preload="metadata" />}

@@ -1,5 +1,6 @@
 import { channels } from '../../auth/config'
 import { formatPrice, unitName } from './format'
+import { getStoredPromo } from '../../api/promo'
 
 /*
  * Passerelle site → messagerie. Le site prépare (panier, dates, réception) ;
@@ -90,16 +91,31 @@ export function buildOrderMessage(items, info = {}) {
 }
 
 /** Message court pour une seule annonce (question, négociation, commande directe). */
-export function buildItemMessage(item, intent = 'order') {
+export function buildItemMessage(item, intent = 'order', promoCode = getStoredPromo()) {
+  // Code d'influenceur venu d'un lien partagé (?promo=CODE) : transmis à l'assistant.
+  const promo = promoCode ? `\nCode promo : ${promoCode}` : ''
   const price = item.price != null ? ` (${formatPrice(item.price, item.currency)})` : ''
   const ref = `réf. ${item.ref}`
   if (intent === 'negotiate') {
-    return `🛒 Commande depuis tindisa.com\nBonjour Tindisa, je souhaite négocier le prix avant de commander : ${item.name}${price}, ${ref}.`
+    return `🛒 Commande depuis tindisa.com\nBonjour Tindisa, je souhaite négocier le prix avant de commander : ${item.name}${price}, ${ref}.${promo}`
   }
   if (intent === 'question') {
     return `Bonjour Tindisa, j'ai une question avant de commander : ${item.name}${price}, ${ref}.`
   }
-  return `🛒 Commande depuis tindisa.com\nBonjour Tindisa, je veux commander : ${item.name}${price}, ${ref}. Est-ce disponible ?`
+  return `🛒 Commande depuis tindisa.com\nBonjour Tindisa, je veux commander : ${item.name}${price}, ${ref}. Est-ce disponible ?${promo}`
+}
+
+/** Message de commande : articles (réf.) + code promo de l'influenceur. */
+export function selectionOrderMessage(sel, code) {
+  const lines = [`🛒 Commande depuis la sélection « ${sel.title} » sur tindisa.com`, '']
+  const items = (sel.items || []).slice(0, 12)
+  items.forEach((it, i) => {
+    const price = it.price != null ? ` (${formatPrice(it.price, it.currency)})` : ''
+    lines.push(`${i + 1}. ${it.name}${price}, réf. ${it.ref}`)
+  })
+  if (code) lines.push('', `Code promo : ${code}`)
+  lines.push('', 'Bonjour Tindisa, je suis intéressé(e) : pouvez-vous me confirmer la disponibilité ?')
+  return lines.join('\n')
 }
 
 export function whatsappLink(text) {

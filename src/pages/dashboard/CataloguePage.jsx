@@ -16,6 +16,7 @@ import {
   FaCreditCard,
   FaPrint,
   FaExchangeAlt,
+  FaMagic,
 } from "react-icons/fa";
 import { useTindisaApi } from "../../api/client";
 import { useLoad } from "../../api/useLoad";
@@ -38,6 +39,7 @@ import { Pagination } from "../../components/Pagination.jsx";
 import { useTaxonomy, categoriesByType } from "../../api/taxonomy";
 import ProductFormModal from "./ProductFormModal.jsx";
 import AnalyticsModal from "../../components/AnalyticsModal.jsx";
+import PhotoEnhanceModal from "../../components/PhotoEnhanceModal.jsx";
 import PaymentModal from "../../components/PaymentModal.jsx";
 import { isInvalidPromoError, promoReasonLabel } from "../../api/promo";
 import BataOfferModal from "./BataOfferModal.jsx";
@@ -195,6 +197,8 @@ function ProductTable({
   onCertState,
   bataByProduct,
   onBata,
+  onPhoto,
+  proposedIds,
 }) {
   const showCert = !!threshold;
   const rate = threshold?.exchangeRate;
@@ -295,6 +299,20 @@ function ProductTable({
                     >
                       <FaExternalLinkAlt />
                     </a>
+                  )}
+                  {onPhoto && p.id && (p.imageUrl || p.images?.length) && (
+                    <button
+                      className={`cat-icon-btn${proposedIds?.has(p.id) ? " cat-icon-todo" : ""}`}
+                      onClick={() => onPhoto(p)}
+                      title={
+                        proposedIds?.has(p.id)
+                          ? "Photo améliorée à valider"
+                          : "Photo e-commerce (avant / après)"
+                      }
+                      aria-label="Photo e-commerce"
+                    >
+                      <FaMagic />
+                    </button>
                   )}
                   <button
                     className="cat-icon-btn"
@@ -531,6 +549,16 @@ export default function CataloguePage() {
     busy: false,
   });
   const [analytics, setAnalytics] = useState({ open: false, product: null });
+  // Photo de couverture au format e-commerce (avant / après, Studio ou Scène).
+  const [photoFor, setPhotoFor] = useState(null);
+  // Retouches IA en attente : jamais publiées sans votre accord.
+  const { data: photoProposals, reload: reloadProposals } = useLoad(
+    () => api.get("/v1/merchant/photos/proposed").catch(() => null),
+    [],
+  );
+  const proposedIds = new Set(
+    (photoProposals?.items || []).map((x) => x.productId),
+  );
   const [renaming, setRenaming] = useState(false);
   const [filters, setFilters] = useState({
     q: "",
@@ -862,6 +890,30 @@ export default function CataloguePage() {
               onChange={setFilters}
               taxonomy={taxonomy}
             />
+            {photoProposals?.count > 0 && (
+              <div className="cat-photo-todo" role="status">
+                <FaMagic />
+                <span>
+                  <strong>{photoProposals.count}</strong> photo
+                  {photoProposals.count > 1 ? "s" : ""} améliorée
+                  {photoProposals.count > 1 ? "s" : ""} à valider. Elles ne
+                  sont pas publiées tant que vous ne les acceptez pas.
+                </span>
+                <div className="cat-photo-todo-list">
+                  {photoProposals.items.slice(0, 6).map((x) => (
+                    <button
+                      key={x.productId}
+                      type="button"
+                      className="cat-photo-todo-item"
+                      title={x.name}
+                      onClick={() => setPhotoFor({ id: x.productId, name: x.name })}
+                    >
+                      <img src={x.enhancedUrl} alt={x.name} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {filtered.length === 0 ? (
               <Card>
                 <p className="cat-empty-filter">
@@ -885,6 +937,8 @@ export default function CataloguePage() {
                   onCertState={(p, c) => setCertState({ product: p, cert: c })}
                   bataByProduct={bataByProduct}
                   onBata={setBataFor}
+                  onPhoto={setPhotoFor}
+                  proposedIds={proposedIds}
                 />
                 <Pagination
                   page={lp.page}
@@ -938,6 +992,21 @@ export default function CataloguePage() {
         product={analytics.product}
         onClose={() => setAnalytics({ open: false, product: null })}
       />
+
+      {photoFor && (
+        <PhotoEnhanceModal
+          open
+          title={`Photo de « ${photoFor.name} »`}
+          onClose={() => setPhotoFor(null)}
+          onChanged={reloadProposals}
+          endpoints={{
+            state: `/v1/merchant/products/${photoFor.id}/photo`,
+            enhance: `/v1/merchant/products/${photoFor.id}/photo/enhance`,
+            accept: `/v1/merchant/products/${photoFor.id}/photo/accept`,
+            revert: `/v1/merchant/products/${photoFor.id}/photo/enhance`,
+          }}
+        />
+      )}
 
       <Modal
         open={!!viewCert}

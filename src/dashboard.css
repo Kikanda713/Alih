@@ -1187,3 +1187,22 @@ button.cat-cert-badge { cursor: pointer; }
   .infl-cand { flex-direction: column; align-items: stretch; }
   .ui-modal.ui-modal-wide .ui-modal-body { padding: 16px; }
 }
+
+/* Influenceur : kit visuel (images de partage) et sélections. */
+.infl-kit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.infl-kit-item { margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.infl-kit-item img { width: 100%; height: auto; aspect-ratio: 1 / 1; border-radius: 12px; border: 1px solid var(--border); background: var(--ivory); object-fit: cover; }
+.infl-kit-item figcaption { font-size: 0.88rem; color: var(--gray); }
+.infl-sel-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.infl-sel { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; min-width: 0; }
+.infl-sel-main { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.infl-sel-main strong { overflow-wrap: anywhere; }
+.infl-sel-stats { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.86rem; color: var(--gray); }
+.infl-sel-stats span { display: inline-flex; align-items: center; gap: 5px; }
+/* Photos améliorées par IA en attente de validation (espace commerçant). */
+.cat-icon-btn.cat-icon-todo { color: var(--terracotta); border-color: var(--terracotta); }
+.cat-photo-todo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 12px; padding: 10px 14px; border-radius: 12px; background: rgba(211, 155, 90, 0.14); color: #8a5a1e; font-size: 0.9rem; }
+.cat-photo-todo > span { flex: 1; min-width: 200px; }
+.cat-photo-todo-list { display: flex; gap: 6px; flex-wrap: wrap; }
+.cat-photo-todo-item { width: 44px; height: 44px; padding: 0; border: 1px solid var(--border); border-radius: 8px; background: #fff; cursor: pointer; overflow: hidden; }
+.cat-photo-todo-item img { width: 100%; height: 100%; object-fit: contain; display: block; }

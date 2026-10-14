@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLoad } from '../../api/useLoad'
-import { FaMagic, FaImage, FaUndo, FaExclamationTriangle, FaSpinner } from 'react-icons/fa'
+import { FaMagic, FaImage, FaUndo, FaExclamationTriangle, FaSpinner, FaCheck } from 'react-icons/fa'
+import PhotoEnhanceModal from '../../components/PhotoEnhanceModal.jsx'
+import { MODE_LABEL } from '../../components/photoModes.js'
 import { useTindisaApi } from '../../api/client'
 import { useToast } from '../../components/useToast'
-import { Button, Modal } from '../../components/ui.jsx'
+import { Button } from '../../components/ui.jsx'
 
 /*
- * Amélioration IA des photos produit (netteté, exposition, bruit), fidèle au
- * produit d'origine. La version améliorée devient la COUVERTURE sur le marché ;
- * l'original reste conservé et visible sur la fiche. Réversible à tout moment.
+ * Photos produit au format e-commerce : mode Studio (fond blanc, produit
+ * redressé et centré) ou Scène (décor réel pour véhicules, immobilier…), fidèle
+ * au produit d'origine. La version améliorée devient la COUVERTURE sur le
+ * marché ; l'original reste conservé et visible sur la fiche. Réversible.
  */
 
 const PROVIDER_LABEL = { openrouter: 'OpenRouter', azure: 'Azure OpenAI', gemini: 'Gemini', openai: 'OpenAI' }
@@ -22,7 +25,7 @@ const providerName = (p) => {
 }
 
 /** Panneau global : état + lancement d'un lot sur les couvertures non traitées. */
-export function EnhancePanel({ withParams, onProgress }) {
+export function EnhancePanel({ withParams, onProgress, onShowProposed }) {
   const api = useTindisaApi()
   const { notify } = useToast()
   const [starting, setStarting] = useState(false)
@@ -66,14 +69,22 @@ export function EnhancePanel({ withParams, onProgress }) {
         <div>
           <h3>Photos produit</h3>
           <p className="dash-sub">
-            {st.enhanced} améliorée{st.enhanced > 1 ? 's' : ''} sur {st.withPhoto} ({ratio}%). Netteté et lumière uniquement : le produit,
-            ses couleurs et ses inscriptions restent identiques. L’original est conservé.
+            {st.enhanced} améliorée{st.enhanced > 1 ? 's' : ''} sur {st.withPhoto} ({ratio}%). Format e-commerce : fond blanc et produit
+            centré (Studio), ou décor réel corrigé pour véhicules et immobilier (Scène). Le produit, ses couleurs et ses inscriptions
+            ne changent pas ; l’original est conservé.
+            {st.autoEnabled && ' Les nouvelles photos sont traitées automatiquement.'}
           </p>
         </div>
-        <Button onClick={start} disabled={!configured || starting || job.running || st.pending === 0}>
+        <Button onClick={start} disabled={starting || job.running || st.pending === 0}>
           {job.running ? <><FaSpinner className="spin" /> En cours…</> : <><FaMagic /> Améliorer les photos en attente ({Math.min(st.pending, 20)})</>}
         </Button>
       </div>
+      {st.proposed > 0 && (
+        <p className="admin-enhance-todo">
+          <span className="admin-enhance-count">{st.proposed}</span> Photos améliorées à valider : retouches IA non publiées tant qu’un admin ou le commerçant ne les accepte pas.
+          {onShowProposed && <Button variant="ghost" size="sm" onClick={onShowProposed}>Voir</Button>}
+        </p>
+      )}
       <div className="admin-enhance-bar" aria-label={`${ratio}% des photos améliorées`}><span style={{ width: `${ratio}%` }} /></div>
       {job.running && (
         <p className="dash-sub">Lot : {job.done + job.failed} / {job.total} traitées{job.failed ? `, ${job.failed} échec(s)` : ''}. Vous pouvez quitter la page, le traitement continue.</p>
@@ -84,53 +95,56 @@ export function EnhancePanel({ withParams, onProgress }) {
       <p className="admin-enhance-prov">
         {configured
           ? <>Moteurs : {(st.providers || []).map((p, i) => <span key={i}>{i ? ' → ' : ''}{providerName(p)}{i ? ' (secours)' : ''}</span>)}</>
-          : <><FaExclamationTriangle /> Aucun moteur configuré : renseignez OPENROUTER_API_KEY (et AZURE_OPENAI_* en secours) sur le serveur.</>}
+          : <><FaExclamationTriangle /> Aucun moteur IA configuré (Réglages IA) : seule une retouche de base est appliquée (cadrage, lumière).</>}
+        {configured && !st.sceneAi && <span> · Scènes (véhicules, immobilier) : retouche de base, sans IA.</span>}
       </p>
     </section>
   )
 }
 
+
 /**
  * Vignette de l'annonce : bouton flottant discret « Améliorer » si la photo ne
- * l'est pas encore ; sinon pastille ✨ qui ouvre la comparaison avant / après.
+ * l'est pas encore ; sinon pastille qui ouvre l'avant / après (mode, choix de
+ * la photo affichée, nouvel essai Studio ou Scène).
  */
 export function EnhanceThumb({ item, onChanged }) {
   const api = useTindisaApi()
   const { notify } = useToast()
   const [busy, setBusy] = useState(false)
   const [compare, setCompare] = useState(false)
+  const base = `/v1/admin/marketplace/listings/${item.id}/enhance`
 
   const enhance = async (e) => {
     e?.stopPropagation()
     setBusy(true)
     try {
-      await api.post(`/v1/admin/marketplace/listings/${item.id}/enhance`, {})
+      await api.post(base, {})
       notify(`Photo améliorée : ${item.name}`, 'success')
       onChanged?.()
+      setCompare(true)
     } catch (err) { notify(err?.message || 'Amélioration impossible', 'error') } finally { setBusy(false) }
-  }
-  const revert = async () => {
-    setBusy(true)
-    try {
-      await api.del(`/v1/admin/marketplace/listings/${item.id}/enhance`)
-      notify('Photo d’origine rétablie', 'success')
-      setCompare(false)
-      onChanged?.()
-    } catch (err) { notify(err?.message || 'Erreur', 'error') } finally { setBusy(false) }
   }
 
   if (!item.image) return <span className="cat-thumb"><FaImage /></span>
   const enhanced = !!item.enhancedImage
+  const proposed = !enhanced && !!item.enhancedCandidate && item.enhanceStatus === 'proposed'
+  const candidate = proposed || (!enhanced && !!item.enhancedCandidate && item.enhanceStatus === 'rejected')
 
   return (
     <>
       <span className={`cat-thumb admin-thumb${enhanced ? ' is-enhanced' : ''}`}>
         <img src={enhanced ? item.enhancedImage : item.image} alt="" />
-        {enhanced ? (
-          <button type="button" className="admin-thumb-badge" title="Photo améliorée : comparer" onClick={() => setCompare(true)}><FaMagic /></button>
+        {enhanced || candidate ? (
+          <button type="button" className="admin-thumb-badge"
+            title={enhanced ? `Photo améliorée (${MODE_LABEL[item.enhanceMode] || 'auto'}) : comparer` : proposed ? 'Photo améliorée à valider' : 'Originale gardée : voir la version améliorée'}
+            onClick={() => setCompare(true)}>
+            {enhanced ? <FaMagic /> : proposed ? <FaCheck /> : <FaUndo />}
+            {proposed && <i className="admin-thumb-fail admin-thumb-todo" />}
+          </button>
         ) : (
           <button type="button" className={`admin-thumb-fab${busy ? ' busy' : ''}`} disabled={busy}
-            title={item.enhanceStatus === 'failed' ? `Échec précédent : ${item.enhanceError || ''}. Réessayer` : 'Améliorer la netteté'}
+            title={item.enhanceStatus === 'failed' ? `Échec précédent : ${item.enhanceError || ''}. Réessayer` : 'Mettre au format e-commerce'}
             onClick={enhance}>
             {busy ? <FaSpinner className="spin" /> : <FaMagic />}
             {item.enhanceStatus === 'failed' && <i className="admin-thumb-fail" />}
@@ -138,17 +152,8 @@ export function EnhanceThumb({ item, onChanged }) {
         )}
       </span>
       {compare && (
-        <Modal open title={`Photo de « ${item.name} »`} onClose={() => setCompare(false)}>
-          <div className="admin-compare">
-            <figure><img src={item.image} alt="Originale" /><figcaption>Originale (conservée, visible sur la fiche)</figcaption></figure>
-            <figure><img src={item.enhancedImage} alt="Améliorée" /><figcaption>Améliorée (couverture sur le marché)</figcaption></figure>
-          </div>
-          <div className="ui-modal-foot">
-            <Button variant="ghost" onClick={revert} disabled={busy}><FaUndo /> Revenir à l’original</Button>
-            <Button variant="secondary" onClick={enhance} disabled={busy}>{busy ? <FaSpinner className="spin" /> : <FaMagic />} Refaire</Button>
-            <Button onClick={() => setCompare(false)}>Garder</Button>
-          </div>
-        </Modal>
+        <PhotoEnhanceModal open title={`Photo de « ${item.name} »`} onClose={() => setCompare(false)} onChanged={onChanged}
+          endpoints={{ state: base, enhance: base, accept: `${base}/accept`, revert: base }} />
       )}
     </>
   )

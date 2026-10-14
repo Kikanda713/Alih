@@ -143,7 +143,7 @@ export default function AdminMarketplace() {
         </section>
       </div>
 
-      <EnhancePanel withParams={withParams} onProgress={loadList} />
+      <EnhancePanel withParams={withParams} onProgress={loadList} onShowProposed={() => { setPhoto('proposed'); setPage(1) }} />
       <ProactivePanel />
 
       <div className="admin-toolbar admin-mk-toolbar">
@@ -155,7 +155,7 @@ export default function AdminMarketplace() {
         <Select value={type} onChange={(e) => { setType(e.target.value); setPage(1) }}
           options={[{ id: 'product', label: 'Produits' }, { id: 'service', label: 'Services' }]} placeholder="Tous types" />
         <Select value={photo} onChange={(e) => { setPhoto(e.target.value); setPage(1) }}
-          options={[{ id: 'pending', label: 'Photos à améliorer' }, { id: 'enhanced', label: 'Photos améliorées' }]} placeholder="Toutes les photos" />
+          options={[{ id: 'pending', label: 'Photos à améliorer' }, { id: 'proposed', label: 'Photos à valider' }, { id: 'enhanced', label: 'Photos améliorées' }]} placeholder="Toutes les photos" />
         <form className="admin-mk-search" onSubmit={(e) => { e.preventDefault(); setQuery(q.trim()); setPage(1) }}>
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nom, établissement ou réf. TND-…" />
           <button type="submit" className="cat-icon-btn" aria-label="Rechercher"><FaSearch /></button>

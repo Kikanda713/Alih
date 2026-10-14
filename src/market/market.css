@@ -138,6 +138,9 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 /* Ratio 4:3 imposé : l'image est en couche absolue, une photo portrait ne peut plus agrandir la carte. */
 .mk-card-media { position: relative; aspect-ratio: 4 / 3; flex-shrink: 0; overflow: hidden; background: #EFE7DA; }
 .mk-card-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Couverture retouchée (packshot carré sur fond blanc) : jamais rognée. */
+.mk-card-media-studio { background: #fff; }
+.mk-card-media-studio img { object-fit: contain; }
 .mk-card-noimg { position: absolute; inset: 0; display: grid; place-items: center; font-size: 2rem; color: var(--copper-gold); background-image: var(--mk-bogolan); background-size: 40px; }
 .mk-card-tags { position: absolute; top: 10px; left: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
 .mk-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 8px; font-size: 0.72rem; font-weight: 600; background: rgba(255, 255, 255, 0.92); color: var(--ebony); }
@@ -533,6 +536,9 @@ section[id] { scroll-margin-top: calc(var(--mk-header-h) + 8px); }
 .admin-thumb:hover .admin-thumb-fab, .admin-thumb-fab:focus-visible, .admin-thumb-fab.busy { opacity: 1; transform: scale(1.08); }
 .admin-thumb-badge { background: linear-gradient(135deg, var(--terracotta), var(--copper-gold)); color: #fff; }
 .admin-thumb-fail { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: var(--mk-red); }
+.admin-thumb-todo { background: var(--copper-gold); }
+.admin-enhance-todo { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0; font-size: 0.85rem; padding: 8px 12px; border-radius: 10px; background: rgba(211, 155, 90, 0.14); color: #8a5a1e; }
+.admin-enhance-count { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; display: inline-grid; place-items: center; font-weight: 700; font-size: 0.75rem; background: var(--terracotta); color: #fff; }
 @media (hover: none) { .admin-thumb-fab { opacity: 1; } }
 .admin-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .admin-compare figure { margin: 0; display: grid; gap: 6px; }
@@ -764,3 +770,20 @@ a.mk-shop-verified:hover span { text-decoration: underline; }
 .mk-bata-card .mk-bata-wants { font-size: 0.82rem; margin: 6px 0 0; overflow-wrap: anywhere; }
 .mk-bata-cta { display: grid; justify-items: center; gap: 8px; }
 .mk-bata-shop-link, .mk-assist a.mk-bata-shop-link { font-size: 0.82rem; color: var(--gray); font-weight: 500; text-decoration: underline; }
+
+/* Repli doux d'une recherche filtrée sans résultat (autres villes / sans filtre). */
+.mk-fallback-note { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 18px; padding: 12px 16px; border-radius: 12px; background: rgba(198, 93, 46, 0.08); border: 1px solid rgba(198, 93, 46, 0.25); color: var(--ebony); }
+.mk-fallback-note > svg { color: var(--terracotta); flex: none; }
+.mk-fallback-note > span { flex: 1 1 220px; }
+
+/* Sélection d'un influenceur (/selection/:slug). */
+.mk-selection-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin: 8px 0 22px; padding: 20px 22px; border-radius: 18px; background: var(--ebony); color: var(--ivory); }
+.mk-selection-banner .mk-eyebrow { margin-bottom: 6px; }
+.mk-selection-banner h1 { font-family: var(--font-heading); font-size: clamp(1.5rem, 4vw, 2.2rem); line-height: 1.15; margin: 0; }
+.mk-selection-banner p { margin: 6px 0 0; color: var(--sand); font-size: 0.92rem; }
+.mk-selection-code { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 16px; border-radius: 14px; background: rgba(248, 245, 239, 0.08); border: 1px dashed rgba(248, 245, 239, 0.35); }
+.mk-selection-code strong { font-family: var(--font-heading); font-size: 1.5rem; color: var(--terracotta); letter-spacing: 1px; }
+.mk-selection-code small { color: var(--sand); }
+.mk-selection-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; justify-content: center; }
+.mk-selection-order { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 12px; background: #1f9d55; color: #fff; font-weight: 600; text-decoration: none; }
+.mk-selection-order:hover { filter: brightness(1.05); }

@@ -26,6 +26,7 @@ import {
   Textarea,
 } from "../../components/ui.jsx";
 import { EarningsStats, EarningsTable } from "../../components/InfluencerParts.jsx";
+import { SelectionsCard, VisualKitCard } from "../../components/InfluencerVisualKit.jsx";
 import {
   METHODS,
   codesOf,
@@ -305,6 +306,10 @@ export default function InfluencerPage() {
           WhatsApp ou Telegram : écrivez « mes gains » à l'assistant Tindisa.
         </p>
       </Card>
+
+      {!suspended && <VisualKitCard api={api} notify={notify} />}
+
+      <SelectionsCard api={api} notify={notify} />
 
       <Card className="infl-card">
         <h2 className="dash-h3">Vos gains</h2>

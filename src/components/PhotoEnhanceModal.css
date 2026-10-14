@@ -1,0 +1,24 @@
+/* Photo de couverture : avant / après, modes Studio / Scène. */
+.pe-wrap { display: grid; gap: 14px; }
+.pe-ba { position: relative; width: 100%; max-width: 560px; margin: 0 auto; aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: #fff; border: 1px solid var(--border); user-select: none; }
+.pe-ba-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+.pe-ba-after { clip-path: inset(0 0 0 var(--pe-pos, 50%)); }
+.pe-ba-line { position: absolute; top: 0; bottom: 0; left: var(--pe-pos, 50%); width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25); pointer-events: none; }
+.pe-ba-line::after { content: ''; position: absolute; top: 50%; left: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: #fff; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.3); }
+.pe-ba-tag { position: absolute; top: 10px; padding: 3px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; background: rgba(18, 18, 18, 0.62); color: #fff; pointer-events: none; }
+.pe-ba-tag-l { left: 10px; }
+.pe-ba-tag-r { right: 10px; }
+.pe-ba-range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; touch-action: pan-y; }
+.pe-meta { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.pe-error { color: #c0392b; font-size: 0.85rem; margin: 0; }
+.pe-note { color: var(--gray); font-size: 0.85rem; margin: 0; }
+.pe-modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.pe-mode { display: grid; gap: 3px; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: transparent; color: inherit; cursor: pointer; font: inherit; }
+.pe-mode strong { font-size: 0.9rem; }
+.pe-mode span { font-size: 0.76rem; color: var(--gray); line-height: 1.35; }
+.pe-mode.is-on { border-color: var(--terracotta); box-shadow: 0 0 0 1px var(--terracotta) inset; }
+.pe-run { display: grid; gap: 6px; justify-items: start; }
+@media (max-width: 560px) {
+  .pe-modes { grid-template-columns: 1fr; }
+}
+.pe-warn { margin: 0; padding: 8px 12px; border-radius: 10px; font-size: 0.85rem; background: rgba(211, 155, 90, 0.16); color: #8a5a1e; }
