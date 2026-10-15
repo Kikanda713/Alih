@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react'
 import { useLoad } from '../../api/useLoad'
 import { Link } from 'react-router-dom'
-import { FaGlobeAfrica, FaCheckCircle, FaBan, FaUndo, FaSearch, FaConciergeBell, FaExclamationTriangle, FaExternalLinkAlt, FaEye } from 'react-icons/fa'
+import { FaGlobeAfrica, FaCheckCircle, FaBan, FaSearch, FaConciergeBell, FaExclamationTriangle, FaExternalLinkAlt, FaEye, FaFlag } from 'react-icons/fa'
 import { useTindisaApi } from '../../api/client'
 import { useToast } from '../../components/useToast'
-import { Badge, Spinner, EmptyState, ConfirmModal, Input, Select } from '../../components/ui.jsx'
+import { Badge, Spinner, EmptyState, Input, Select } from '../../components/ui.jsx'
 import { StatGrid, StatCard } from '../../components/StatCard.jsx'
 import { Pagination } from '../../components/Pagination.jsx'
 import { useAdminView } from './adminView'
@@ -12,26 +12,20 @@ import { useTaxonomy } from '../../api/taxonomy'
 import { categoryLabel } from '../../market/lib/format'
 import { EnhancePanel, EnhanceThumb } from './PhotoEnhance.jsx'
 import ProactivePanel from './ProactivePanel.jsx'
+import { ModTabs, FlagChips, RowActions, BulkBar, ModerationModal, ModerationHistory } from './ModerationKit.jsx'
+import { MOD_STATUS, useSelection, doneMessage } from './moderationShared.jsx'
 
 /*
  * Back-office du marché web : santé du catalogue public, ce que cherchent les
  * visiteurs (et ne trouvent pas : opportunités de recrutement de vendeurs), et
- * modération de n'importe quelle annonce. Retirer = invisible sur le site ET
- * dans la recherche de l'assistant. Périmètre ville respecté côté serveur.
+ * modération APRÈS publication de n'importe quelle annonce (boutique ou P2P) :
+ * file « À examiner » (filtre automatique, signalements), bloquer la diffusion,
+ * supprimer, restaurer, en lot, avec historique. Périmètre ville côté serveur.
  */
 
 const PAGE = 20
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 const money = (v, c) => (v == null ? '·' : `${Number(v).toLocaleString('fr-FR')} ${c === 'USD' ? '$' : 'FC'}`)
-const STATUS = {
-  published: { tone: 'success', label: 'En ligne' },
-  removed: { tone: 'danger', label: 'Retirée' },
-}
-const STATUS_FILTERS = [
-  { k: '', label: 'Toutes' },
-  { k: 'published', label: 'En ligne' },
-  { k: 'removed', label: 'Retirées' },
-]
 
 export default function AdminMarketplace() {
   const api = useTindisaApi()
@@ -44,7 +38,9 @@ export default function AdminMarketplace() {
   const [q, setQ] = useState('')
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
-  const [confirm, setConfirm] = useState({ open: false, item: null, action: null, busy: false })
+  const [modal, setModal] = useState({ open: false, action: null, items: [], busy: false })
+  const [history, setHistory] = useState(null)
+  const sel = useSelection()
 
   const withParams = useCallback((path, params) => {
     const base = withCity(path)
@@ -61,28 +57,40 @@ export default function AdminMarketplace() {
   const listQ = useLoad(
     () => api.get(withParams('/v1/admin/marketplace/listings', {
       q: query, status, type, photo, offset: (page - 1) * PAGE, limit: PAGE,
-    })).then((r) => ({ items: r?.items || [], total: r?.total || 0 }), () => ({ items: [], total: 0 })),
+    })).then(
+      (r) => ({ items: (r?.items || []).map((i) => ({ ...i, isP2P: !!i.shop?.isP2P })), total: r?.total || 0, counts: r?.counts || {} }),
+      () => ({ items: [], total: 0, counts: {} }),
+    ),
     [city, query, status, type, photo, page],
   )
   const insights = insightsQ.data
-  const list = listQ.data || { items: [], total: 0 }
+  const list = listQ.data || { items: [], total: 0, counts: {} }
   const loading = listQ.loading
   const loadList = listQ.reload
   const loadInsights = insightsQ.reload
 
-  const doModerate = async () => {
-    setConfirm((s) => ({ ...s, busy: true }))
+  const openAction = (action, items) => setModal({ open: true, action, items, busy: false })
+  const closeModal = () => setModal({ open: false, action: null, items: [], busy: false })
+  const selectedItems = list.items.filter((i) => sel.ids.has(i.id))
+
+  const doModerate = async (payload) => {
+    setModal((s) => ({ ...s, busy: true }))
     try {
-      await api.post(`/v1/admin/marketplace/listings/${confirm.item.id}/moderate`, { action: confirm.action })
-      notify(confirm.action === 'remove' ? 'Annonce retirée du marché' : 'Annonce remise en ligne', 'success')
-      setConfirm({ open: false, item: null, action: null, busy: false })
+      const ids = modal.items.map((i) => i.id)
+      const res = ids.length > 1
+        ? await api.post('/v1/admin/marketplace/listings/moderate-bulk', { ...payload, ids })
+        : await api.post(`/v1/admin/marketplace/listings/${ids[0]}/moderate`, payload)
+      notify(doneMessage(payload.action, res), res?.failed?.length ? 'info' : 'success')
+      closeModal()
+      sel.clear()
       loadList()
       loadInsights()
     } catch (e) {
       notify(e?.message || 'Erreur', 'error')
-      setConfirm((s) => ({ ...s, busy: false }))
+      setModal((s) => ({ ...s, busy: false }))
     }
   }
+  const loadHistory = useCallback((item) => api.get(`/v1/admin/marketplace/listings/${item.id}/moderation-log`), [api])
 
   const L = insights?.listings || {}
   const S = insights?.searches || {}
@@ -102,7 +110,8 @@ export default function AdminMarketplace() {
       <StatGrid>
         <StatCard icon={<FaCheckCircle />} value={L.published ?? 0} label="Annonces en ligne" />
         <StatCard icon={<FaConciergeBell />} value={L.services ?? 0} label="dont services" />
-        <StatCard icon={<FaBan />} value={L.removed ?? 0} label="Retirées" />
+        <StatCard icon={<FaFlag />} value={list.counts?.flagged ?? 0} label="À examiner" />
+        <StatCard icon={<FaBan />} value={(L.blocked ?? 0) + (L.removed ?? 0)} label="Bloquées ou supprimées" />
         <StatCard icon={<FaSearch />} value={S.total ?? 0} label="Recherches web (30 j)" />
         <StatCard icon={<FaExclamationTriangle />} value={S.zero ?? 0} label="Sans résultat" />
       </StatGrid>
@@ -147,11 +156,7 @@ export default function AdminMarketplace() {
       <ProactivePanel />
 
       <div className="admin-toolbar admin-mk-toolbar">
-        <div className="cat-tabs admin-tabs">
-          {STATUS_FILTERS.map((f) => (
-            <button key={f.k} className={`cat-tab${status === f.k ? ' active' : ''}`} onClick={() => { setStatus(f.k); setPage(1) }}>{f.label}</button>
-          ))}
-        </div>
+        <ModTabs value={status} counts={list.counts} onChange={(k) => { setStatus(k); setPage(1); sel.clear() }} />
         <Select value={type} onChange={(e) => { setType(e.target.value); setPage(1) }}
           options={[{ id: 'product', label: 'Produits' }, { id: 'service', label: 'Services' }]} placeholder="Tous types" />
         <Select value={photo} onChange={(e) => { setPhoto(e.target.value); setPage(1) }}
@@ -162,37 +167,46 @@ export default function AdminMarketplace() {
         </form>
       </div>
 
+      <BulkBar count={selectedItems.length} onAction={(a) => openAction(a, selectedItems)} onClear={sel.clear} />
+
       {loading ? <Spinner label="Chargement…" /> : list.items.length === 0 ? (
         <EmptyState icon={<FaGlobeAfrica />} title="Aucune annonce" text="Aucune annonce pour ces filtres ou cette ville." />
       ) : (
         <>
           <div className="cat-table-wrap">
             <table className="cat-table">
-              <thead><tr><th className="cat-col-img"></th><th>Annonce</th><th>Prix</th><th>Ville</th><th>Vendeur</th><th>Vues</th><th>Statut</th><th className="cat-col-actions">Actions</th></tr></thead>
+              <thead><tr>
+                <th className="mod-col-check">
+                  <input type="checkbox" aria-label="Tout sélectionner"
+                    checked={list.items.length > 0 && list.items.every((i) => sel.ids.has(i.id))}
+                    onChange={(e) => sel.setAll(list.items.map((i) => i.id), e.target.checked)} />
+                </th>
+                <th className="cat-col-img"></th><th>Annonce</th><th>Prix</th><th>Ville</th><th>Vendeur</th><th>Vues</th><th>Statut</th><th className="cat-col-actions">Actions</th></tr></thead>
               <tbody>
                 {list.items.map((i) => {
-                  const st = STATUS[i.status] || STATUS.published
+                  const st = MOD_STATUS[i.status] || MOD_STATUS.published
                   return (
                     <tr key={i.id}>
+                      <td className="mod-col-check"><input type="checkbox" aria-label={`Sélectionner ${i.name}`} checked={sel.ids.has(i.id)} onChange={() => sel.toggle(i.id)} /></td>
                       <td><EnhanceThumb item={i} onChanged={loadList} /></td>
                       <td>
                         <span className="cat-pname">{i.name}</span>
                         <span className="cat-sku">{i.ref} · {i.type === 'service' ? 'Service' : 'Produit'}{i.category ? ` · ${categoryLabel(taxonomy, i.category)}` : ''}</span>
+                        <FlagChips moderation={i.moderation} />
                       </td>
                       <td>{money(i.price, i.currency)}</td>
                       <td>{cap(i.city) || '·'}</td>
-                      <td>{i.shop?.isP2P ? <Badge tone="warn">Particulier</Badge> : <span className="cat-sku">{i.shop?.name}</span>}</td>
+                      <td>
+                        {i.shop?.isP2P ? <Badge tone="warn">Particulier</Badge> : <span className="cat-sku">{i.shop?.name}</span>}
+                        {i.shop?.status === 'blocked' && <Badge tone="danger">Vendeur bloqué</Badge>}
+                      </td>
                       <td>{i.views}</td>
                       <td><Badge tone={st.tone}>{st.label}</Badge></td>
                       <td className="cat-col-actions">
-                        {i.status !== 'removed' && (
+                        {i.status === 'published' && (
                           <Link className="cat-icon-btn" title="Voir sur le marché" to={`/annonce/${i.id}`} target="_blank"><FaExternalLinkAlt /></Link>
                         )}
-                        {i.status === 'removed' ? (
-                          <button className="cat-icon-btn" title="Remettre en ligne" onClick={() => setConfirm({ open: true, item: i, action: 'publish', busy: false })}><FaUndo /></button>
-                        ) : (
-                          <button className="cat-icon-btn danger" title="Retirer du marché" onClick={() => setConfirm({ open: true, item: i, action: 'remove', busy: false })}><FaBan /></button>
-                        )}
+                        <RowActions item={i} onAction={openAction} onHistory={setHistory} />
                       </td>
                     </tr>
                   )
@@ -204,19 +218,8 @@ export default function AdminMarketplace() {
         </>
       )}
 
-      <ConfirmModal
-        open={confirm.open}
-        danger={confirm.action === 'remove'}
-        busy={confirm.busy}
-        title={confirm.action === 'remove' ? 'Retirer du marché' : 'Remettre en ligne'}
-        message={confirm.item ? (confirm.action === 'remove'
-          ? `« ${confirm.item.name} » ne sera plus visible sur le site ni proposé par l’assistant. Continuer ?`
-          : `« ${confirm.item.name} » redeviendra visible sur le site et dans l’assistant.`) : ''}
-        confirmLabel={confirm.action === 'remove' ? 'Retirer' : 'Remettre en ligne'}
-        cancelLabel="Annuler"
-        onConfirm={doModerate}
-        onClose={() => setConfirm({ open: false, item: null, action: null, busy: false })}
-      />
+      <ModerationModal state={modal} onClose={closeModal} onConfirm={doModerate} />
+      <ModerationHistory item={history} load={loadHistory} onClose={() => setHistory(null)} />
     </div>
   )
 }

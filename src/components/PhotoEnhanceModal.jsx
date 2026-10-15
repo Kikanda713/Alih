@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FaMagic, FaSpinner, FaUndo, FaCheck } from 'react-icons/fa'
+import { FaMagic, FaSpinner, FaUndo, FaCheck, FaShieldAlt } from 'react-icons/fa'
 import { useTindisaApi } from '../api/client'
 import { useLoad } from '../api/useLoad'
 import { useToast } from './useToast'
@@ -11,8 +11,9 @@ import './PhotoEnhanceModal.css'
  * Avant / après avec curseur, mode Studio (fond blanc) ou Scène (décor réel),
  * choix de la photo affichée sur le marché. L'original n'est jamais supprimé.
  *
- * `endpoints` : { state, enhance, accept, revert } (chemins API déjà bornés au
- * périmètre : admin de ville ou propriétaire de l'annonce).
+ * `endpoints` : { state, enhance, accept, revert, revalidate? } (chemins API déjà
+ * bornés au périmètre : admin de ville ou propriétaire de l'annonce). `revalidate`
+ * (back-office) rejoue les contrôles de vision sur une retouche IA existante.
  */
 
 import { MODE_LABEL } from './photoModes.js'
@@ -68,6 +69,10 @@ export default function PhotoEnhanceModal({ open, title, endpoints, onClose, onC
   const enhance = () => act('enhance', () => api.post(endpoints.enhance, mode === 'auto' ? {} : { mode }), 'Photo traitée : comparez puis choisissez la photo affichée')
   const accept = () => act('accept', () => api.post(endpoints.accept, {}), 'La photo améliorée est affichée sur le marché')
   const revert = () => act('revert', () => api.del(endpoints.revert), 'La photo originale est affichée sur le marché')
+  const revalidate = () => act('revalidate', async () => {
+    const r = await api.post(endpoints.revalidate, {})
+    notify(r?.changed ? 'Retouche IA refusée par le contrôle : remplacée par une retouche sans IA' : 'Contrôle passé : même article', r?.changed ? 'info' : 'success')
+  })
 
   const hasEnhanced = !!st?.enhancedUrl
   const shown = st?.status === 'done' ? 'enhanced' : 'original'
@@ -80,6 +85,11 @@ export default function PhotoEnhanceModal({ open, title, endpoints, onClose, onC
           {hasEnhanced && (shown === 'enhanced' || st.status === 'proposed') && (
             <Button variant="ghost" onClick={revert} disabled={!!busy}>
               {busy === 'revert' ? <FaSpinner className="spin" /> : <FaUndo />} Garder l’originale
+            </Button>
+          )}
+          {endpoints?.revalidate && hasEnhanced && st.method === 'ai' && (
+            <Button variant="ghost" onClick={revalidate} disabled={!!busy}>
+              {busy === 'revalidate' ? <FaSpinner className="spin" /> : <FaShieldAlt />} Revalider
             </Button>
           )}
           {hasEnhanced && shown !== 'enhanced' && (
@@ -105,7 +115,11 @@ export default function PhotoEnhanceModal({ open, title, endpoints, onClose, onC
             {st.status === 'pending' && <Badge tone="warn">En cours de traitement</Badge>}
           </div>
           {st.error && <p className="pe-error">Dernier essai échoué : {st.error}</p>}
-          {st.note && st.method !== 'ai' && <p className="pe-note">L’IA n’a pas pu être utilisée, retouche de base appliquée (cadrage, lumière).</p>}
+          {st.note && st.method !== 'ai' && (
+            <p className="pe-note">
+              {st.guarded ? st.note : 'L’IA n’a pas pu être utilisée, retouche de base appliquée (cadrage, lumière).'}
+            </p>
+          )}
           {st.status === 'proposed' && <p className="pe-warn">Retouche par IA : comparez avec l’original (inscriptions, hologramme, étiquettes, défauts) avant de l’afficher sur le marché.{st.note && st.method === 'ai' ? ` ${st.note}` : ''}</p>}
 
           <div className="pe-modes" role="radiogroup" aria-label="Type de rendu">

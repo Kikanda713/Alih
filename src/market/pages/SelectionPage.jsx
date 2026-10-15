@@ -45,14 +45,18 @@ export default function SelectionPage() {
 
   if (error) {
     const expired = error.status === 410
+    // Sélection encore vide : elle sera en ligne dès que l'influenceur y ajoutera un article.
+    const empty = error.status === 404 && error.data?.error === 'empty'
     return (
       <div className="mk-container">
         <EmptyState
           icon={expired ? <FaHourglassEnd /> : <FaSearch />}
-          title={expired ? 'Cette sélection a expiré' : 'Sélection introuvable'}
+          title={expired ? 'Cette sélection a expiré' : empty ? 'Sélection en préparation' : 'Sélection introuvable'}
           text={expired
             ? 'Les sélections partagées restent en ligne quelques jours. Les articles sont peut-être encore sur le marché.'
-            : 'Le lien est peut-être incomplet. Découvrez le marché Tindisa.'}
+            : empty
+              ? 'Elle ne contient encore aucun article. Revenez un peu plus tard ou découvrez le marché Tindisa.'
+              : 'Le lien est peut-être incomplet. Découvrez le marché Tindisa.'}
           action={<Button as={Link} to="/marche">Voir le marché</Button>}
         />
       </div>

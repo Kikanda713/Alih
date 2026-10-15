@@ -153,7 +153,7 @@ export function EnhanceThumb({ item, onChanged }) {
       </span>
       {compare && (
         <PhotoEnhanceModal open title={`Photo de « ${item.name} »`} onClose={() => setCompare(false)} onChanged={onChanged}
-          endpoints={{ state: base, enhance: base, accept: `${base}/accept`, revert: base }} />
+          endpoints={{ state: base, enhance: base, accept: `${base}/accept`, revert: base, revalidate: `${base}/revalidate` }} />
       )}
     </>
   )

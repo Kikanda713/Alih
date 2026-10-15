@@ -15,6 +15,8 @@ function qs(params = {}) {
 export const marketApi = {
   listings: (params) => apiFetch(`/v1/market/listings${qs(params)}`),
   listing: (id) => apiFetch(`/v1/market/listings/${encodeURIComponent(id)}`),
+  // Signalement d'une annonce (sans compte) : { reasonCode, text? }. Elle reste en ligne jusqu'à l'examen.
+  report: (id, body) => apiFetch(`/v1/market/listings/${encodeURIComponent(id)}/report`, { method: 'POST', body }),
   shop: (id) => apiFetch(`/v1/market/shops/${encodeURIComponent(id)}`),
   shopListings: (id, params) => apiFetch(`/v1/market/shops/${encodeURIComponent(id)}/listings${qs(params)}`),
   // Techniciens et artisans indépendants (profils pro) : ?family=&trade=&city=&q=&limit=&offset=

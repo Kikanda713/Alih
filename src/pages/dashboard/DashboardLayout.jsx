@@ -9,6 +9,8 @@ import { useT } from '../../i18n'
 import { Spinner } from '../../components/ui.jsx'
 import AppShell from '../../components/AppShell.jsx'
 import SidebarChannels from '../../components/SidebarChannels.jsx'
+import { AssistantProvider } from './assistant/AssistantProvider.jsx'
+import AssistantPanel, { AssistantLauncher, AssistantHeaderButton } from './assistant/AssistantPanel.jsx'
 import { DEMO_MODE, isDemoSession } from '../../demo/demo' // DEMO: retirer en production
 
 function MerchantShell() {
@@ -43,7 +45,18 @@ function MerchantShell() {
       </span>
     </div>
   ) : null
-  return <AppShell nav={nav} sidebarExtra={<SidebarChannels />} notice={notice} />
+  // Assistant Tindisa : panneau disponible sur toutes les pages du tableau de bord.
+  return (
+    <AssistantProvider>
+      <AppShell
+        nav={nav}
+        sidebarExtra={<SidebarChannels />}
+        notice={notice}
+        headerExtra={<AssistantHeaderButton />}
+        floating={<><AssistantLauncher /><AssistantPanel /></>}
+      />
+    </AssistantProvider>
+  )
 }
 
 function MerchantLayoutInner() {

@@ -26,7 +26,8 @@ import {
   Textarea,
 } from "../../components/ui.jsx";
 import { EarningsStats, EarningsTable } from "../../components/InfluencerParts.jsx";
-import { SelectionsCard, VisualKitCard } from "../../components/InfluencerVisualKit.jsx";
+import { VisualKitCard } from "../../components/InfluencerVisualKit.jsx";
+import { SelectionsManager } from "../../components/InfluencerSelections.jsx";
 import {
   METHODS,
   codesOf,
@@ -309,7 +310,7 @@ export default function InfluencerPage() {
 
       {!suspended && <VisualKitCard api={api} notify={notify} />}
 
-      <SelectionsCard api={api} notify={notify} />
+      <SelectionsManager api={api} notify={notify} canEdit={status === "active"} />
 
       <Card className="infl-card">
         <h2 className="dash-h3">Vos gains</h2>

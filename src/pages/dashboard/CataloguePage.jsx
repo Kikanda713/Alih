@@ -175,6 +175,31 @@ function Thumb({ url }) {
 }
 
 // Valeur en USD (au taux BCC) pour juger l'éligibilité à la certification.
+/*
+ * Décision de modération sur un article (posée par l'équipe Tindisa) : diffusion
+ * bloquée ou supprimée, avec le motif. Le vendeur ne peut pas le remettre en ligne
+ * lui-même ; il conteste auprès de l'assistant.
+ */
+function ModerationNotice({ moderation }) {
+  if (!moderation || moderation.status === "published") return null;
+  const label =
+    moderation.status === "removed"
+      ? "Supprimée"
+      : moderation.status === "blocked"
+        ? "Diffusion bloquée"
+        : "Hors ligne";
+  return (
+    <span className="cat-mod-notice">
+      <Badge tone="danger">{label}</Badge>
+      {moderation.reason && <span className="cat-sku"> {moderation.reason}</span>}
+      <span className="cat-sku">
+        {" "}
+        Pour contester, écrivez à l’assistant Tindisa.
+      </span>
+    </span>
+  );
+}
+
 function priceUsd(pricing, rate) {
   const v = Number(pricing?.displayPrice);
   if (!Number.isFinite(v)) return null;
@@ -234,6 +259,7 @@ function ProductTable({
               <td>
                 <span className="cat-pname">{p.name}</span>
                 {p.sku && <span className="cat-sku">{p.sku}</span>}
+                <ModerationNotice moderation={p.moderation} />
               </td>
               <td>{p.category || "·"}</td>
               <td>{fmtPrice(p.pricing?.displayPrice, p.pricing?.currency)}</td>
@@ -288,7 +314,7 @@ function ProductTable({
               )}
               {!readOnly && (
                 <td className="cat-col-actions">
-                  {p.id && (
+                  {p.id && !p.moderation && (
                     <a
                       className="cat-icon-btn"
                       href={`/annonce/${p.id}`}

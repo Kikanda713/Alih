@@ -20,7 +20,7 @@ import OnboardingPage from "./market/pages/OnboardingPage.jsx";
 import BataPage from "./market/pages/BataPage.jsx";
 import SelectionPage from "./market/pages/SelectionPage.jsx";
 const DashboardLayout = lazy(() => import("./pages/dashboard/DashboardLayout.jsx"));
-const ChatHome = lazy(() => import("./pages/dashboard/ChatHome.jsx"));
+const DashboardHome = lazy(() => import("./pages/dashboard/DashboardHome.jsx"));
 const CataloguePage = lazy(() => import("./pages/dashboard/CataloguePage.jsx"));
 const BoutiquePage = lazy(() => import("./pages/dashboard/BoutiquePage.jsx"));
 const VentesPage = lazy(() => import("./pages/dashboard/VentesPage.jsx"));
@@ -75,7 +75,7 @@ export default function Root() {
       <Route path="/pay" element={<PayPage />} />
       <Route path="/step-up" element={<StepUpPage />} />
       <Route path="/dashboard" element={<DashboardLayout />}>
-        <Route index element={<ChatHome />} />
+        <Route index element={<DashboardHome />} />
         <Route path="catalogue" element={<CataloguePage />} />
         <Route path="boutique" element={<BoutiquePage />} />
         <Route path="ventes" element={<VentesPage />} />

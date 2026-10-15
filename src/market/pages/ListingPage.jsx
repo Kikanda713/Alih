@@ -20,6 +20,7 @@ import { useChat } from '../chat/useChat'
 import BookingModal from '../components/BookingModal'
 import { ListingGrid, CertificateLine } from '../components/ListingCard'
 import BataBlock from '../components/BataBlock'
+import ReportListing from '../components/ReportListing'
 
 // La 1re photo peut être la version AMÉLIORÉE (netteté) ; les originales suivent.
 function Gallery({ images, videos, name, enhancedFirst }) {
@@ -221,6 +222,7 @@ function ListingPage({ id }) {
           </p>
           {!shop.isP2P && shop.id && <Link to={`/boutique/${shop.id}`} className="ui-btn ui-btn-secondary mk-btn-block">Voir {businessNoun(taxonomy, shop.shopType, shop.noun).the}</Link>}
           <p className="mk-hint">Les coordonnées du vendeur et l’itinéraire sont transmis par l’assistant, au moment de conclure.</p>
+          <ReportListing id={item.id} />
         </aside>
       </div>
 

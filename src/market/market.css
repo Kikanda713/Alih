@@ -787,3 +787,20 @@ a.mk-shop-verified:hover span { text-decoration: underline; }
 .mk-selection-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; justify-content: center; }
 .mk-selection-order { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 12px; background: #1f9d55; color: #fff; font-weight: 600; text-decoration: none; }
 .mk-selection-order:hover { filter: brightness(1.05); }
+
+/* Signaler une annonce (discret, sous la fiche vendeur). */
+.mk-report-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--gray-light);
+  cursor: pointer;
+}
+.mk-report-link:hover:not(:disabled) { color: var(--mk-red); text-decoration: underline; }
+.mk-report-link:disabled { cursor: default; color: var(--mk-green); }

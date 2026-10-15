@@ -1,0 +1,70 @@
+/* Modération des annonces (marché web + P2P). */
+.mod-count {
+  display: inline-block;
+  min-width: 18px;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  background: rgba(18, 18, 18, 0.08);
+  color: var(--gray, #555);
+}
+.mod-count.alert { background: #c0392b; color: #fff; }
+
+.mod-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.mod-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  background: rgba(211, 155, 90, 0.18);
+  color: #8a5a1e;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mod-chip.severe { background: rgba(192, 57, 43, 0.12); color: #c0392b; }
+.mod-reason { display: block; font-size: 12px; color: var(--gray, #555); margin-top: 2px; overflow-wrap: anywhere; }
+
+.mod-col-check { width: 32px; }
+.mod-col-check input { width: 16px; height: 16px; cursor: pointer; }
+
+.mod-bulk {
+  position: sticky;
+  top: 8px;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--white, #fff);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+.mod-bulk b { margin-right: auto; }
+
+.mod-check { display: flex; align-items: flex-start; gap: 8px; margin: 8px 0; font-size: 14px; cursor: pointer; }
+.mod-check input { margin-top: 3px; }
+.mod-hint { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #c0392b; margin: 4px 0 8px; }
+
+.mod-history section { margin-bottom: 16px; }
+.mod-history h4 { margin: 0 0 8px; font-size: 14px; }
+.mod-log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.mod-log li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 10px; border-radius: 8px; background: rgba(18, 18, 18, 0.03); }
+.mod-log li small { color: var(--gray, #555); }
+.mod-log li .mod-reason { flex-basis: 100%; margin: 0; }
+
+.mod-bans { margin-top: 16px; }
+.mod-bans li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+@media (max-width: 640px) {
+  .mod-bulk { position: static; }
+  .mod-bulk b { flex-basis: 100%; }
+}
