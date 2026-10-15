@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom'
 import { FaExchangeAlt, FaCommentDots } from 'react-icons/fa'
 import { useChat } from '../chat/useChat'
 import ChannelLinks from './ChannelLinks'
-import { cashModeLabel, txt, usd, wantsSummary } from '../lib/bata'
+import { bataFamilyOf, cashModeLabel, txt, usd, wantsSummary } from '../lib/bata'
+import BataComparables from './BataComparables'
 
 /**
  * Bloc « BATA possible » d'une annonce : le propriétaire accepte d'échanger ce
@@ -30,6 +31,14 @@ export default function BataBlock({ item }) {
         <FaCommentDots /> Proposer un échange
       </button>
       <ChannelLinks text={text} />
+      <BataComparables
+        compact
+        family={bataFamilyOf(item.category, item.subcategory) || 'vehicule'}
+        value={bata.valueUsd}
+        exclude={item.id || item.productId}
+        limit={3}
+        title="Biens de valeur proche sur le marché"
+      />
       <p className="mk-hint">
         Le BATA, c’est échanger un bien certifié contre un autre et régler la différence en cash. <Link to="/bata">En savoir plus</Link>
       </p>

@@ -112,30 +112,97 @@ function ProposeModal({ offer, match, onClose, onDone }) {
   )
 }
 
+const TIER_TONE = { 'très proche': 'success', proche: 'info', 'plus éloigné': 'warn', éloigné: 'neutral' }
+const num = (v) => {
+  const n = Number(String(v ?? '').replace(/s/g, '').replace(',', '.'))
+  return v !== '' && v != null && Number.isFinite(n) && n >= 0 ? n : null
+}
+
+/** Ce que l'échange coûte ou rapporte, en clair. */
+function cashLine(m) {
+  const d = Number(m.cashDifferenceUsd ?? m.difference)
+  if (!Number.isFinite(d)) return ''
+  if (d > 0) return `Vous ajoutez ${usd(d)}`
+  if (d < 0) return `Vous recevez ${usd(-d)}`
+  return 'Même valeur, rien à ajouter'
+}
+
 function Matches({ offer, onProposed }) {
   const api = useTindisaApi()
+  const { notify } = useToast()
   const [proposing, setProposing] = useState(null)
+  const [budget, setBudget] = useState({ min: '', max: '' })
+  const [applied, setApplied] = useState({ min: null, max: null })
+  const [invited, setInvited] = useState({})
   const { data = [], loading } = useLoad(
-    () => api.get(`/v1/merchant/bata/offers/${encodeURIComponent(offer.id)}/matches`).then((r) => asList(r, 'matches'), () => []),
-    [offer.id],
+    () => {
+      const q = new URLSearchParams({ limit: '8' })
+      if (applied.min != null) q.set('minTopUpUsd', String(applied.min))
+      if (applied.max != null) q.set('maxTopUpUsd', String(applied.max))
+      return api.get(`/v1/merchant/bata/offers/${encodeURIComponent(offer.id)}/matches?${q}`).then((r) => asList(r, 'matches'), () => [])
+    },
+    [offer.id, applied.min, applied.max],
   )
-  if (loading) return <Spinner label="Recherche d’échanges…" />
-  if (!data.length) return <p className="dash-sub bata-none">Aucune correspondance pour l’instant. Nous vous prévenons dès qu’un bien compatible est inscrit.</p>
+  const invite = async (m) => {
+    try {
+      const r = await api.post('/v1/merchant/bata/interests', { offerId: offer.id, productId: m.productId })
+      if (r && r.ok === false) notify(txt(r.reason) || 'Invitation impossible', 'error')
+      else {
+        setInvited((x) => ({ ...x, [m.productId]: true }))
+        notify(r?.alreadyInvited ? 'Ce propriétaire a déjà été invité' : 'Invitation envoyée au propriétaire', 'success')
+      }
+    } catch (e) {
+      notify(e?.message || 'Invitation impossible', 'error')
+    }
+  }
+  const apply = (e) => {
+    e.preventDefault()
+    setApplied({ min: num(budget.min), max: num(budget.max) })
+  }
   return (
     <>
+    <form className="bata-budget" onSubmit={apply}>
+      <span className="dash-sub">Je peux ajouter</span>
+      <input className="ui-input" inputMode="numeric" placeholder="de … $" aria-label="Complément minimum en dollars" value={budget.min} onChange={(e) => setBudget((b) => ({ ...b, min: e.target.value }))} />
+      <input className="ui-input" inputMode="numeric" placeholder="à … $" aria-label="Complément maximum en dollars" value={budget.max} onChange={(e) => setBudget((b) => ({ ...b, max: e.target.value }))} />
+      <Button size="sm" variant="secondary" type="submit">Filtrer</Button>
+    </form>
+    {loading ? <Spinner label="Recherche d’échanges…" /> : !data.length ? (
+      <p className="dash-sub bata-none">Aucun bien comparable pour l’instant. Nous vous prévenons dès qu’un bien compatible est inscrit.</p>
+    ) : (
     <ul className="bata-matches">
-      {data.slice(0, 5).map((m, i) => (
-        <li key={txt(m.offerId) || i}>
-          <Thumb url={m.image} />
-          <div className="bata-grow">
-            <strong>{txt(m.name) || 'Bien proposé'}</strong>
-            <span className="cat-sku">{[usd(m.valueUsd), txt(m.city), txt(m.summary)].filter(Boolean).join(' · ')}</span>
-            <span className="bata-payer">{payerText(m.payer, m.difference)}</span>
-          </div>
-          <Button size="sm" onClick={() => setProposing(m)} disabled={!m.offerId}>Proposer</Button>
-        </li>
-      ))}
+      {data.slice(0, 8).map((m, i) => {
+        const tier = txt(m.tier)
+        const reasons = Array.isArray(m.reasons) ? m.reasons.map(txt).filter(Boolean).slice(1, 4) : []
+        return (
+          <li key={txt(m.productId) || i}>
+            <Thumb url={m.image} />
+            <div className="bata-grow">
+              <strong>
+                {txt(m.url) ? <a href={txt(m.url)} target="_blank" rel="noreferrer">{txt(m.name) || 'Bien'}</a> : (txt(m.name) || 'Bien')}
+              </strong>
+              <span className="cat-sku">{[usd(m.valueUsd), txt(m.city), txt(m.summary)].filter(Boolean).join(' · ')}</span>
+              <span className="bata-tags">
+                {tier && <Badge tone={TIER_TONE[tier] || 'neutral'}>{tier}</Badge>}
+                <Badge tone={m.kind === 'bata_offer' ? 'success' : 'neutral'}>{m.kind === 'bata_offer' ? 'Ouvert au BATA' : 'Annonce du marché'}</Badge>
+                {m.certified && <Badge tone="info">Certifié</Badge>}
+                {m.overBudget && <Badge tone="warn">Au-delà du budget</Badge>}
+              </span>
+              <span className="bata-payer">{cashLine(m)}</span>
+              {reasons.length > 0 && <span className="bata-wants">{reasons.join(' · ')}</span>}
+            </div>
+            {m.canProposeNow && m.offerId ? (
+              <Button size="sm" onClick={() => setProposing(m)}>Proposer</Button>
+            ) : m.canInvite ? (
+              <Button size="sm" variant="secondary" onClick={() => invite(m)} disabled={!!invited[m.productId]}>
+                {invited[m.productId] ? 'Invité' : 'Inviter le propriétaire'}
+              </Button>
+            ) : null}
+          </li>
+        )
+      })}
     </ul>
+    )}
     {proposing && (
       <ProposeModal offer={offer} match={proposing} onClose={() => setProposing(null)} onDone={() => { setProposing(null); onProposed() }} />
     )}
@@ -174,7 +241,7 @@ function ProposalCard({ p, onAction }) {
   const st = PROPOSAL_STATUS[p.status] || { tone: 'neutral', label: txt(p.status) || '·' }
   const mine = p.yourItem && typeof p.yourItem === 'object' ? p.yourItem : {}
   const theirs = p.theirItem && typeof p.theirItem === 'object' ? p.theirItem : {}
-  const received = p.direction === 'received'
+  const received = p.direction === 'received' || p.role === 'to'
   const active = ['accepted', 'agreed', 'paid'].includes(p.status)
   return (
     <Card className="bata-card">
@@ -224,7 +291,7 @@ export default function BataDashPage() {
   const proposals = useLoad(() => api.get('/v1/merchant/bata/proposals').then((r) => asList(r, 'proposals'), () => []), [])
   const offerList = offers.data || []
   const propList = proposals.data || []
-  const toAnswer = propList.filter((p) => p.direction === 'received' && p.status === 'proposed').length
+  const toAnswer = propList.filter((p) => (p.direction === 'received' || p.role === 'to') && p.status === 'proposed').length
 
   const run = async (fn, okMsg) => {
     setBusy(true)
@@ -284,7 +351,7 @@ export default function BataDashPage() {
             action={<Link to="/dashboard/catalogue" className="ui-btn ui-btn-primary">Aller au catalogue</Link>} />
         ) : (
           <div className="bata-list">
-            {offerList.map((o, i) => <OfferCard key={txt(o.id) || i} offer={o} onStatus={setStatus} onProposed={() => { proposals.reload(); setTab('proposals') }} />)}
+            {offerList.map((o, i) => <OfferCard key={txt(o.id || o.offerId) || i} offer={{ ...o, id: o.id || o.offerId }} onStatus={setStatus} onProposed={() => { proposals.reload(); setTab('proposals') }} />)}
           </div>
         )
       ) : proposals.loading && !proposals.data ? <Spinner label="Chargement…" /> : propList.length === 0 ? (

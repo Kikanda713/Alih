@@ -1220,6 +1220,9 @@ a.home-kpi:hover { border-color: rgba(198,93,46,0.45); }
 .bata-payer { color: var(--ebony); font-weight: 600; }
 .bata-swap { margin: 0 8px; color: var(--terracotta); vertical-align: -2px; }
 .bata-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.bata-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.bata-budget { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
+.bata-budget .ui-input { width: 110px; max-width: 40%; }
 .bata-matches { list-style: none; margin: 0; padding: 10px 0 0; border-top: 1px solid var(--border); display: grid; gap: 10px; }
 .bata-matches li { display: flex; gap: 10px; align-items: center; }
 .bata-none { margin: 0; }

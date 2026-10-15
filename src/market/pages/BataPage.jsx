@@ -8,6 +8,7 @@ import { marketApi } from '../lib/api'
 import { imageUrl, cityLabel } from '../lib/format'
 import { ESCROW_OPEN, BATA_FAMILIES, cashModeLabel, txt, usd, wantsSummary } from '../lib/bata'
 import ChannelLinks from '../components/ChannelLinks'
+import BataComparables from '../components/BataComparables'
 
 const PAGE = 12
 const REGISTER_TEXT = 'Bonjour Tindisa, je veux inscrire mon véhicule (ou téléphone) pour un BATA'
@@ -49,6 +50,8 @@ export default function BataPage() {
   const family = params.get('family') || ''
   const city = params.get('city') || ''
   const [pages, setPages] = useState(1)
+  // Valeur de son bien (facultative) : classe les biens du marché du plus proche au plus éloigné.
+  const [myValue, setMyValue] = useState('')
 
   useEffect(() => { document.title = 'BATA, l’échange de biens · Tindisa' }, [])
 
@@ -129,6 +132,14 @@ export default function BataPage() {
           </div>
         </>
       )}
+
+      <div className="mk-bata-market">
+        <label className="mk-bata-value">
+          <span>Valeur de votre bien ($)</span>
+          <input type="number" inputMode="numeric" min="0" placeholder="ex. 6500" value={myValue} onChange={(e) => setMyValue(e.target.value)} />
+        </label>
+        <BataComparables family={family || 'vehicule'} value={myValue} city={city || undefined} limit={8} />
+      </div>
     </div>
   )
 }

@@ -77,3 +77,12 @@ export function payerText(payer, difference) {
   if (payer === 'them') return `L’autre partie vous paie${d ? ` ${d}` : ' la différence'}`
   return 'Valeurs équivalentes, pas de différence à payer'
 }
+
+/** Ce que l'échange coûte ou rapporte (différence > 0 : vous ajoutez). */
+export function cashDiffText(d) {
+  const n = Number(d)
+  if (d == null || d === '' || !Number.isFinite(n)) return ''
+  if (n > 0) return `vous ajoutez ${usd(n)}`
+  if (n < 0) return `vous recevez ${usd(-n)}`
+  return 'même valeur'
+}
